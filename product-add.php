@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js' ></script>
     <title>카테고리 선택 페이지</title>
     <style>
         /* 기본 스타일 */
@@ -20,7 +21,7 @@
         .header {
             background-color: #274BDB;
             padding: 15px 20px;
-            color: white;
+            color: grey;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -199,31 +200,23 @@
         }
 
         .option-fields {
-            display: flex;
+            display: table;
             flex-direction: column;
         }
 
-        .top-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
 
-        .column {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        /* 수정 */
+        .col-sm-6, .col-sm-3{
+            float: left;
         }
-
-        .top-row input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 150px;
+        .col-sm-6 {
+            width: 50%;
+        }
+        .col-sm-3{
+            width: 25%;
         }
 
         .buttons {
-            display: flex;
             flex-direction: column;
             gap: 5px;
         }
@@ -235,9 +228,8 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        
         }
-
-
 
         .apply-btn {
             padding: 8px 20px;
@@ -246,6 +238,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            width: 250px;
         }
 
         .option-list {
@@ -274,19 +267,108 @@
             background-color: #f7f7f7;
         }
 
-        .delete-row-btn, .excel-upload-btn, .add-row-btn {
+        .add-row-btn {
             background-color: #007bff;
             color: #fff;
             border: none;
             padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
+            float:right;
+            display: block;
+            
         }
 
         .excel-upload-btn, .add-row-btn {
             margin-top: 10px;
         }
 
+
+        /* 테이블 */
+        .option-table {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .option-row {
+            display: table-row;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .header {
+            font-weight: bold;
+            background-color: #f8f8f8;
+        }
+        .option-checkbox, .option-price, .stock, .memo, .sale-status, .manage-code, .use-status, .delete {
+            display: table-cell;
+            padding: 10px;
+            text-align: center;
+            border-right: 1px solid #e0e0e0;
+            vertical-align:middle;
+        }
+        .option-checkbox:last-child, .option-price:last-child, .stock:last-child, .memo:last-child, .sale-status:last-child, .manage-code:last-child, .use-status:last-child, .delete:last-child {
+            border-right: none; /* Remove right border from the last header cell */
+        }
+        .option-name-group {
+            display: table-cell;
+            padding: 10px;
+            border-left: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
+        .main-header {
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #e0e0e0; /* Bottom border for main header */
+            padding-bottom: 5px;
+        }
+        .sub-headers {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 5px;
+        }
+        .sub-header {
+            width: 32%;
+            text-align: center;
+            font-weight: normal;
+            border-right: 1px solid #e0e0e0; /* Right border between sub-headers */
+            padding: 5px 0;
+        }
+        .sub-header:last-child {
+            border-right: none;
+        }
+        .sub-item {
+            width: 32%;
+            text-align: center;
+            display: inline-block;
+            border-right: 1px solid #e0e0e0;
+        }
+        .sub-item:last-child {
+            border-right: none;
+        }
+        .delete button {
+            background: none;
+            border: none;
+            color: red;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .option-input{
+            background: none;
+            text-align: center;
+            padding: 0px 10px;
+            box-sizing: border-box;
+            width: 100%;
+            height: 34px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            border-radius: 5px;
+            word-break: keep-all;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
     </style>
 </head>
@@ -372,51 +454,97 @@
                 <div class="option-combination">
                     <label>옵션명 조합 생성</label>
                     <div class="option-fields">
-                        <div class="top-row">
+                        <div class="col-sm-3">
                             <input type="text" placeholder="색상,크기"> <!-- 인풋(1) -->
-                            <div class="column">
-                                <input type="text" placeholder="빨강,노랑"> <!-- 인풋(2) -->
-                                <input type="text" placeholder="55mm,75mm"> <!-- 인풋(3) -->
-                            </div>
+                        </div> 
+                        <div class="col-sm-6">
+                            <input type="text" placeholder="빨강,노랑"> <!-- 인풋(2) -->
+                        </div>
+                        <div class="col-sm-3">
                             <div class="buttons">
                                 <button class="add-option-btn">+</button>
-                                <button class="apply-btn">적용</button>
                             </div>
                         </div>
                     </div>
+                    <div class="option-fields">
+                        <div class="col-sm-3">
+                            <input type="text" placeholder="색상,크기"> <!-- 인풋(1) -->
+                        </div> 
+                        <div class="col-sm-6">
+                            <input type="text" placeholder="빨강,노랑"> <!-- 인풋(2) -->
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="buttons">
+                                <button class="add-option-btn">x</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="option-fields">
+                        <div class="col-sm-3">
+                            <input type="text" placeholder="색상,크기"> <!-- 인풋(1) -->
+                        </div> 
+                        <div class="col-sm-6">
+                            <input type="text" placeholder="빨강,노랑"> <!-- 인풋(2) -->
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="buttons">
+                                <button class="add-option-btn">x</button>
+                                <!-- <button class="add-option-btn">+</button> -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="apply-btn">적용</button>
                 </div>
 
                 <div class="option-list">
                     <label>옵션 목록 (총 4개)</label>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>삭제</th>
-                                <th>옵션명</th>
-                                <th>옵션태그</th>
-                                <th>판매가격</th>
-                                <th>매입가격</th>
-                                <th>출고지</th>
-                                <th>상태</th>
-                                <th>메모</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><button class="delete-row-btn">🗑️</button></td>
-                                <td>빨강색상,크기55mm</td>
-                                <td><input type="text" placeholder="옵션태그를 입력"></td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td><input type="text" placeholder="출고지를 입력"></td>
-                                <td><input type="text" placeholder="상태를 입력"></td>
-                                <td><input type="text" placeholder="메모를 입력"></td>
-                            </tr>
-                            <!-- 추가 항목들 -->
-                        </tbody>
-                    </table>
-                    <button class="excel-upload-btn">엑셀 일괄등록</button>
                     <button class="add-row-btn">추가</button>
+                    <div class="option-table">
+                        <div class="option-row header">
+                            <div class="option-checkbox"><input type="checkbox"></div>
+                            <div class="option-name-group">
+                                <div class="main-header">옵션명</div>
+                                <div class="sub-headers">
+                                    <div class="sub-header">색상</div>
+                                    <div class="sub-header">크기</div>
+                                    <div class="sub-header">호환</div>
+                                </div>
+                            </div>
+                            <div class="option-price">매입가</div>
+                            <div class="stock">재고수량</div>
+                            <div class="memo">메모</div>
+                            <div class="delete">삭제</div>
+                        </div>
+
+                        <!-- Row example -->
+                        <div class="option-row">
+                            <div class="option-checkbox"><input type="checkbox"></div>
+                            <div class="option-name-group">
+                                <div class="sub-item">
+                                    <input type="text" class="option-input" value="블랙">
+                                </div>
+                                <div class="sub-item">
+                                    <input type="text" class="option-input" value="55">
+                                </div>
+                                <div class="sub-item">
+                                    <input type="text" class="option-input" value="시마노">
+                                </div>
+                            </div>
+                            <div class="option-price">
+                                <input type="text" class="option-input" value="0">
+                            </div>
+                            <div class="stock">
+                                <input type="text" class="option-input" value="0">
+                            </div>
+                            <div class="memo">
+                                <input type="text" class="option-input" value="메모">
+                            </div>
+                            <div class="delete"><button>×</button></div>
+                        </div>
+                        
+                        <!-- Additional rows can be added here -->
+                    </div>
                 </div>
             </div>
 
@@ -424,4 +552,16 @@
         </div>
     </div>
 </body>
+<script>
+    $(document).on('click', '.add-option-btn', function() {
+        // 현재 .option-fields를 복제
+        var newOptionFields = $(this).closest('.option-fields').clone();
+        
+        // 복제한 요소의 입력 필드를 초기화
+        newOptionFields.find('input').val('');
+        
+        // 새로 생성된 요소를 현재 요소의 아래에 추가
+        $(this).closest('.option-fields').after(newOptionFields);
+    });
+</script>
 </html>
