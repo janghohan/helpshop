@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" data-n-g="">
     <title>내정보 페이지</title>
     <style>
         /* 기본 스타일 */
@@ -170,9 +171,6 @@
             cursor: pointer;
         }
 
-        .charge-info{
-            display: flex;
-        }
         .charge-label{
             display: inline-block;
             margin: 10px 0;
@@ -225,20 +223,20 @@
                 <div class="product-item">
                     <div class="product-info">
                         <h3>네이버 스마트스토어</h3>
-                        <div class="charge-info">
-                            <div>
+                        <div class="row">
+                            <div class="col-lg-3">
                                 <label class="charge-label" for="">기본 수수료(%)</label>
                                 <input type="text" class="field-input" value="3.5">
                             </div>
-                            <div>
+                            <div class="col-lg-3">
                                 <label class="charge-label" for="">연동 수수료(%)</label>
                                 <input type="text" class="field-input" value="3.5">
                             </div>
-                            <div>
+                            <div class="col-lg-3">
                                 <label class="charge-label" for="">기본 수수료(%)</label>
                                 <input type="text" class="field-input" value="3.5">
                             </div>
-                            <div>
+                            <div class="col-lg-3">
                                 <label class="charge-label" for="">배송비 수수료(%)</label>
                                 <input type="text" class="field-input" value="3.5">
                             </div>
