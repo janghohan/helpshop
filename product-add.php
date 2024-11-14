@@ -219,9 +219,11 @@
         .buttons {
             flex-direction: column;
             gap: 5px;
+            width: 68px;
+            text-align: right;
         }
 
-        .add-option-btn, .apply-btn {
+        .add-option-btn, .del-option-btn, .apply-btn {
             padding: 8px 12px;
             background-color: #007bff;
             color: #fff;
@@ -455,10 +457,10 @@
                     <label>옵션명 조합 생성</label>
                     <div class="option-fields">
                         <div class="col-sm-3">
-                            <input type="text" placeholder="색상,크기"> <!-- 인풋(1) -->
+                            <input type="text" class="optionName" placeholder="색상,크기"> <!-- 인풋(1) -->
                         </div> 
                         <div class="col-sm-6">
-                            <input type="text" placeholder="빨강,노랑"> <!-- 인풋(2) -->
+                            <input type="text" class="optionValue" placeholder="빨강,노랑"> <!-- 인풋(2) -->
                         </div>
                         <div class="col-sm-3">
                             <div class="buttons">
@@ -466,35 +468,35 @@
                             </div>
                         </div>
                     </div>
-                    <div class="option-fields">
+                    <!-- <div class="option-fields">
                         <div class="col-sm-3">
-                            <input type="text" placeholder="색상,크기"> <!-- 인풋(1) -->
+                            <input type="text" placeholder="색상,크기"> 
                         </div> 
                         <div class="col-sm-6">
-                            <input type="text" placeholder="빨강,노랑"> <!-- 인풋(2) -->
+                            <input type="text" placeholder="빨강,노랑"> 
                         </div>
                         <div class="col-sm-3">
                             <div class="buttons">
-                                <button class="add-option-btn">x</button>
+                                <button class="del-option-btn">x</button>
+                                <button class="add-option-btn">+</button>
                             </div>
                         </div>
                     </div>
                     <div class="option-fields">
                         <div class="col-sm-3">
-                            <input type="text" placeholder="색상,크기"> <!-- 인풋(1) -->
+                            <input type="text" placeholder="색상,크기"> 
                         </div> 
                         <div class="col-sm-6">
-                            <input type="text" placeholder="빨강,노랑"> <!-- 인풋(2) -->
+                            <input type="text" placeholder="빨강,노랑"> 
                         </div>
                         <div class="col-sm-3">
                             <div class="buttons">
-                                <button class="add-option-btn">x</button>
-                                <!-- <button class="add-option-btn">+</button> -->
+                                <button class="del-option-btn">x</button>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     
-                    <button class="apply-btn">적용</button>
+                    <button class="apply-btn" onclick="generateCombinations()">적용</button>
                 </div>
 
                 <div class="option-list">
@@ -506,9 +508,9 @@
                             <div class="option-name-group">
                                 <div class="main-header">옵션명</div>
                                 <div class="sub-headers">
-                                    <div class="sub-header">색상</div>
-                                    <div class="sub-header">크기</div>
-                                    <div class="sub-header">호환</div>
+                                    <!-- <div class="sub-header">색상</div>
+                                    <div class="sub-header">크기</div> -->
+                                    <!-- <div class="sub-header">호환</div> -->
                                 </div>
                             </div>
                             <div class="option-price">매입가</div>
@@ -521,15 +523,15 @@
                         <div class="option-row">
                             <div class="option-checkbox"><input type="checkbox"></div>
                             <div class="option-name-group">
-                                <div class="sub-item">
+                                <!-- <div class="sub-item">
                                     <input type="text" class="option-input" value="블랙">
                                 </div>
                                 <div class="sub-item">
                                     <input type="text" class="option-input" value="55">
-                                </div>
-                                <div class="sub-item">
+                                </div> -->
+                                <!-- <div class="sub-item">
                                     <input type="text" class="option-input" value="시마노">
-                                </div>
+                                </div> -->
                             </div>
                             <div class="option-price">
                                 <input type="text" class="option-input" value="0">
@@ -554,7 +556,9 @@
 </body>
 <script>
     $(document).on('click', '.add-option-btn', function() {
+        // $(this).remove();
         // 현재 .option-fields를 복제
+        var delBtn = '<button class="del-option-btn">x</button>';
         var newOptionFields = $(this).closest('.option-fields').clone();
         
         // 복제한 요소의 입력 필드를 초기화
@@ -562,6 +566,63 @@
         
         // 새로 생성된 요소를 현재 요소의 아래에 추가
         $(this).closest('.option-fields').after(newOptionFields);
+        $(this).remove();
+
+        var len = $(".option-fields").length;
+        if(len==2){
+            $(".option-fields").last().find(".buttons").prepend(delBtn);
+        }else if(len==3){
+            $(".option-fields").last().find('.add-option-btn').remove();
+        }
     });
+
+    $(document).on('click', '.del-option-btn', function() {
+        // $(this).remove();
+        $(".option-fields").last().remove();
+        $(".option-fields").last().find(".buttons").append('<button class="add-option-btn">+</button>');
+
+        
+    });
+
+
+    function generateCombinations() {
+        // 입력 필드에서 값을 가져와 콤마로 분리하여 배열로 변환
+        const Names = document.querySelectorAll('.optionName');
+        const Values = document.querySelectorAll('.optionValue');
+
+        $(".sub-headers").html('');
+        Names.forEach(name => {
+            console.log(name.value);
+            
+            $(".sub-headers").append(' <div class="sub-header">'+name.value+'</div>')
+        });
+
+        
+        Values.forEach(function(val,i) {
+            console.log(i);
+            op = val.value;
+            const options = op.split(",").map(val => val.trim());
+        });
+
+
+
+        // 조합을 저장할 배열
+        // var combinations = [];
+
+        // // 이중 for문을 사용하여 색상과 크기의 조합 생성
+        // for (var i = 0; i < colors.length; i++) {
+        //     for (var j = 0; j < sizes.length; j++) {
+        //         // 각 조합을 객체로 저장
+        //         combinations.push({ color: colors[i].trim(), size: sizes[j].trim() });
+        //     }
+        // }
+
+        // // 결과 출력
+        // var resultDiv = document.getElementById("result");
+        // resultDiv.innerHTML = ""; // 이전 결과 지우기
+        // combinations.forEach(function(combination) {
+        //     resultDiv.innerHTML += "색상: " + combination.color + ", 크기: " + combination.size + "<br>";
+        // });
+    }
 </script>
 </html>
