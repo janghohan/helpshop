@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <title>내정보 페이지</title>
     <style>
         /* 기본 스타일 */
@@ -172,19 +173,19 @@
                 <h3>장호호호</h3>
                 <p>ID: wkdgh5430</p>
                 <div class="info-item">
-                    <label>이름을 등록해 주세요.</label>
+                    <input type="text" class="field-input" placeholder="이름을 수정해주세요.">
                     <button>수정</button>
                 </div>
                 <div class="info-item">
-                    <label>01056135430</label>
+                    <input type="text" class="field-input" placeholder="01056135430">
                     <button>수정</button>
                 </div>
                 <div class="info-item">
-                    <label>이메일</label>
+                    <input type="text" class="field-input" placeholder="wkdgh5430@naver.com">
                     <button>수정</button>
                 </div>
                 <div class="info-item">
-                    <label>비밀번호</label>
+                    <input type="text" class="field-input" placeholder="******">
                     <button>수정</button>
                 </div>
             </div>

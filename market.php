@@ -135,6 +135,7 @@
         }
         .product-item {
             display: flex;
+            justify-content: space-between;
             align-items: center;
             background-color: #f9f9f9;
             padding: 10px;
@@ -144,6 +145,7 @@
 
         .product-info {
             flex: 1;
+            max-width: 850px;
         }
         .product-info h3 {
             font-size: 16px;
@@ -166,6 +168,14 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        .charge-info{
+            display: flex;
+        }
+        .charge-label{
+            display: inline-block;
+            margin: 10px 0;
         }
         
     </style>
@@ -205,7 +215,7 @@
 
             <!-- 기본정보 섹션 -->
             <div class="info-section">
-                <button class="basic-btn btn-primary">+ 새로운 마켓 등록</button>
+                <button class="btn btn-primary">+ 새로운 마켓 등록</button>
             </div>
 
             <!-- 마케팅 정보 수신 동의 섹션 -->
@@ -215,10 +225,27 @@
                 <div class="product-item">
                     <div class="product-info">
                         <h3>네이버 스마트스토어</h3>
-                        <p>코드: 5f5021e7lf4b99e7xfx<br>태그: 예기 / 키우라</p>
+                        <div class="charge-info">
+                            <div>
+                                <label class="charge-label" for="">기본 수수료(%)</label>
+                                <input type="text" class="field-input" value="3.5">
+                            </div>
+                            <div>
+                                <label class="charge-label" for="">연동 수수료(%)</label>
+                                <input type="text" class="field-input" value="3.5">
+                            </div>
+                            <div>
+                                <label class="charge-label" for="">기본 수수료(%)</label>
+                                <input type="text" class="field-input" value="3.5">
+                            </div>
+                            <div>
+                                <label class="charge-label" for="">배송비 수수료(%)</label>
+                                <input type="text" class="field-input" value="3.5">
+                            </div>
+                        </div>
                     </div>
                     <div class="product-controls">
-                        <button>▼</button>
+                        <button class="btn btn-secondary">수정</button>
                     </div>
                 </div>
                 <div class="product-item">

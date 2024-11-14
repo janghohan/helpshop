@@ -2,3 +2,30 @@
     background-color: #2f3b7e;
     color: white;
 }
+.btn-secondary {
+    background-color: #afafaf;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #2f3b7e;
+    color: white;
+}
+
+.field-input{
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    resize: none;
+}
+
+.btn{
+    /* background-color: #007bff; */
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+}
+
