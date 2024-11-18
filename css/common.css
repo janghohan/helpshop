@@ -1,12 +1,20 @@
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox  */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+
 .btn-primary {
     background-color: #2f3b7e;
     color: white;
 }
-.btn-secondary {
-    background-color: #afafaf;
-    color: white;
-}
-
 .btn-primary {
     background-color: #2f3b7e;
     color: white;
@@ -18,14 +26,5 @@
     border-radius: 5px;
     font-size: 14px;
     resize: none;
-}
-
-.btn{
-    /* background-color: #007bff; */
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    display: block;
 }
 

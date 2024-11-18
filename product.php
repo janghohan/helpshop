@@ -17,26 +17,6 @@
             background-color: #f4f5f7;
         }
 
-        /* 헤더 */
-        .header {
-            background-color: #2f3b7e;
-            padding: 10px 20px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header .menu {
-            display: flex;
-            gap: 20px;
-        }
-        .header .menu a {
-            color: white;
-            text-decoration: none;
-        }
-        .header .menu a:hover {
-            text-decoration: underline;
-        }
 
         /* 메인 컨테이너 */
         .container {
@@ -170,20 +150,7 @@
 </head>
 <body>
     <!-- 헤더 -->
-    <div class="header">
-        <div class="menu">
-            <a href="#">마진율 계산기</a>
-            <a href="#">엑셀 변환기</a>
-            <a href="#">스토어 랭킹</a>
-            <a href="#">통합 재고 관리</a>
-            <a href="#">통합 판매 분석</a>
-            <a href="#">셀툴 이용 가이드</a>
-        </div>
-        <div>
-            <button>내 정보</button>
-            <button>로그아웃</button>
-        </div>
-    </div>
+    <?php include './header.php'?>
 
     <!-- 메인 컨테이너 -->
     <div class="container">

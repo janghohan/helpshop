@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" data-n-g="">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js' ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <title>내정보 페이지</title>
     <style>
         /* 기본 스타일 */
@@ -18,36 +20,6 @@
             background-color: #f4f5f7;
         }
 
-        /* 헤더 */
-        .header {
-            background-color: #274BDB;
-            padding: 15px 20px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header .menu {
-            display: flex;
-            gap: 20px;
-        }
-        .header .menu a {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .header .menu a:hover {
-            text-decoration: underline;
-        }
-        .header button {
-            background: none;
-            border: 1px solid #fff;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
 
         /* 메인 컨테이너 */
         .container {
@@ -180,20 +152,7 @@
 </head>
 <body>
     <!-- 헤더 -->
-    <div class="header">
-        <div class="menu">
-            <a href="#">마진율 계산기</a>
-            <a href="#">엑셀 변환기</a>
-            <a href="#">스토어 랭킹</a>
-            <a href="#">통합 재고 관리</a>
-            <a href="#">통합 판매 분석</a>
-            <a href="#">셀툴 이용 가이드</a>
-        </div>
-        <div>
-            <button>내 정보</button>
-            <button>로그아웃</button>
-        </div>
-    </div>
+    <?php include './header.php'?>
 
     <!-- 메인 컨테이너 -->
     <div class="container">
@@ -213,50 +172,117 @@
 
             <!-- 기본정보 섹션 -->
             <div class="info-section">
-                <button class="btn btn-primary">+ 새로운 마켓 등록</button>
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#martketModal">+ 새로운 마켓 등록</button>
             </div>
 
             <!-- 마케팅 정보 수신 동의 섹션 -->
             <h3>내 마켓</h3>
             <div class="product-list">
                 <!-- 상품 아이템 -->
-                <div class="product-item">
-                    <div class="product-info">
+                <div class="product-item row">
+                    <div class="product-info col-md-11">
                         <h3>네이버 스마트스토어</h3>
                         <div class="row">
                             <div class="col-lg-3">
                                 <label class="charge-label" for="">기본 수수료(%)</label>
-                                <input type="text" class="field-input" value="3.5">
+                                <input type="text" class="field-input" value="2.6">
                             </div>
                             <div class="col-lg-3">
                                 <label class="charge-label" for="">연동 수수료(%)</label>
-                                <input type="text" class="field-input" value="3.5">
+                                <input type="text" class="field-input" value="2">
                             </div>
                             <div class="col-lg-3">
-                                <label class="charge-label" for="">기본 수수료(%)</label>
-                                <input type="text" class="field-input" value="3.5">
-                            </div>
-                            <div class="col-lg-3">
-                                <label class="charge-label" for="">배송비 수수료(%)</label>
-                                <input type="text" class="field-input" value="3.5">
+                                <label class="charge-label" for="">배송 수수료(%)</label>
+                                <input type="text" class="field-input" value="3.3">
                             </div>
                         </div>
                     </div>
-                    <div class="product-controls">
-                        <button class="btn btn-secondary">수정</button>
+                    <div class="product-controls col-md-1">
+                        <button class="btn btn-secondary market-edit">수정</button>
                     </div>
                 </div>
-                <div class="product-item">
-                    <div class="product-info">
+                <div class="product-item row">
+                    <div class="product-info col-md-11">
                         <h3>쿠팡</h3>
-                        <p>코드: 5f502e6d7b9e0bn9y2<br>태그: 바다무하사대, 류어대</p>
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label class="charge-label" for="">기본 수수료(%)</label>
+                                <input type="text" class="field-input" value="10.8">
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="charge-label" for="">연동 수수료(%)</label>
+                                <input type="text" class="field-input" value="0">
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="charge-label" for="">배송 수수료(%)</label>
+                                <input type="text" class="field-input" value="3.3">
+                            </div>
+                        </div>
                     </div>
-                    <div class="product-controls">
-                        <button>▼</button>
+                    <div class="product-controls col-md-1">
+                        <button class="btn btn-secondary market-edit">수정</button>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="martketModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">마켓 등록</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="" id="newMarketForm" method="post">
+                        <input type="hidden" name="type" value="create">
+                        <p class="mt-4 mb-1 mb-n2">마켓명을 입력하세요.</p>
+                        <input type="text" name="marketName" class="form-control col-3" placeholder="ex) 스마트스토어">
+                        <p class="mt-4 mb-1 mb-n2">수수료 입력(숫자만 입력하세요)</p>
+                        <div class="row">
+                            <div class="col-4">
+                                <input type="text" name="basicFee" class="form-control" placeholder="기본 수수료(%)">
+                            </div>
+                            <div class="col-4">
+                                <input type="text" name="linkedFee" class="form-control" placeholder="연동 수수료(%)">
+                            </div>
+                            <div class="col-4">
+                                <input type="text" name="shipFee" class="form-control" placeholder="배송 수수료(%)">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" onclick="newMarketCreate()">등록</button>
+                </div>
                 </div>
             </div>
         </div>
     </div>
 </body>
+<script>
+    function newMarketCreate(){
+        $.ajax({
+            url: "./api/market_api.php",
+            type: "post",
+            dataType: "json",
+            data: $("#newMarketForm").serialize(),
+            success: function(data){
+                if(data['msg']=='suc'){					
+                    location.reload();		
+                }else if(data['msg']=='exist')  {
+                    alert('error');
+                }
+                $('#newMarketForm')[0].reset();
+            },
+            error: function (request, status, error){
+                alert('정보 신청에 실패하셨습니다.');    
+
+            }                     
+        });
+    }
+
+    $(".")
+    
+</script>
 </html>

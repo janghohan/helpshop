@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" data-n-g="">
+    <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js' ></script>
+    <script src="./js/common.js"></script>
+    <script src="./js/product-add.js"></script>
     <title>카테고리 선택 페이지</title>
     <style>
         /* 기본 스타일 */
@@ -17,36 +21,7 @@
             background-color: #f4f5f7;
         }
 
-        /* 헤더 */
-        .header {
-            background-color: #274BDB;
-            padding: 15px 20px;
-            color: grey;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header .menu {
-            display: flex;
-            gap: 20px;
-        }
-        .header .menu a {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .header .menu a:hover {
-            text-decoration: underline;
-        }
-        .header button {
-            background: none;
-            border: 1px solid #fff;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
+       
 
         /* 메인 컨테이너 */
         .container {
@@ -219,7 +194,6 @@
         .buttons {
             flex-direction: column;
             gap: 5px;
-            width: 68px;
             text-align: right;
         }
 
@@ -297,7 +271,7 @@
             display: table-row;
             border-bottom: 1px solid #e0e0e0;
         }
-        .header {
+        .op-header {
             font-weight: bold;
             background-color: #f8f8f8;
         }
@@ -329,7 +303,7 @@
             padding-top: 5px;
         }
         .sub-header {
-            width: 32%;
+            /* width: 32%; */
             text-align: center;
             font-weight: normal;
             border-right: 1px solid #e0e0e0; /* Right border between sub-headers */
@@ -372,24 +346,15 @@
             white-space: nowrap;
         }
 
+        .op-delete{
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
     <!-- 헤더 -->
-    <div class="header">
-        <div class="menu">
-            <a href="#">마진율 계산기</a>
-            <a href="#">엑셀 변환기</a>
-            <a href="#">스토어 랭킹</a>
-            <a href="#">통합 재고 관리</a>
-            <a href="#">통합 판매 분석</a>
-            <a href="#">셀툴 이용 가이드</a>
-        </div>
-        <div>
-            <button>내 정보</button>
-            <button>로그아웃</button>
-        </div>
-    </div>
+    <?php include './header.php'?>
 
     <!-- 메인 컨테이너 -->
     <div class="container">
@@ -455,12 +420,12 @@
                 <div class="section-title">옵션 정보</div>
                 <div class="option-combination">
                     <label>옵션명 조합 생성</label>
-                    <div class="option-fields">
+                    <div class="option-fields row">
                         <div class="col-sm-3">
-                            <input type="text" class="optionName" placeholder="색상,크기"> <!-- 인풋(1) -->
+                            <input type="text" class="optionName form-control" placeholder="색상,크기"> <!-- 인풋(1) -->
                         </div> 
-                        <div class="col-sm-6">
-                            <input type="text" class="optionValue" placeholder="빨강,노랑"> <!-- 인풋(2) -->
+                        <div class="col-sm-3">
+                            <input type="text" class="optionValue form-control" placeholder="빨강,노랑"> <!-- 인풋(2) -->
                         </div>
                         <div class="col-sm-3">
                             <div class="buttons">
@@ -503,7 +468,7 @@
                     <label>옵션 목록 (총 4개)</label>
                     <button class="add-row-btn">추가</button>
                     <div class="option-table">
-                        <div class="option-row header">
+                        <div class="option-row op-header">
                             <div class="option-checkbox"><input type="checkbox"></div>
                             <div class="option-name-group">
                                 <div class="main-header">옵션명</div>
@@ -520,18 +485,9 @@
                         </div>
 
                         <!-- Row example -->
-                        <div class="option-row">
+                        <!-- <div class="option-row" >
                             <div class="option-checkbox"><input type="checkbox"></div>
                             <div class="option-name-group">
-                                <!-- <div class="sub-item">
-                                    <input type="text" class="option-input" value="블랙">
-                                </div>
-                                <div class="sub-item">
-                                    <input type="text" class="option-input" value="55">
-                                </div> -->
-                                <!-- <div class="sub-item">
-                                    <input type="text" class="option-input" value="시마노">
-                                </div> -->
                             </div>
                             <div class="option-price">
                                 <input type="text" class="option-input" value="0">
@@ -542,11 +498,12 @@
                             <div class="memo">
                                 <input type="text" class="option-input" value="메모">
                             </div>
-                            <div class="delete"><button>×</button></div>
-                        </div>
-                        
-                        <!-- Additional rows can be added here -->
+                            <div class="op-delete"><button>×</button></div>
+                        </div> -->
                     </div>
+                </div>
+                <div id="result">
+
                 </div>
             </div>
 
@@ -585,44 +542,16 @@
     });
 
 
-    function generateCombinations() {
-        // 입력 필드에서 값을 가져와 콤마로 분리하여 배열로 변환
-        const Names = document.querySelectorAll('.optionName');
-        const Values = document.querySelectorAll('.optionValue');
+    
+    
+    $(document).on('click','.op-delete',function(){
+        $(this).parent().closest('.option-row').remove();
+    });
 
-        $(".sub-headers").html('');
-        Names.forEach(name => {
-            console.log(name.value);
-            
-            $(".sub-headers").append(' <div class="sub-header">'+name.value+'</div>')
-        });
-
-        
-        Values.forEach(function(val,i) {
-            console.log(i);
-            op = val.value;
-            const options = op.split(",").map(val => val.trim());
-        });
-
-
-
-        // 조합을 저장할 배열
-        // var combinations = [];
-
-        // // 이중 for문을 사용하여 색상과 크기의 조합 생성
-        // for (var i = 0; i < colors.length; i++) {
-        //     for (var j = 0; j < sizes.length; j++) {
-        //         // 각 조합을 객체로 저장
-        //         combinations.push({ color: colors[i].trim(), size: sizes[j].trim() });
-        //     }
-        // }
-
-        // // 결과 출력
-        // var resultDiv = document.getElementById("result");
-        // resultDiv.innerHTML = ""; // 이전 결과 지우기
-        // combinations.forEach(function(combination) {
-        //     resultDiv.innerHTML += "색상: " + combination.color + ", 크기: " + combination.size + "<br>";
-        // });
-    }
+    // $(document).on('keyup','input', function(){
+    //     // newNumber = comma($(this).val());
+    //     console.log($(this).val().toLocaleString('ko-KR'));
+    //     $(this).val($(this).val().toLocaleString('ko-KR'));
+    // });
 </script>
 </html>
