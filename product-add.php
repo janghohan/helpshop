@@ -353,13 +353,25 @@
     </style>
 </head>
 <body>
-    <!-- 헤더 -->
-    <?php include './header.php'?>
+    <?php 
+    include './sidebar.html';
+    include './header.php';
+     
+     ?>
 
     <!-- 메인 컨테이너 -->
     <div class="container">
         <!-- 카테고리 선택 섹션 -->
         <div class="category-section">
+            <!-- 거래처 선택 -->
+            <div class="category-box">
+                <label><span class="required">•</span>거래처</label>
+                <select>
+                    <option value="">선택</option>
+                    <!-- 카테고리 옵션 추가 가능 -->
+                </select>
+            </div>
+
             <!-- 카테고리 선택 -->
             <div class="category-box">
                 <label><span class="required">•</span>카테고리</label>
@@ -369,43 +381,13 @@
                 </select>
             </div>
 
-            <!-- 서브 카테고리 선택 -->
-            <div class="category-box">
-                <label><span class="required">•</span>서브 카테고리</label>
-                <select>
-                    <option value="">선택</option>
-                    <!-- 서브 카테고리 옵션 추가 가능 -->
-                </select>
-            </div>
-
             <div class="product-info-section">
-                <div class="section-title">상품 정보</div>
                 <div class="product-info">
-                    <div class="image-container">
-                        <div class="image-box">
-                            <img src="placeholder.png" alt="대표 이미지">
-                            <div class="image-actions">
-                                <button class="zoom-btn">🔍</button>
-                                <button class="delete-btn">🗑️</button>
-                            </div>
-                        </div>
-                        <label>대표 이미지</label>
-                    </div>
                     <div class="product-fields">
                         <div class="field">
                             <label>상품명</label>
                             <input type="text" placeholder="상품명" maxlength="100">
                             <div class="char-count">0 / 100</div>
-                        </div>
-                        <div class="field">
-                            <label>상품 태그</label>
-                            <input type="text" placeholder="상품 태그" maxlength="100">
-                            <div class="char-count">0 / 100</div>
-                        </div>
-                        <div class="field">
-                            <label>매입 사이트 URL</label>
-                            <input type="text" placeholder="매입 사이트 URL" maxlength="400">
-                            <div class="char-count">0 / 400</div>
                         </div>
                         <div class="field">
                             <label>상품별 메모</label>
@@ -506,7 +488,9 @@
 
                 </div>
             </div>
-
+            <div>
+                <button class="btn btn-primary float-md-end">등록</button>
+            </div>
 
         </div>
     </div>
