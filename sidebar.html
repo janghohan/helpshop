@@ -1,0 +1,176 @@
+<style>
+    /* 사이드바 스타일 */
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        background-color: #2c3e50;
+        color: white;
+        position: fixed;
+        top: 0;
+        left: 0;
+        transition: width 0.3s;
+        overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+        width: 60px;
+    }
+
+    .sidebar .sidebar-toggle {
+        text-align: right;
+        padding: 10px;
+    }
+
+    .sidebar.collapsed #toggle-sidebar{
+        transform: rotate(180deg);
+    }
+
+    #toggle-sidebar{
+        overflow: hidden;
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        font-size: 1px;
+        line-height: 0;
+        color: transparent;
+        white-space: nowrap;
+        text-indent: 150%;
+        background: url('./img/icon/ico_toggle.svg') no-repeat center;
+        box-shadow: none;   
+        border: 0;
+    }
+
+    .sidebar .menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar .menu li {
+        padding: 10px 20px;
+    }
+
+    .sidebar .menu li a {
+        color: white;
+        text-decoration: none;
+        display: block;
+    }
+
+    .sidebar .sub-flex{
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* 사이드바 서브 */
+    /* 하위 메뉴 숨김 */
+    .submenu {
+        display: none;
+        list-style: none;
+        padding-left: 20px;
+        margin: 0;
+    }
+
+    /* 하위 메뉴 항목 스타일 */
+    .submenu li {
+        padding: 5px 0;
+    }
+
+
+    /* 서브메뉴 토글 버튼 스타일 */
+    .submenu-toggle {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        margin-left: 10px;
+        font-size: 14px;
+    }
+
+    .submenu-toggle.collapsed::after {
+        content: "▶"; /* 닫힌 상태 */
+    }
+
+    .submenu-toggle::after {
+        content: "▼"; /* 열린 상태 */
+    }
+
+    /* 헤더 스타일 */
+    .header {
+        background-color: #f5f6fa;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        margin-left: 250px; /* 사이드바 넓이 */
+        transition: margin-left 0.3s;
+    }
+
+    .sidebar.collapsed ~ .header {
+        margin-left: 60px;
+    }
+
+    .header-left .logo {
+        height: 40px;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .header-right .search-bar {
+        padding: 5px;
+        margin-right: 10px;
+    }
+
+    .header-right .ai-chatbot {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+
+</style>
+
+
+<!-- 사이드바 -->
+<div class="sidebar">
+    <div class="sidebar-toggle">
+        <button id="toggle-sidebar">☰</button>
+    </div>
+    <ul class="menu">
+        <li><a href="#">홈</a></li>
+        <li>
+            <div class="sub-flex">
+                <a href="#">주문</a>
+                <button class="submenu-toggle"></button>
+            </div>
+            <ul class="submenu">
+                <li><a href="#">주문 내역</a></li>
+                <li><a href="#">환불 관리</a></li>
+            </ul>
+        </li>
+        <li>
+            <div class="sub-flex">
+                <a href="#">상품</a>
+                <button class="submenu-toggle"></button>
+            </div>
+            <ul class="submenu">
+                <li><a href="#">상품 목록</a></li>
+                <li><a href="#">상품 등록</a></li>
+            </ul>
+        </li>
+        <li><a href="#">고객</a></li>
+        <li><a href="#">메시지</a></li>
+        <li><a href="#">게시판</a></li>
+        <li><a href="#">디자인 (PC/모바일)</a></li>
+        <li><a href="#">프로모션</a></li>
+        <li><a href="#">통계</a></li>
+        <li><a href="#">통합설정</a></li>
+    </ul>
+</div>

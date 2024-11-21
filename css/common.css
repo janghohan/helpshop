@@ -28,3 +28,28 @@ input[type='number'] {
     resize: none;
 }
 
+
+/* 메인 콘텐츠 */
+.full-content{
+  margin-left: 270px;
+  transition: margin-left 0.3s;
+}
+
+.sidebar.collapsed ~ .full-content {
+  margin-left: 80px;
+}
+
+.main-content {
+  flex: 1;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+
+.main-content h2 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}

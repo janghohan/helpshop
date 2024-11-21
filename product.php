@@ -74,18 +74,7 @@
             background-color: #ccc;
         }
 
-        /* 메인 콘텐츠 */
-        .main-content {
-            flex: 1;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .main-content h2 {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
+        
         .product-list {
             display: flex;
             flex-direction: column;
