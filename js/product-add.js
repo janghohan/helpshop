@@ -1,7 +1,7 @@
 
 
 // 옵션 로우
-var newOptionNames = '<div class="option-row" ><div class="option-checkbox"><input type="checkbox"></div><div class="option-name-group"></div><div class="option-price"><input type="text" class="option-input localeNumber" value="0"></div><div class="stock"><input type="text" class="option-input localeNumber" value="0"></div><div class="memo"><input type="text" class="option-input" placeholder="메모"></div><div class="op-delete"><button class="btn btn-secondary">×</button></div></div>';
+var newOptionNames = '<div class="option-row" ><div class="option-checkbox"><input type="checkbox"></div><div class="option-name-group"></div><div class="option-price"><input type="text" class="option-input localeNumber" value="0"></div><div class="stock"><input type="text" class="option-input localeNumber" value="0"></div><div class="buying-price"><button class="btn btn-secondary">입력</button></div><div class="memo"><input type="text" class="option-input" placeholder="메모"></div><div class="op-delete"><button class="btn btn-secondary">×</button></div></div>';
 
 //옵션 적용버튼 누를때
 function generateCombinations() {

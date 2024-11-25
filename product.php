@@ -4,49 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="./js/product.js"></script>
+
     <title>상품 관리</title>
     <style>
-        /* 기본 스타일 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+  
+        /* 검색 컨테이너 */
+        .filter-group {
+            margin-bottom: 5px;
         }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f5f7;
-        }
-
-
-        /* 메인 컨테이너 */
-        .container {
-            display: flex;
-            padding: 20px;
-        }
-
-        /* 사이드바 */
-        .sidebar {
-            width: 20%;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-right: 20px;
-        }
-        .sidebar h2 {
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        .sidebar .filter-group {
-            margin-bottom: 20px;
-        }
-        .sidebar .filter-group label {
+        .filter-group label {
             font-size: 14px;
             display: block;
             margin-bottom: 5px;
         }
-        .sidebar .filter-group select,
-        .sidebar .filter-group input {
+        .filter-group select,
+        .filter-group input {
             width: 100%;
             padding: 8px;
             font-size: 14px;
@@ -54,24 +29,17 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .sidebar .buttons {
+        .buttons {
             display: flex;
             gap: 10px;
         }
-        .sidebar .buttons button {
+        .buttons button {
             flex: 1;
             padding: 10px;
             font-size: 14px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }
-        .btn-primary {
-            background-color: #2f3b7e;
-            color: white;
-        }
-        .btn-secondary {
-            background-color: #ccc;
         }
 
         
@@ -139,76 +107,92 @@
 </head>
 <body>
     <!-- 헤더 -->
-    <?php include './header.php'?>
-
-    <!-- 메인 컨테이너 -->
-    <div class="container">
-        <!-- 사이드바 -->
-        <div class="sidebar">
-            <h2>상품 조회</h2>
-            <div class="filter-group">
-                <label for="category">카테고리</label>
-                <select id="category">
-                    <option>전체</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="subcategory">서브 카테고리</label>
-                <select id="subcategory">
-                    <option>전체</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="search">조회 조건</label>
-                <select id="search">
-                    <option>선택</option>
-                </select>
-                <input type="text" placeholder="검색어를 입력하세요.">
-            </div>
-            <div class="buttons">
-                <button class="btn-primary">조회</button>
-                <button class="btn-secondary">초기화</button>
-            </div>
+    <?php include './sidebar.html'?>
+    <!-- 헤더 -->
+   
+    <div class="header">
+        <div class="header-left">
+            <img src="logo.png" alt="로고" class="logo">
         </div>
-
-        <!-- 메인 콘텐츠 -->
-        <div class="main-content">
-            <h2>상품관리</h2>
-            <div class="product-list">
-                <!-- 상품 아이템 -->
-                <div class="product-item">
-                    <div class="product-image"></div>
-                    <div class="product-info">
-                        <h3>키우라 아레이기</h3>
-                        <p>코드: 5f5021e7lf4b99e7xfx<br>태그: 예기 / 키우라</p>
-                    </div>
-                    <div class="product-controls">
-                        <button>▼</button>
-                    </div>
-                </div>
-                <div class="product-item">
-                    <div class="product-image"></div>
-                    <div class="product-info">
-                        <h3>인스트라 R2</h3>
-                        <p>코드: 5f502e6d7b9e0bn9y2<br>태그: 바다무하사대, 류어대</p>
-                    </div>
-                    <div class="product-controls">
-                        <button>▼</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 페이지네이션 -->
-            <div class="pagination">
-                <select>
-                    <option>10개 보기</option>
-                </select>
-                <span>1 / 1</span>
-            </div>
+        <div class="header-right">
+            <input type="text" placeholder="검색" class="search-bar">
+            <button class="ai-chatbot">카페24 AI 챗봇</button>
         </div>
     </div>
 
-    <!-- 추가 버튼 -->
-    <div class="add-button">+</div>
+    <div class="full-content">
+
+        <!-- 검색 컨테이너 -->
+        <div class="container">
+            <!-- 사이드바 -->
+            <div class="main-content">
+                <h2>상품 조회</h2>
+                <div class="row">
+                    <div class="filter-group col-md-6">
+                        <label for="account-cate">거래처</label>
+                        <select id="account-cate">
+                            <option>전체</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
+                    <div class="filter-group col-md-6">
+                        <label for="product-cate">카테고리</label>
+                        <select id="product-cate">
+                            <option>전체</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <input type="text" placeholder="상품명을 입력하세요." id="search-input">
+                </div>
+                <div class="buttons">
+                    <button class="btn-primary" id="search-btn">조회</button>
+                    <button class="btn-secondary" id="reset-btn">초기화</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 컨테이너 -->
+        <div class="container">
+            <!-- 메인 콘텐츠 -->
+            <div class="main-content">
+                <h2>상품관리</h2>
+                <div class="product-list">
+                    <!-- 상품 아이템 -->
+                    <div class="product-item">
+                        <div class="product-info">
+                            <h3>키우라 아레이기</h3>
+                            <span>거래처: 5f5021e7lf4b99e7xfx</span>
+                            <span>태그: 예기 / 키우라</span>
+                        </div>
+                        <div class="product-controls">
+                            <button>▼</button>
+                        </div>
+                    </div>
+                    <div class="product-item">
+                        <div class="product-info">
+                            <h3>인스트라 R2</h3>
+                            <p>코드: 5f502e6d7b9e0bn9y2<br>태그: 바다무하사대, 류어대</p>
+                        </div>
+                        <div class="product-controls">
+                            <button>▼</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="pagination">
+                    <select>
+                        <option>10개 보기</option>
+                    </select>
+                    <span>1 / 1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 추가 버튼 -->
+        <div class="add-button">+</div>
+    </div>
 </body>
 </html>

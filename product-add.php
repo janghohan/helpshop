@@ -275,7 +275,7 @@
             font-weight: bold;
             background-color: #f8f8f8;
         }
-        .option-checkbox, .option-price, .stock, .memo, .sale-status, .manage-code, .use-status, .delete {
+        .option-checkbox, .option-price, .stock, .buying-price, .memo, .sale-status, .manage-code, .use-status, .delete {
             display: table-cell;
             padding: 10px;
             text-align: center;
@@ -415,34 +415,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- <div class="option-fields">
-                        <div class="col-sm-3">
-                            <input type="text" placeholder="색상,크기"> 
-                        </div> 
-                        <div class="col-sm-6">
-                            <input type="text" placeholder="빨강,노랑"> 
-                        </div>
-                        <div class="col-sm-3">
-                            <div class="buttons">
-                                <button class="del-option-btn">x</button>
-                                <button class="add-option-btn">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="option-fields">
-                        <div class="col-sm-3">
-                            <input type="text" placeholder="색상,크기"> 
-                        </div> 
-                        <div class="col-sm-6">
-                            <input type="text" placeholder="빨강,노랑"> 
-                        </div>
-                        <div class="col-sm-3">
-                            <div class="buttons">
-                                <button class="del-option-btn">x</button>
-                            </div>
-                        </div>
-                    </div> -->
-                    
                     <button class="apply-btn" onclick="generateCombinations()">적용</button>
                 </div>
 
@@ -462,6 +434,7 @@
                             </div>
                             <div class="option-price">매입가</div>
                             <div class="stock">재고수량</div>
+                            <div class="buying-price">판매가</div>
                             <div class="memo">메모</div>
                             <div class="delete">삭제</div>
                         </div>

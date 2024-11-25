@@ -52,4 +52,5 @@ input[type='number'] {
 .main-content h2 {
   margin-bottom: 20px;
   font-size: 18px;
+  font-weight: bold;
 }
