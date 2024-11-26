@@ -282,6 +282,9 @@
             border-right: 1px solid #e0e0e0;
             vertical-align:middle;
         }
+        .buying-price button, .memo button, .delete{
+            width: 58px;
+        }
         .option-checkbox:last-child, .option-price:last-child, .stock:last-child, .memo:last-child, .sale-status:last-child, .manage-code:last-child, .use-status:last-child, .delete:last-child {
             border-right: none; /* Remove right border from the last header cell */
         }
@@ -359,7 +362,8 @@
      
      ?>
 
-    <!-- 메인 컨테이너 -->
+    <div class="full-content">
+        <!-- 메인 컨테이너 -->
     <div class="container">
         <!-- 카테고리 선택 섹션 -->
         <div class="category-section">
@@ -466,6 +470,7 @@
             </div>
 
         </div>
+    </div>
     </div>
 </body>
 <script>
