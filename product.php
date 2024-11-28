@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" href="./css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="./js/product.js"></script>
 
     <title>상품 관리</title>
@@ -49,7 +50,6 @@
             gap: 10px;
         }
         .product-item {
-            display: flex;
             align-items: center;
             background-color: #f9f9f9;
             padding: 10px;
@@ -63,21 +63,12 @@
             border-radius: 8px;
             margin-right: 20px;
         }
-        .product-info {
-            flex: 1;
-        }
-        .product-info h3 {
+
+        h3 {
             font-size: 16px;
             margin-bottom: 5px;
         }
-        .product-info p {
-            font-size: 14px;
-            color: #666;
-        }
-        .product-controls {
-            display: flex;
-            align-items: center;
-        }
+
         .pagination {
             display: flex;
             justify-content: center;
@@ -102,6 +93,16 @@
             align-items: center;
             font-size: 24px;
             cursor: pointer;
+        }
+
+        .flex-item-1 {
+            flex: 5; /* 50% */
+        }
+        .flex-item-2 {
+            flex: 2; /* 20% */
+        }
+        .flex-item-3 {
+            flex: 1 /* 10% */
         }
     </style>
 </head>
@@ -161,22 +162,77 @@
                 <div class="product-list">
                     <!-- 상품 아이템 -->
                     <div class="product-item">
-                        <div class="product-info">
-                            <h3>키우라 아레이기</h3>
-                            <span>거래처: 5f5021e7lf4b99e7xfx</span>
-                            <span>태그: 예기 / 키우라</span>
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <h3>키우라 아레이기</h3>
+                            </div>
+                            <div class=" flex-shrink-0">
+                                <button class="btn btn-secondary toggle-detail-btn">보기</button>
+                                <button class="btn btn-secondary">수정</button>
+                            </div>
                         </div>
-                        <div class="product-controls">
-                            <button>▼</button>
+                        <div class="product-detail" style="display: none;">
+                            <div class="d-flex flex-column">
+                                <label for="">메모</label>
+                                <textarea name="" id=""></textarea>
+                            </div>
+                            <div class="d-flex text-c">
+                                <div class="flex-item-1">
+                                    <div class="d-flex flex-column">
+                                        <label for="">옵션</label>
+                                        <span>색상 : 빨강, 크기 : 55mm</span>
+                                    </div>
+                                </div>
+                                <div class="flex-item-2 text-end">
+                                    <div class="d-flex flex-column">
+                                        <label for="">원가</label>
+                                        <span>4,500</span>
+                                    </div>
+                                </div>
+                                <div class="flex-item-2 text-end">
+                                    <div class="d-flex flex-column">
+                                        <label for="">판매가</label>
+                                        <span>6000</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="product-item">
-                        <div class="product-info">
-                            <h3>인스트라 R2</h3>
-                            <p>코드: 5f502e6d7b9e0bn9y2<br>태그: 바다무하사대, 류어대</p>
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <h3>키우라 아레이기</h3>
+                            </div>
+                            <div class=" flex-shrink-0">
+                                <button class="btn btn-secondary toggle-detail-btn">보기</button>
+                                <button class="btn btn-secondary">수정</button>
+                            </div>
                         </div>
-                        <div class="product-controls">
-                            <button>▼</button>
+                        <div class="product-detail" style="display: none;">
+                            <div class="d-flex flex-column">
+                                <label for="">메모</label>
+                                <textarea name="" id=""></textarea>
+                            </div>
+                            <div class="d-flex text-c">
+                                <div class="flex-item-1">
+                                    <div class="d-flex flex-column">
+                                        <label for="">옵션</label>
+                                        <span>색상 : 빨강, 크기 : 55mm</span>
+                                    </div>
+                                </div>
+                                <div class="flex-item-2 text-end">
+                                    <div class="d-flex flex-column">
+                                        <label for="">원가</label>
+                                        <span>4,500</span>
+                                    </div>
+                                </div>
+                                <div class="flex-item-2 text-end">
+                                    <div class="d-flex flex-column">
+                                        <label for="">판매가</label>
+                                        <span>6000</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -194,5 +250,20 @@
         <!-- 추가 버튼 -->
         <div class="add-button">+</div>
     </div>
+    <script>
+        $(document).ready(function () {
+            $('.toggle-detail-btn').on('click', function () {
+                // 현재 버튼에서 가까운 product-item 내부의 product-detail을 슬라이드 토글
+                $(this).closest('.product-item').find('.product-detail').slideToggle();
+
+                // 버튼 텍스트 변경
+                if ($(this).text() === "보기") {
+                    $(this).text("닫기");
+                } else {
+                    $(this).text("보기");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
