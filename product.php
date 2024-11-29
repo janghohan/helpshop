@@ -108,18 +108,13 @@
 </head>
 <body>
     <!-- 헤더 -->
-    <?php include './sidebar.html'?>
+    <?php 
+    include './sidebar.html';
+    include './header.php';
+    
+    ?>
     <!-- 헤더 -->
    
-    <div class="header">
-        <div class="header-left">
-            <img src="logo.png" alt="로고" class="logo">
-        </div>
-        <div class="header-right">
-            <input type="text" placeholder="검색" class="search-bar">
-            <button class="ai-chatbot">카페24 AI 챗봇</button>
-        </div>
-    </div>
 
     <div class="full-content">
 

@@ -11,10 +11,14 @@
     <script src="./js/common.js"></script>
 </head>
 <body>
-    <?php include './sidebar.html'?>
-
+    <?php 
+    include './sidebar.html';
+    include './header.php';
+    
+    ?>
+    
     <!-- 헤더 -->
-    <div class="header">
+    <!-- <div class="header">
         <div class="header-left">
             <img src="logo.png" alt="로고" class="logo">
         </div>
@@ -22,24 +26,31 @@
             <input type="text" placeholder="검색" class="search-bar">
             <button class="ai-chatbot">카페24 AI 챗봇</button>
         </div>
-    </div>
+    </div> -->
 
     <div class="full-content">
         <div class="main-content">
             <h2>거래서 조회</h2>
             <div class="row">
                 <div class="col-5">
-                    <input type="text" class="col-5 form-control">
+                    <input type="text" class="col-5 form-control" id="search-input">
                 </div>
-                <button class="btn btn-primary col-2">조회</button>
+                <button class="btn btn-primary col-2" id="search-btn">조회</button>
             </div>
         </div>
     
         <!-- 메인 콘텐츠 -->
         <div class="main-content">
-            <div class="row mb-3">
-                <h2 class="col-10">거래처 관리</h2>
-                <button class="btn btn-primary col-2">+ 거래처 등록</button>
+            <div class="d-flex mb-3">
+                <h2 class="flex-grow-1">거래처 관리</h2>
+                <button class="btn flex-shrink-0">
+                    <a href="./account-manage.php">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
+                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                        </svg>
+                    </a>
+                </button>
             </div>
             <div class="account-list">
                 <!-- 상품 아이템 -->
