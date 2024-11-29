@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공통 레이아웃</title>
-    <link rel="stylesheet" href="./css/common.css">
     <link rel="stylesheet" href="./css/account.css">
     <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/common.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="./js/common.js"></script>
 </head>
 <body>
@@ -15,6 +16,8 @@
     include './sidebar.html';
     include './header.php';
     
+    $pdo = new PDO('mysql:host=localhost;dbname=helpshop;charset=utf8', 'root', '');
+
     ?>
     
     <!-- 헤더 -->
@@ -30,7 +33,7 @@
 
     <div class="full-content">
         <div class="main-content">
-            <h2>거래서 조회</h2>
+            <h2>거래처 조회</h2>
             <div class="row">
                 <div class="col-5">
                     <input type="text" class="col-5 form-control" id="search-input">
@@ -54,9 +57,20 @@
             </div>
             <div class="account-list">
                 <!-- 상품 아이템 -->
+
+                <?php
+                    $sql = "SELECT * FROM account WHERE user_ix = :ix";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([':ix' => '1']);
+
+                    $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    foreach($accounts as $account) {
+                ?>
+
                 <div class="account-item">
                     <div class="account-info col-10">
-                        <h3>NS</h3>
+                        <h3><?=$account['name']?></h3>
                         <table class="table">
                             <thead>
                                 <th>대표번호</th>
@@ -66,53 +80,29 @@
                                 <th>주소</th>
                             </thead>
                             <tbody>
-                                <td>032-554-5541</td>
-                                <td>정석현</td>
-                                <td>010-5544-5412</td>
+                                <td><?=$account['contact']?></td>
+                                <td><?=$account['account_manager']?></td>
+                                <td><?=$account['manager_contact']?></td>
                                 <td>
-                                    <a href="">http://dlasdf.com</a>
+                                    <a href=""><?=$account['site']?></a>
                                 </td>
                                 <td>
-                                    전남 순천시 우석로 56 낚시타운
-                                </td>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="account-controls col-2">
-                        <button class="btn btn-primary">메모</button>
-                        <button class="btn btn-secondary">수정</button>
-                    </div>
-                </div>
-                <div class="account-item">
-                    <div class="account-info col-10">
-                        <h3>다이나미스</h3>
-                        <table class="table">
-                            <thead>
-                                <th>대표번호</th>
-                                <th>담당자</th>
-                                <th>담당자 번호</th>
-                                <th>홈페이지</th>
-                                <th>주소</th>
-                            </thead>
-                            <tbody>
-                                <td>032-554-5541</td>
-                                <td>정석현</td>
-                                <td>010-5544-5412</td>
-                                <td>
-                                    <a href="">http://dlasdf.com</a>
-                                </td>
-                                <td>
-                                    전남 순천시 우석로 56 낚시타운
+                                    <?=$account['address']?>
                                 </td>
                             </tbody>
                         </table>
                     </div>
                     <div class="account-controls col-2">
-                        <button class="btn btn-primary">메모</button>
-                        <button class="btn btn-secondary">수정</button>
+                        <button class="btn btn-primary btn-memo"  data-bs-toggle="modal" data-bs-target="#accountModal">메모</button>
+                        <button class="btn btn-secondary">
+                            <a href="./account-manage.php?ix=<?=$account['ix']?>" class="text-white">수정</a>
+                        </button>
                     </div>
+                    <textarea name="memo" class="memo" style="visibility:hidden;">
+                        <?=$account['memo']?>
+                    </textarea>
                 </div>
-            
+                <?php } ?>            
             </div>
         </div>
         <!-- 페이지네이션 -->
@@ -122,9 +112,30 @@
             </select>
             <span>1 / 1</span>
         </div>
+        <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">메모</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="" id="newMarketForm" method="post">
+                        <textarea name="modalMemo" id="modalMemo" class="form-control" rows="5" readonly></textarea>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <script src="script.js"></script>
+    <script>
+        $(".btn-memo").click(function(){
+            $("#modalMemo").val($(this).parent().parent().find(".memo").val().trim());
+        });
+    </script>
 </body>
 <script>
    

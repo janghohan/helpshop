@@ -5,6 +5,10 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
+a{
+  text-decoration: none;
+}
+
 /* Firefox  */
 input[type='number'] {
   -moz-appearance: textfield;
@@ -13,10 +17,7 @@ input[type='number'] {
 
 .btn-primary {
     background-color: #2f3b7e;
-    color: white;
-}
-.btn-primary {
-    background-color: #2f3b7e;
+    border-color: #2f3b7e;
     color: white;
 }
 

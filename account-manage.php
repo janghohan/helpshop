@@ -34,8 +34,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($ix) {
         // 수정 처리
-        $stmt = $pdo->prepare("UPDATE products SET name = :name, price = :price, description = :description WHERE id = :id");
-        $stmt->execute(['id' => $id, 'name' => $name, 'price' => $price, 'description' => $description]);
+        $stmt = $pdo->prepare("UPDATE account SET name = :name, account_manager = :account_manager, manager_contact = :manager_contact, contact = :contact, site = :site, address = :address, account_number = :account_number, memo = :memo WHERE ix = :ix");
+        $stmt->execute([
+            'ix' => $ix, 
+            'name' => $name, 
+            'account_manager' => $account_manager,
+            'manager_contact' => $manager_contact,
+            'contact' => $contact,
+            'site' => $site,
+            'address' => $address,
+            'account_number' => $account_number,
+            'memo' => $memo
+        ]);
         $message = "상품이 수정되었습니다.";
     } else {
         // 생성 처리
@@ -90,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if($_SERVER['REQUEST_METHOD'] === 'POST'){ 
         if($ix) {
-            $location = './account-manage.php?ix='+$ix;
+            $location = './account-manage.php?ix='.$ix;
         }else{
             $location = './account-manage.php?';
         }
@@ -161,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <div class="mb-3">
                                 <label for="exampleFormControlTextarea1" class="form-label">메모</label>
-                                <textarea class="form-control" name="accountMemo" rows="5" value="<?= htmlspecialchars($account['memo']) ?>"></textarea>
+                                <textarea class="form-control" name="accountMemo" rows="5"><?= htmlspecialchars($account['memo']) ?></textarea>
                             </div>
                         </div>
                         <div class="text-center">
