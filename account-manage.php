@@ -175,6 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                         <div class="text-center">
+                            <a href="./account.php" class="btn btn-secondary">취소</a>
                             <button type="submit" class="btn btn-primary"><?= $account['ix'] ? '수정' : '등록' ?></button>
                         </div>
                     </form>

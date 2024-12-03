@@ -1,3 +1,36 @@
+<?php
+$pdo = new PDO('mysql:host=localhost;dbname=helpshop;charset=utf8', 'root', '');
+
+
+
+// 검색 처리
+$searchResult = [];
+if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
+
+    $stmt = "SELECT * FROM account WHERE name LIKE '%:searchKeyword%'";
+    $stmt->execute(['searchKeyword' => $_GET['searchKey']]);
+
+    $result = $conn->query($query);
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $searchResult[] = $row;
+        }
+    }
+
+
+    $stmt = $pdo->prepare("SELECT * FROM account WHERE ix = :ix");
+    $stmt->execute(['ix' => $_GET['ix']]);
+    $account = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$account) {
+        $message = "상품을 찾을 수 없습니다.";
+        $account = ['ix'=> '', 'user_ix'=> '', 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
+    }
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,7 +117,7 @@
                                 <td><?=$account['account_manager']?></td>
                                 <td><?=$account['manager_contact']?></td>
                                 <td>
-                                    <a href=""><?=$account['site']?></a>
+                                    <a href="<?=$account['site']?>" target="_blank"><?=$account['site']?></a>
                                 </td>
                                 <td>
                                     <?=$account['address']?>
@@ -134,6 +167,10 @@
     <script>
         $(".btn-memo").click(function(){
             $("#modalMemo").val($(this).parent().parent().find(".memo").val().trim());
+        });
+
+        $("#search-btn").click(function(){
+            location.href = ='./account.php?searchKeyword=';
         });
     </script>
 </body>

@@ -38,3 +38,7 @@ $(document).ready(function () {
         $(this).toggleClass('collapsed'); // 버튼 상태 변경
     });
 });
+
+function back(){
+    window.history.back();
+}
