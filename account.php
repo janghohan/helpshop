@@ -1,36 +1,3 @@
-<?php
-$pdo = new PDO('mysql:host=localhost;dbname=helpshop;charset=utf8', 'root', '');
-
-
-
-// 검색 처리
-$searchResult = [];
-if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
-
-    $stmt = "SELECT * FROM account WHERE name LIKE '%:searchKeyword%'";
-    $stmt->execute(['searchKeyword' => $_GET['searchKey']]);
-
-    $result = $conn->query($query);
-
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $searchResult[] = $row;
-        }
-    }
-
-
-    $stmt = $pdo->prepare("SELECT * FROM account WHERE ix = :ix");
-    $stmt->execute(['ix' => $_GET['ix']]);
-    $account = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$account) {
-        $message = "상품을 찾을 수 없습니다.";
-        $account = ['ix'=> '', 'user_ix'=> '', 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
-    }
-}
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,11 +13,41 @@ if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
 </head>
 <body>
     <?php 
-    include './sidebar.html';
     include './header.php';
-    
-    $pdo = new PDO('mysql:host=localhost;dbname=helpshop;charset=utf8', 'root', '');
+    include './sidebar.html';
 
+    include './dbConnect.php';
+
+    // 검색 처리
+    // DB 연결 오류 확인
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    // 검색 처리
+    $searchResult = [];
+    if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
+        $searchTerm = $conn->real_escape_string($_GET['searchKey']); // 사용자 입력값
+        $query = "SELECT * FROM account WHERE name LIKE '%$searchTerm%' AND user_ix='$user_ix'";
+        $result = $conn->query($query);
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $searchResult[] = $row;
+            }
+        }
+    }else{
+        $query = "SELECT * FROM account WHERE user_ix='1'";
+        $result = $conn->query($query);
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $searchResult[] = $row;
+            }
+        }
+    }
+
+    
     ?>
     
     <!-- 헤더 -->
@@ -72,6 +69,7 @@ if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
                     <input type="text" class="col-5 form-control" id="search-input">
                 </div>
                 <button class="btn btn-primary col-2" id="search-btn">조회</button>
+                <a href="./account.php" class="btn btn-secondary col-2 ms-1">전체보기</a>
             </div>
         </div>
     
@@ -92,18 +90,12 @@ if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
                 <!-- 상품 아이템 -->
 
                 <?php
-                    $sql = "SELECT * FROM account WHERE user_ix = :ix";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([':ix' => '1']);
-
-                    $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    foreach($accounts as $account) {
+                    foreach($searchResult as $accountRow) {
                 ?>
 
                 <div class="account-item">
                     <div class="account-info col-10">
-                        <h3><?=$account['name']?></h3>
+                        <h3><?=$accountRow['name']?></h3>
                         <table class="table">
                             <thead>
                                 <th>대표번호</th>
@@ -113,14 +105,14 @@ if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
                                 <th>주소</th>
                             </thead>
                             <tbody>
-                                <td><?=$account['contact']?></td>
-                                <td><?=$account['account_manager']?></td>
-                                <td><?=$account['manager_contact']?></td>
+                                <td><?=$accountRow['contact']?></td>
+                                <td><?=$accountRow['account_manager']?></td>
+                                <td><?=$accountRow['manager_contact']?></td>
                                 <td>
-                                    <a href="<?=$account['site']?>" target="_blank"><?=$account['site']?></a>
+                                    <a href="<?=$accountRow['site']?>" target="_blank"><?=$accountRow['site']?></a>
                                 </td>
                                 <td>
-                                    <?=$account['address']?>
+                                    <?=$accountRow['address']?>
                                 </td>
                             </tbody>
                         </table>
@@ -128,11 +120,11 @@ if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
                     <div class="account-controls col-2">
                         <button class="btn btn-primary btn-memo"  data-bs-toggle="modal" data-bs-target="#accountModal">메모</button>
                         <button class="btn btn-secondary">
-                            <a href="./account-manage.php?ix=<?=$account['ix']?>" class="text-white">수정</a>
+                            <a href="./account-manage.php?ix=<?=$accountRow['ix']?>" class="text-white">수정</a>
                         </button>
                     </div>
                     <textarea name="memo" class="memo" style="visibility:hidden;">
-                        <?=$account['memo']?>
+                        <?=$accountRow['memo']?>
                     </textarea>
                 </div>
                 <?php } ?>            
@@ -170,7 +162,13 @@ if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
         });
 
         $("#search-btn").click(function(){
-            location.href = ='./account.php?searchKeyword=';
+            keyword = $("#search-input").val();
+            if (keyword.trim() !== '') {
+                // 현재 페이지로 GET 요청 전달
+               location.href = `./account.php?searchKey=${encodeURIComponent(keyword)}`;
+            } else {
+                alert('검색어를 입력하세요.');
+            }
         });
     </script>
 </body>

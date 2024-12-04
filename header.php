@@ -1,3 +1,14 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['user_ix'])) {
+    // header('Location: login.php'); // 로그인 페이지로 리디렉션
+    // exit;
+    $user_ix = '1';
+}
+
+?>
+
 <style>
     /* 헤더 */
     .header {

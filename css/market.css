@@ -1,0 +1,54 @@
+    /* 메인 콘텐츠 */
+
+    .info-section {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    .info-section h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .info-item label {
+        color: #666;
+    }
+    .info-item button {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+
+    /* 내마켓 */
+    .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding-top: 25px;
+    }
+
+    .product-list button{
+        border: 1px solid #2f3b7e;
+    }
+
+    .product-list button:hover{
+        background-color: #2f3b7e;
+    }
+    .product-list button:hover svg{
+        fill: #fff;
+    }
+
+    .charge-label{
+        display: inline-block;
+        margin: 10px 0;
+    }

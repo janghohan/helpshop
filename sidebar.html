@@ -11,6 +11,7 @@
         left: 0;
         transition: width 0.3s;
         overflow: hidden;
+        padding: 15px;
     }
 
     .sidebar.collapsed {
@@ -41,14 +42,32 @@
         border: 0;
     }
 
+    .sidebar ul li:hover,
+    .sidebar ul li.active {
+        background-color: #f0f0f0;
+        border-radius: 5px;
+    }
+
+    .sidebar ul li:hover a{
+        color: #2c3e50;
+    }
+
     .sidebar .menu {
         list-style: none;
         padding: 0;
         margin: 0;
     }
 
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+    
     .sidebar .menu li {
-        padding: 10px 20px;
+        padding: 8px;
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
     }
 
     .sidebar .menu li a {
@@ -112,19 +131,20 @@
     </div>
     <ul class="menu">
         <li><a href="#">홈</a></li>
+        <li><a href="./account.php">거래처 관리</a></li>
         <li>
             <div class="sub-flex">
-                <a href="#">주문</a>
+                <a href="#">상품</a>
                 <button class="submenu-toggle"></button>
             </div>
             <ul class="submenu">
-                <li><a href="#">주문 내역</a></li>
-                <li><a href="#">환불 관리</a></li>
+                <li><a href="./product.php">상품내역</a></li>
+                <li><a href="./product-add.php">상품등록</a></li>
             </ul>
         </li>
         <li>
             <div class="sub-flex">
-                <a href="#">상품</a>
+                <a href="#">-</a>
                 <button class="submenu-toggle"></button>
             </div>
             <ul class="submenu">
@@ -132,7 +152,7 @@
                 <li><a href="#">상품 등록</a></li>
             </ul>
         </li>
-        <li><a href="#">고객</a></li>
+    
         <li><a href="#">메시지</a></li>
         <li><a href="#">게시판</a></li>
         <li><a href="#">디자인 (PC/모바일)</a></li>

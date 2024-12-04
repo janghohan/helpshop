@@ -19,6 +19,9 @@ if($type=="create"){
         $data['msg'] = "fail";
     }
 
+}else if($type=="edit"){
+
+}else if($type=="delete"){
 }
 
 echo json_encode($data, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);

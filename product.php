@@ -3,114 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
-    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/product.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="./js/common.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="./js/product.js"></script>
-
     <title>상품 관리</title>
-    <style>
-  
-        /* 검색 컨테이너 */
-        .filter-group {
-            margin-bottom: 5px;
-        }
-        .filter-group label {
-            font-size: 14px;
-            display: block;
-            margin-bottom: 5px;
-        }
-        .filter-group select,
-        .filter-group input {
-            width: 100%;
-            padding: 8px;
-            font-size: 14px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .buttons button {
-            flex: 1;
-            padding: 10px;
-            font-size: 14px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        
-        .product-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .product-item {
-            align-items: center;
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .product-image {
-            width: 60px;
-            height: 60px;
-            background-color: #ddd;
-            border-radius: 8px;
-            margin-right: 20px;
-        }
-
-        h3 {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            margin-top: 20px;
-        }
-        .pagination select, .pagination span {
-            font-size: 14px;
-        }
-        .add-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #2f3b7e;
-            color: white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .flex-item-1 {
-            flex: 5; /* 50% */
-        }
-        .flex-item-2 {
-            flex: 2; /* 20% */
-        }
-        .flex-item-3 {
-            flex: 1 /* 10% */
-        }
-    </style>
 </head>
 <body>
     <!-- 헤더 -->
     <?php 
-    include './sidebar.html';
     include './header.php';
+    include './sidebar.html';
+    include './dbConnect.php';
     
     ?>
     <!-- 헤더 -->
@@ -128,7 +35,20 @@
                         <label for="account-cate">거래처</label>
                         <select id="account-cate">
                             <option>전체</option>
-                            <option value="1">1</option>
+                            <?php
+                                $accountResult = [];
+                                $query = "SELECT * FROM account WHERE user_ix='$user_ix'";
+                                $result = $conn->query($query);
+                        
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        $accountResult[] = $row;
+                                    }
+                                }
+                                foreach($accountResult as $accountRow) {
+                            ?>
+                                <option value="<?=htmlspecialchars($accountRow['name'])?>"><?=htmlspecialchars($accountRow['name'])?></option>
+                            <?php }?>
                         </select>
                     </div>
                     <div class="filter-group col-md-6">

@@ -1,80 +1,3 @@
-<?php
-
-// include './dbConnect.php';
-$pdo = new PDO('mysql:host=localhost;dbname=helpshop;charset=utf8', 'root', '');
-
-
-//기본값 설정
-$account = ['ix'=> '', 'user_ix'=> '', 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
-$message = '';
-
-// 수정 모드: GET 요청에 id가 있을 경우 해당 상품 정보 불러오기
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ix'])) {
-    $stmt = $pdo->prepare("SELECT * FROM account WHERE ix = :ix");
-    $stmt->execute(['ix' => $_GET['ix']]);
-    $account = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$account) {
-        $message = "상품을 찾을 수 없습니다.";
-        $account = ['ix'=> '', 'user_ix'=> '', 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
-    }
-}
-
-// POST 요청 처리: 데이터 저장 또는 업데이트
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $ix = $_POST['ix'] ?? '';
-    $name = $_POST['accountName'];
-    $account_manager = $_POST['accountManager'];
-    $manager_contact = $_POST['managerContact'];
-    $contact = $_POST['accountContact'];
-    $address = $_POST['accountAddress'];
-    $site = $_POST['accountSite'];
-    $account_number = $_POST['accountBNumber'];
-    $memo = $_POST['accountMemo'];
-
-    if ($ix) {
-        // 수정 처리
-        $stmt = $pdo->prepare("UPDATE account SET name = :name, account_manager = :account_manager, manager_contact = :manager_contact, contact = :contact, site = :site, address = :address, account_number = :account_number, memo = :memo WHERE ix = :ix");
-        $stmt->execute([
-            'ix' => $ix, 
-            'name' => $name, 
-            'account_manager' => $account_manager,
-            'manager_contact' => $manager_contact,
-            'contact' => $contact,
-            'site' => $site,
-            'address' => $address,
-            'account_number' => $account_number,
-            'memo' => $memo
-        ]);
-        $message = "상품이 수정되었습니다.";
-    } else {
-        // 생성 처리
-        $stmt = $pdo->prepare("INSERT INTO account (user_ix,name,account_manager,manager_contact,contact,site,address,account_number,memo) VALUES (:user_ix, :name, :account_manager, :manager_contact, :contact, :site, :address, :account_number, :memo)");
-        $stmt->execute([
-            'user_ix' => '1', 
-            'name' => $name, 
-            'account_manager' => $account_manager,
-            'manager_contact' => $manager_contact,
-            'contact' => $contact,
-            'site' => $site,
-            'address' => $address,
-            'account_number' => $account_number,
-            'memo' => $memo
-        ]);
-        if($stmt){
-            $message = "거래처가 등록 되었습니다.";
-        }else{
-            $message = "거래처 등록이 실패했습니다.";
-        }
-        
-    }
-
-    // // 초기화 또는 리다이렉트
-    // header('Location: ' . $_SERVER['PHP_SELF']);
-    // exit;
-}
-
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -92,6 +15,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php 
     include './sidebar.html';
     include './header.php';
+
+    include './dbConnect.php';
+
+
+
+    //기본값 설정
+    $account = ['ix'=> '', 'user_ix'=> $user_ix, 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
+    $message = '';
+
+    // 수정 모드: GET 요청에 id가 있을 경우 해당 상품 정보 불러오기
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ix'])) {
+        $ix = $conn->real_escape_string($_GET['ix']);
+        $stmt = $conn->prepare("SELECT * FROM account WHERE user_ix = ? AND ix = ?");
+        $stmt->bind_param("ss", $user_ix, $ix);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $account = $result->fetch_assoc();
+
+        if (!$account) {
+            $message = "상품을 찾을 수 없습니다.";
+            $account = ['ix'=> '', 'user_ix'=> $user_ix, 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
+        }
+        $stmt->close();
+    }
+
+    // POST 요청 처리: 데이터 저장 또는 업데이트
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $ix = $_POST['ix'] ?? '';
+        $name = $conn->real_escape_string($_POST['accountName']);
+        $account_manager = $conn->real_escape_string($_POST['accountManager']);
+        $manager_contact = $conn->real_escape_string($_POST['managerContact']);
+        $contact = $conn->real_escape_string($_POST['accountContact']);
+        $address = $conn->real_escape_string($_POST['accountAddress']);
+        $site = $conn->real_escape_string($_POST['accountSite']);
+        $account_number = $conn->real_escape_string($_POST['accountBNumber']);
+        $memo = $conn->real_escape_string($_POST['accountMemo']);
+
+        if ($ix) {
+            // 수정 처리
+            $stmt = $conn->prepare("UPDATE account SET name = ?, account_manager = ?, manager_contact = ?, contact = ?, site = ?, address = ?, account_number = ?, memo = ? WHERE user_ix = ? AND ix = ?");
+            $stmt->bind_param(
+                "ssssssssss",
+                $name, 
+                $account_manager,
+                $manager_contact,
+                $contact,
+                $site,
+                $address,
+                $account_number,
+                $memo,
+                $user_ix,
+                $ix,
+
+            );
+            $stmt->execute();
+            $message = $stmt->affected_rows > 0 ? "상품이 수정되었습니다." : "수정에 실패했습니다.";
+            $stmt->close();
+        } else {
+            // 생성 처리
+            $stmt = $pdo->prepare("INSERT INTO account (user_ix,name,account_manager,manager_contact,contact,site,address,account_number,memo) VALUES (?,?,?,?,?,?,?,?,?)");
+            $stmt->bind_param(
+                "sssssssss", 
+                $user_ix, 
+                $name, 
+                $account_manager, 
+                $manager_contact, 
+                $contact, 
+                $site, 
+                $address, 
+                $account_number, 
+                $memo
+            );
+            if($stmt->execute()){
+                $message = "거래처가 등록 되었습니다.";
+            }else{
+                $message = "거래처 등록이 실패했습니다.";
+            }
+            $stmt->close();
+            
+        }
+    }
+
+    $conn->close();
+
     ?>
 
     <!-- 헤더 -->
