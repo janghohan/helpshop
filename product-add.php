@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product-add.css" data-n-g="">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js' ></script>
     <script src="./js/common.js"></script>
     <script src="./js/product-add.js"></script>
@@ -28,7 +29,7 @@
             <!-- 거래처 선택 -->
             <div class="category-box">
                 <label><span class="required">•</span>거래처</label>
-                <select>
+                <select name="accountIx">
                     <?php
                     $accountResult = [];
                     $query = "SELECT * FROM account WHERE user_ix='$user_ix'";
@@ -42,7 +43,7 @@
                     foreach($accountResult as $accountRow) {
                     ?>
                     
-                    <option value="<?=htmlspecialchars($accountRow['name'])?>"><?=htmlspecialchars($accountRow['name'])?></option>
+                    <option value="<?=htmlspecialchars($accountRow['ix'])?>"><?=htmlspecialchars($accountRow['name'])?></option>
                     <?php } 
                     ?>
                     <!-- 카테고리 옵션 추가 가능 -->
@@ -52,8 +53,8 @@
             <!-- 카테고리 선택 -->
             <div class="category-box">
                 <label><span class="required">•</span>카테고리</label>
-                <select>
-                    <option value="">선택</option>
+                <select class="category" name="categoryIx">
+                    <option value="1">선택</option>
                     <!-- 카테고리 옵션 추가 가능 -->
                 </select>
             </div>
@@ -63,12 +64,12 @@
                     <div class="product-fields">
                         <div class="field">
                             <label>상품명</label>
-                            <input type="text" placeholder="상품명" maxlength="100">
+                            <input type="text" placeholder="상품명" maxlength="100" name="productName">
                             <div class="char-count">0 / 100</div>
                         </div>
                         <div class="field">
                             <label>상품별 메모</label>
-                            <textarea placeholder="상품별 메모" maxlength="200"></textarea>
+                            <textarea placeholder="상품별 메모" maxlength="200" name="productMemo"></textarea>
                             <div class="char-count">0 / 200</div>
                         </div>
                     </div>
@@ -76,7 +77,6 @@
             </div>
 
             <div class="option-info-section">
-                <div class="section-title">옵션 정보</div>
                 <div class="option-combination">
                     <label>옵션명 조합 생성</label>
                     <div class="option-fields row">
@@ -112,7 +112,6 @@
                             <div class="option-price">매입가</div>
                             <div class="stock">재고수량</div>
                             <div class="buying-price">판매가</div>
-                            <div class="memo">메모</div>
                             <div class="delete">삭제</div>
                         </div>
 
@@ -139,14 +138,59 @@
                 </div>
             </div>
             <div>
-                <button class="btn btn-primary float-md-end">등록</button>
+                <button class="btn btn-primary float-md-end" onclick="productAdd();">등록</button>
             </div>
+            <div class="modal fade" id="priceModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-id="">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">판매가 등록</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="" id="priceForm" method="post" >
+                            <?php
+                            $marketResult = [];
+                            $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                            $result = $conn->query($query);
+                    
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $marketResult[] = $row;
+                                }
+                            }
+                            foreach($marketResult as $marketRow) {
+                            ?>
+                            <div class="market-row">
+                                <label for=""><?=htmlspecialchars(string: $marketRow['market_name'])?></label>
+                                <input type="hidden" name="market_ix" value="<?=htmlspecialchars(string: $marketRow['ix'])?>">
+                                <input type="number" name="price_by_market" class="form-control" placeholder="판매가 입력">
+                            </div>
+                            <?php }?>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary" onclick="newMarketCreate()">등록</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="productForm" style="visibility:hidden;">
+                <div id="optionsContainer">
+                    <!-- 옵션별 정보가 여기에 동적으로 추가됩니다 -->
+                </div>
+                <button type="submit">저장하기</button>
+            </form>
+            
 
         </div>
     </div>
     </div>
 </body>
 <script>
+    
     $(document).on('click', '.add-option-btn', function() {
         // $(this).remove();
         // 현재 .option-fields를 복제
@@ -168,6 +212,7 @@
         }
     });
 
+    //옵션 조합 삭제
     $(document).on('click', '.del-option-btn', function() {
         // $(this).remove();
         $(".option-fields").last().remove();
@@ -176,17 +221,33 @@
         
     });
 
-
     
-    
+    //옵션 목록중 옵션 삭제
     $(document).on('click','.op-delete',function(){
         $(this).parent().closest('.option-row').remove();
     });
 
-    // $(document).on('keyup','input', function(){
-    //     // newNumber = comma($(this).val());
-    //     console.log($(this).val().toLocaleString('ko-KR'));
-    //     $(this).val($(this).val().toLocaleString('ko-KR'));
-    // });
+    function productAdd(){
+        const productName = $("input[name='produtName']").val();
+        const productMemo = $("input[name='productMemo']").val();
+        const accountIx = $("select[name='accountIx']:selected").val();
+        const categoryIx = $("select[name='categoryIx']:selected").val();
+        
+        console.log(formCombinations);
+        $.ajax({
+            url: './api/product_api.php', // 데이터를 처리할 서버 URL
+            type: 'POST',
+            data: {'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':options, 'formCombination':formCombinations},
+            processData: false, // FormData 객체를 문자열로 변환하지 않음
+            contentType: false, // 기본 Content-Type 설정을 막음
+            success: function(response) {
+                alert('전송 성공: ' + response);
+            },
+            error: function(xhr, status, error) {
+                alert('전송 실패: ' + error);
+            }
+        });
+    }
+
 </script>
 </html>

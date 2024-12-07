@@ -42,3 +42,18 @@ $(document).ready(function () {
 function back(){
     window.history.back();
 }
+
+
+function modalOpen(modalId){
+    $("#"+modalId).addClass('active'); // 모달 보이기
+    $("#"+modalId).attr('aria-hidden', 'false'); // 모달 활성화
+    $("#"+modalId).attr('aria-hidden', 'true'); // 메인 콘텐츠 숨기기
+}
+
+function modalClose(modalId){
+    $("#"+modalId).removeClass('active'); // 모달 숨기기
+    $("#"+modalId).attr('aria-hidden', 'true'); // 모달 비활성화
+    $("#"+modalId).attr('aria-hidden', 'false'); // 메인 콘텐츠 활성화
+
+    $('#'+modalId).modal('hide');
+}

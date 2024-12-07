@@ -155,6 +155,20 @@
             formData.append($(this).attr('name'), $(this).val());
         });
 
+        $.ajax({
+            url: './api/market_api.php', // 데이터를 처리할 서버 URL
+            type: 'POST',
+            data: formData,
+            processData: false, // FormData 객체를 문자열로 변환하지 않음
+            contentType: false, // 기본 Content-Type 설정을 막음
+            success: function(response) {
+                alert('전송 성공: ' + response);
+            },
+            error: function(xhr, status, error) {
+                alert('전송 실패: ' + error);
+            }
+        });
+
     });
 
     $(".market-del").click(function(){
