@@ -1,4 +1,4 @@
-<style>
+<!-- <style>
     /* 사이드바 스타일 */
 
     .sidebar {
@@ -42,15 +42,19 @@
         border: 0;
     }
 
-    .sidebar ul li:hover,
+    .sidebar ul li:hover {
+        /* background-color: #f0f0f0;
+        border-radius: 5px; */
+    }
     .sidebar ul li.active {
-        background-color: #f0f0f0;
-        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
     }
 
-    .sidebar ul li:hover a{
-        color: #2c3e50;
-    }
+    /* .sidebar ul li:hover a{
+        color: #f;
+    } */
 
     .sidebar .menu {
         list-style: none;
@@ -121,11 +125,78 @@
     }
 
 
+</style> -->
+
+<style>
+    .sidebar {
+        width: 250px;
+        background-color: #333;
+        color: white;
+        height: 100vh;
+        overflow-y: auto;
+        transition: width 0.3s ease;
+        }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar .menu-link {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 15px 20px;
+        transition: background-color 0.3s ease;
+    }
+
+    .sidebar .menu-link:hover, .sidebar .menu-link.active {
+        background-color: #555;
+    }
+
+    .sidebar .submenu {
+        display: none;
+        padding-left: 20px;
+        background-color: #444;
+    }
+
+    .sidebar .submenu a {
+        padding: 10px 20px;
+    }
+
+    .sidebar .submenu a:hover, .sidebar .submenu a.active {
+        background-color: #666;
+    }
+
+    .sidebar .sidebar-toggle {
+        text-align: right;
+        padding: 10px;
+        background-color: #222;
+    }
+
+    .sidebar.collapsed {
+        width: 60px;
+    }
+
+    .sidebar.collapsed .menu-link {
+        text-align: center;
+        padding: 15px;
+    }
+
+    .sidebar.collapsed .submenu {
+        display: none;
+    }
+
+    .content {
+        flex-grow: 1;
+        padding: 20px;
+    }
 </style>
 
 
 <!-- 사이드바 -->
-<div class="sidebar">
+<!-- <div class="sidebar">
     <div class="sidebar-toggle">
         <button id="toggle-sidebar">☰</button>
     </div>
@@ -160,4 +231,70 @@
         <li><a href="#">통계</a></li>
         <li><a href="#">통합설정</a></li>
     </ul>
+</div> -->
+
+<div class="sidebar">
+    <div class="sidebar-toggle">
+      <button id="toggleSidebar">☰</button>
+    </div>
+    <ul class="menu">
+      <li>
+        <a href="index.html" class="menu-link">Home</a>
+      </li>
+      <li>
+        <a href="#" class="menu-link has-submenu">About</a>
+        <ul class="submenu">
+          <li><a href="product.html">상품관리</a></li>
+          <li><a href="history.html">History</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#" class="menu-link has-submenu">Services</a>
+        <ul class="submenu">
+          <li><a href="web.html">Web Development</a></li>
+          <li><a href="seo.html">SEO</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="contact.html" class="menu-link">Contact</a>
+      </li>
+    </ul>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // document.querySelectorAll(".sidebar a").forEach(link => {
+    //     if (link.href === window.location.href) {
+    //         $(this).closest('li').addClass('active');
+    //     }
+    // });
+
+    $(document).ready(function () {
+    // Sidebar toggle
+        $('#toggleSidebar').on('click', function () {
+            $('.sidebar').toggleClass('collapsed');
+        });
+
+        // Submenu toggle
+        $('.has-submenu').on('click', function (e) {
+            e.preventDefault();
+            $(this).next('.submenu').slideToggle();
+        });
+
+        // Highlight current page
+        const currentPage = window.location.href;
+        $('.menu-link').each(function () {
+            console.log($(this).prop("href"),"href");
+            console.log(currentPage,"currentPage");
+            if (this.href === currentPage) {
+                $(this).addClass('active');
+                
+                // If the current link is in a submenu, expand the parent
+                // const submenu = $(this).closest('.submenu');
+                // if (submenu.length) {
+                //     submenu.show();
+                //     submenu.prev('.has-submenu').addClass('active');
+                // }
+            }
+        });
+    });
+</script>
