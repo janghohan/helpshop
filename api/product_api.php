@@ -6,11 +6,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userIx = isset($_SESSION['user_ix']) ? : '1';
     // JSON 문자열로 받은 데이터를 파싱
     $formCombination = isset($_POST['formCombination']) ? json_decode($_POST['formCombination'], true) : [];
-    $accountIx = isset($_POST['accountIx']) ? : '';
-    $categoryIx = isset($_POST['categoryIx']) ? : '';
-    $productName = isset($_POST['productName']) ? : '';
-    $productMemo = isset($_POST['productMemo']) ? : '';
+    $accountIx = isset($_POST['accountIx']) ? $_POST['accountIx'] : '';
+    $categoryIx = isset($_POST['categoryIx']) ? $_POST['categoryIx'] : '1';
+    $productName = isset($_POST['productName']) ? $_POST['productName'] : '';
+    $productMemo = isset($_POST['productMemo']) ? $_POST['productMemo'] : '';
 
+    // echo $formCombination[0]['name'];
+    // echo $_POST['productName'];
 
     if (!empty($formCombination)) {
         //상품명에 넣는다. 
@@ -38,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $combination['id'];
             $name = $combination['name'];
             $value = $combination['value'];
-            $price = $combination['price'];
+            $price = str_replace(",", "", $combination['price']);
             $stock = $combination['stock'];
             $selling = $combination['selling'];
 
@@ -51,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 옵션 데이터
             foreach ($selling as $marketIx => $sellingPrice) {
                 $marketStmt = $conn->prepare("INSERT INTO product_option_market_price(product_option_comb_ix,market_ix,price) VALUES(?,?,?)");
+                $sellingPrice = str_replace("","",$sellingPrice);
                 $marketStmt->bind_param("sss",$combiIx,$marketIx,$sellingPrice);
                 $marketStmt->execute();
                 // echo "Market ID $marketIx: $sellingPrice<br>";

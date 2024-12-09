@@ -9,10 +9,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js' ></script>
     <script src="./js/common.js"></script>
-    <script src="./js/product-add.js"></script>
     <title>카테고리 선택 페이지</title>
 
 </head>
+<style>
+    .marketPriceFormDiv{display: none;}
+    .marketPriceForm{display:none;}
+    .marketPriceForm.active{
+        display: block;
+    }
+
+</style>
 <body>
     <?php 
     include './header.php';
@@ -54,7 +61,22 @@
             <div class="category-box">
                 <label><span class="required">•</span>카테고리</label>
                 <select class="category" name="categoryIx">
-                    <option value="1">선택</option>
+                <?php
+                    $categoryResult = [];
+                    $query = "SELECT * FROM category WHERE user_ix='$user_ix'";
+                    $result = $conn->query($query);
+            
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            $categoryResult[] = $row;
+                        }
+                    }
+                    foreach($categoryResult as $categoryRow) {
+                    ?>
+                    
+                    <option value="<?=htmlspecialchars($categoryRow['ix'])?>"><?=htmlspecialchars($categoryRow['name'])?></option>
+                    <?php } 
+                    ?>
                     <!-- 카테고리 옵션 추가 가능 -->
                 </select>
             </div>
@@ -148,26 +170,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form action="" id="priceForm" method="post" >
-                            <?php
-                            $marketResult = [];
-                            $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
-                            $result = $conn->query($query);
-                    
-                            if ($result->num_rows > 0) {
-                                while ($row = $result->fetch_assoc()) {
-                                    $marketResult[] = $row;
-                                }
-                            }
-                            foreach($marketResult as $marketRow) {
-                            ?>
-                            <div class="market-row">
-                                <label for=""><?=htmlspecialchars(string: $marketRow['market_name'])?></label>
-                                <input type="hidden" name="market_ix" value="<?=htmlspecialchars(string: $marketRow['ix'])?>">
-                                <input type="number" name="price_by_market" class="form-control" placeholder="판매가 입력">
-                            </div>
-                            <?php }?>
-                        </form>
+                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
@@ -183,12 +186,34 @@
                 </div>
                 <button type="submit">저장하기</button>
             </form>
-            
 
+            <div class="marketPriceFormDiv" >
+                <div class="marketPriceForm">
+                    <?php
+                    $marketResult = [];
+                    $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                    $result = $conn->query($query);
+            
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            $marketResult[] = $row;
+                        }
+                    }
+                    foreach($marketResult as $marketRow) {
+                    ?>
+                    <div class="market-row">
+                        <label for=""><?=htmlspecialchars(string: $marketRow['market_name'])?></label>
+                        <input type="hidden" name="market_ix" value="<?=htmlspecialchars(string: $marketRow['ix'])?>">
+                        <input type="number" class="price_by_market" name="price_by_market" class="form-control" placeholder="판매가 입력">
+                    </div>
+                    <?php }?>
+                </div>
+            </div>
         </div>
     </div>
     </div>
 </body>
+<script src="./js/product-add.js"></script>
 <script>
     
     $(document).on('click', '.add-option-btn', function() {
@@ -214,7 +239,6 @@
 
     //옵션 조합 삭제
     $(document).on('click', '.del-option-btn', function() {
-        // $(this).remove();
         $(".option-fields").last().remove();
         $(".option-fields").last().find(".buttons").append('<button class="add-option-btn">+</button>');
 
@@ -224,22 +248,32 @@
     
     //옵션 목록중 옵션 삭제
     $(document).on('click','.op-delete',function(){
+        var delId = $(this).parent().attr('data-id');
+        console.log(delId);
         $(this).parent().closest('.option-row').remove();
+        
+        // formCombinations = formCombinations.filter(item => item.id !== delId);
+        const index = formCombinations.findIndex(item => item.id === delId);
+
+        // 인덱스가 존재하면 해당 항목 삭제
+        if (index !== -1) {
+            formCombinations.splice(index, 1);
+        }
+        console.log(formCombinations,"formCombinations after del")
     });
 
     function productAdd(){
-        const productName = $("input[name='produtName']").val();
-        const productMemo = $("input[name='productMemo']").val();
-        const accountIx = $("select[name='accountIx']:selected").val();
-        const categoryIx = $("select[name='categoryIx']:selected").val();
+        const productName = $("input[name='productName']").val();
+        const productMemo = $("textarea[name='productMemo']").val();
+        const accountIx = $("select[name='accountIx']").val();
+        const categoryIx = $("select[name='categoryIx']").val();
+
+        insertPriceAndStock();
         
-        console.log(formCombinations);
         $.ajax({
             url: './api/product_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
-            data: {'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':options, 'formCombination':formCombinations},
-            processData: false, // FormData 객체를 문자열로 변환하지 않음
-            contentType: false, // 기본 Content-Type 설정을 막음
+            data: {'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':JSON.stringify(options), 'formCombination':JSON.stringify(formCombinations)},
             success: function(response) {
                 alert('전송 성공: ' + response);
             },

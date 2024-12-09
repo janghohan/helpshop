@@ -1,7 +1,11 @@
 
 
 // 옵션 로우
-var newOptionNames = '<div class="option-row" data-id=""><div class="option-checkbox"><input type="checkbox"></div><div class="option-name-group"></div><div class="option-price"><input type="text" class="option-input localeNumber price-input" value="0"></div><div class="stock"><input type="text" class="option-input localeNumber stock-input" value="0"></div><div class="buying-price"><button class="btn btn-secondary priceModal" data-bs-toggle="modal" data-bs-target="#priceModal">입력</button></div><div class="op-delete"><button class="btn btn-secondary">×</button></div></div>';
+var marketPriceDiv = $(".marketPriceFormDiv").clone();
+var marketPriceHtml = marketPriceDiv.html();
+
+console.log(marketPriceHtml);
+var newOptionNames = '<div class="option-row" data-id=""><div class="option-checkbox"><input type="checkbox"></div><div class="option-name-group"></div><div class="option-price"><input type="text" class="option-input localeNumber price-input" value="0"></div><div class="stock"><input type="text" class="option-input localeNumber stock-input" value="0"></div><div class="buying-price"><button class="btn btn-secondary priceModal" data-bs-toggle="modal" data-bs-target="#priceModal">입력</button>'+marketPriceHtml+'</div><div class="op-delete"><button class="btn btn-secondary">×</button></div></div>';
 
 //옵션 적용버튼 누를때
 
@@ -89,10 +93,20 @@ $(document).on('click','.add-row-btn',function(){
 });
 
 
-//마켓별 가격 입력
+//판매가 입력 버튼
+var priceParent = '';
 $(document).on("click", ".priceModal", function () {
     var id = $(this).parents().parents().attr('data-id');
     $("#priceModal").attr('data-id',id);
+
+    priceParent = $(this).parent();
+
+    var priceDiv = priceParent.find('.marketPriceForm').addClass("active").detach();
+    
+    $("#priceModal .modal-body").html(priceDiv);
+    // priceDiv.appendTo("#priceModal .modal-body");
+    // priceDiv.addClass('active');
+
 
     //기존값을 그대로 가져오고, 새로운건 0으로 
     if(formCombinations[id-1].selling){
@@ -115,32 +129,45 @@ $(document).on("click", ".priceModal", function () {
 
 // 마켓별 가격 등록 버튼
 function newMarketCreate(){
-    const optionId = $("#priceModal").attr('data-id');
+    // const optionId = $("#priceModal").attr('data-id');
 
-    const resultObject = {}; // 결과를 담을 배열
-    $(".market-row").each(function(index, element) {
-        const ixValue = $(this).find('input[name="market_ix"]').val(); // name="ix"의 값
-        const valueValue = $(this).find('input[name="price_by_market"]').val(); // name="value"의 값
+    // const resultObject = {}; // 결과를 담을 배열
+    // $(".market-row").each(function(index, element) {
+    //     const ixValue = $(this).find('input[name="market_ix"]').val(); // name="ix"의 값
+    //     const valueValue = $(this).find('input[name="price_by_market"]').val(); // name="value"의 값
 
-        if (ixValue && valueValue) {
-            resultObject[ixValue] = valueValue; //객체로 key:value 저장
-        }
+    //     if (ixValue && valueValue) {
+    //         resultObject[ixValue] = valueValue; //객체로 key:value 저장
+    //     }
+    // });
+
+    // console.log(resultObject,"resultObject");
+    // formCombinations[optionId-1].selling = resultObject;
+
+    // console.log(formCombinations,"formCombinations");
+
+    const tmpValue = [];
+    $(".market-row .price_by_market").each(function(index, element){
+        tmpValue.push($(this).val());
+    });
+    
+    $("#priceModal .modal-body .marketPriceForm ").removeClass('active');
+    $("#priceModal .modal-body .marketPriceForm").appendTo(priceParent);
+    
+    priceParent.find(".price_by_market").each(function(index, element){
+        $(this).val(tmpValue[index]);
     });
 
-    console.log(resultObject,"resultObject");
-    formCombinations[optionId-1].selling = resultObject;
+    
 
-    console.log(formCombinations,"formCombinations");
     modalClose("priceModal");
     $(".priceModal").focus();
-
-    
-    
+  
 }
 
 //상품 등록 버튼
-function productAdd(){
-
+function insertPriceAndStock(){
+    console.log("insertPriceAndStock");
     //매입가를 배열에 넣는다.
     $(".price-input").each(function(index, element) {
         const $element = $(element); // 현재 반복 중인 요소를 jQuery 객체로 변환
@@ -160,10 +187,8 @@ function productAdd(){
         
         console.log(value,"stock");
         formCombinations[index].stock = value;
-
-        formCombinations[index].selling = {};
     });
 
     //배열 체크
-    console.log(formCombinations,"formCombinations");
+    console.log(formCombinations,"formCombinations2");
 }
