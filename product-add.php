@@ -13,7 +13,9 @@
 
 </head>
 <style>
-    .marketPriceFormDiv{display: none;}
+    .marketPriceDiv{
+        display: none;
+    }
     .marketPriceForm{display:none;}
     .marketPriceForm.active{
         display: block;
@@ -122,7 +124,7 @@
                     <button class="add-row-btn">추가</button>
                     <div class="option-table">
                         <div class="option-row op-header">
-                            <div class="option-checkbox"><input type="checkbox"></div>
+                            <!-- <div class="option-checkbox"><input type="checkbox"></div> -->
                             <div class="option-name-group">
                                 <div class="main-header">옵션명</div>
                                 <div class="sub-headers">
@@ -170,7 +172,24 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        
+                        <?php
+                        $marketResult = [];
+                        $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                        $result = $conn->query($query);
+                
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                $marketResult[] = $row;
+                            }
+                        }
+                        foreach($marketResult as $marketRow) {
+                        ?>
+                        <div class="market-row">
+                            <label for=""><?=htmlspecialchars(string: $marketRow['market_name'])?></label>
+                            <input type="hidden" name="market_ix" value="<?=htmlspecialchars(string: $marketRow['ix'])?>">
+                            <input type="number" class="price_by_market form-control" name="price_by_market" class="form-control" placeholder="판매가 입력">
+                        </div>
+                        <?php }?>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
@@ -180,12 +199,18 @@
                 </div>
             </div>
 
-            <form id="productForm" style="visibility:hidden;">
-                <div id="optionsContainer">
-                    <!-- 옵션별 정보가 여기에 동적으로 추가됩니다 -->
+            <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                    <div class="modal-body">
+                       <div class="d-flex justify-content-center" style="gap:15px;">
+                            <button class="btn btn-outline-secondary"  onclick = "location.href ='./product.php';">상품 목록으로 가기</button>
+                            <button class="btn btn-primary" onclick = "location.href ='./product-add.php';">상품 새로 등록하기</button>
+                       </div>
+                    </div>
+                    </div>
                 </div>
-                <button type="submit">저장하기</button>
-            </form>
+            </div>
 
             <div class="marketPriceFormDiv" >
                 <div class="marketPriceForm">
@@ -204,7 +229,7 @@
                     <div class="market-row">
                         <label for=""><?=htmlspecialchars(string: $marketRow['market_name'])?></label>
                         <input type="hidden" name="market_ix" value="<?=htmlspecialchars(string: $marketRow['ix'])?>">
-                        <input type="number" class="price_by_market" name="price_by_market" class="form-control" placeholder="판매가 입력">
+                        <input type="number" class="price_by_market" name="price_by_market" class="form-control" placeholder="판매가 입력" >
                     </div>
                     <?php }?>
                 </div>
@@ -268,13 +293,20 @@
         const accountIx = $("select[name='accountIx']").val();
         const categoryIx = $("select[name='categoryIx']").val();
 
-        insertPriceAndStock();
+        if(productName==""){
+            alert('상품명을 입력해주세요.');
+            return false;
+        }
+        // insertPriceAndStock();
         
+
+        console.log(formCombinations);
         $.ajax({
             url: './api/product_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
-            data: {'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':JSON.stringify(options), 'formCombination':JSON.stringify(formCombinations)},
+            data: {'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':JSON.stringify(optionsArray), 'formCombination':JSON.stringify(formCombinations)},
             success: function(response) {
+                modalOpen("completeModal");
                 alert('전송 성공: ' + response);
             },
             error: function(xhr, status, error) {

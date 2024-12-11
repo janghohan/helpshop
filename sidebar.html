@@ -135,6 +135,9 @@
         height: 100vh;
         overflow-y: auto;
         transition: width 0.3s ease;
+        position: fixed;
+        top: 0;
+        left: 0;
         }
 
     .sidebar ul {
@@ -244,7 +247,7 @@
       <li>
         <a href="#" class="menu-link has-submenu">About</a>
         <ul class="submenu">
-          <li><a href="product.html">상품관리</a></li>
+          <li><a href="product-add.php">상품관리</a></li>
           <li><a href="history.html">History</a></li>
         </ul>
       </li>
@@ -282,18 +285,25 @@
 
         // Highlight current page
         const currentPage = window.location.href;
+        console.log(currentPage,"currentPage");
         $('.menu-link').each(function () {
-            console.log($(this).prop("href"),"href");
-            console.log(currentPage,"currentPage");
-            if (this.href === currentPage) {
-                $(this).addClass('active');
-                
-                // If the current link is in a submenu, expand the parent
-                // const submenu = $(this).closest('.submenu');
-                // if (submenu.length) {
-                //     submenu.show();
-                //     submenu.prev('.has-submenu').addClass('active');
-                // }
+            const link = $(this).attr("href")
+            // console.log(currentPage,"currentPage");
+            if(link=='#'){
+                const submenu = $(this).parent().find('.submenu');
+                const aa = submenu.find('a');
+                aa.each(function(){
+                    console.log($(this).prop("href"),"is #");
+                    if ($(this).prop("href")==currentPage) {
+                        submenu.show();
+                        submenu.prev('.has-submenu').addClass('active');
+                    }
+                });
+            }else{
+                console.log($(this).prop("href"),"not #");
+                if ($(this).prop("href") === currentPage) {
+                    $(this).addClass('active');
+                }
             }
         });
     });

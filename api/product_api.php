@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $options = isset($_POST['options']) ? json_decode($_POST['options'], true) : [];
         foreach ($options as $option){
             $optionName = $option['name'];
-            $optionValues = $option['values'];
+            $optionValues = $option['value'];
             foreach($optionValues as $optionValue) {
                 $optionStmt = $conn->prepare("INSERT INTO product_option(product_ix,name,value) VALUES(?,?,?)");
                 $optionStmt->bind_param("sss",$productIx,$optionName,$optionValue);
@@ -37,24 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         //product_option_combination
         foreach ($formCombination as $combination) {
-            $id = $combination['id'];
             $name = $combination['name'];
-            $value = $combination['value'];
             $price = str_replace(",", "", $combination['price']);
             $stock = $combination['stock'];
-            $selling = $combination['selling'];
+            $sellings = $combination['selling'];   
 
             $combiStmt = $conn->prepare("INSERT INTO product_option_combination(product_ix,combination_key,cost_price,stock) VALUES(?,?,?,?)");
-            $combiStmt -> bind_param("ssss",$productIx,$value,$price,$stock);
+            $combiStmt -> bind_param("ssss",$productIx,$name,$price,$stock);
             $combiStmt->execute();
 
             $combiIx = $combiStmt->insert_id;
-            
+
             // 옵션 데이터
-            foreach ($selling as $marketIx => $sellingPrice) {
+            foreach ($sellings as $selling) {
                 $marketStmt = $conn->prepare("INSERT INTO product_option_market_price(product_option_comb_ix,market_ix,price) VALUES(?,?,?)");
-                $sellingPrice = str_replace("","",$sellingPrice);
-                $marketStmt->bind_param("sss",$combiIx,$marketIx,$sellingPrice);
+                $sellingPrice = str_replace("","",$selling['value']);
+                $marketStmt->bind_param("sss",$combiIx,$selling['ix'],$sellingPrice);
                 $marketStmt->execute();
                 // echo "Market ID $marketIx: $sellingPrice<br>";
             }

@@ -255,6 +255,9 @@
 .buying-price button, .memo button, .delete{
     width: 58px;
 }
+.buying-price button.active{
+    background-color: #212529;
+}
 .option-checkbox:last-child, .option-price:last-child, .stock:last-child, .memo:last-child, .sale-status:last-child, .manage-code:last-child, .use-status:last-child, .delete:last-child {
     border-right: none; /* Remove right border from the last header cell */
 }
