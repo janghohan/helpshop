@@ -13,8 +13,8 @@
 </head>
 <body>
     <?php 
-    include './sidebar.html';
     include './header.php';
+    include './sidebar.html';
 
     include './dbConnect.php';
 

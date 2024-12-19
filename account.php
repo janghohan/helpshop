@@ -127,7 +127,12 @@
                         <?=$accountRow['memo']?>
                     </textarea>
                 </div>
-                <?php } ?>            
+                <?php } 
+                
+                if(count($searchResult)===0){
+                ?>       
+                <p>검색 결과가 없습니다.</p>     
+                <?php }?>
             </div>
         </div>
         <!-- 페이지네이션 -->

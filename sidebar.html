@@ -160,17 +160,22 @@
 
     .sidebar .submenu {
         display: none;
-        padding-left: 20px;
+        /* background-color: #444; */
+    }
+    .sidebar .submenu li {
+        padding: 8px;
+    }
+    .sidebar .submenu li.active {
         background-color: #444;
     }
-
     .sidebar .submenu a {
         padding: 10px 20px;
+        color: #fff;
     }
 
-    .sidebar .submenu a:hover, .sidebar .submenu a.active {
+    /* .sidebar .submenu a:hover, .sidebar .submenu a.active {
         background-color: #666;
-    }
+    } */
 
     .sidebar .sidebar-toggle {
         text-align: right;
@@ -296,7 +301,8 @@
                     console.log($(this).prop("href"),"is #");
                     if ($(this).prop("href")==currentPage) {
                         submenu.show();
-                        submenu.prev('.has-submenu').addClass('active');
+                        // submenu.prev('.has-submenu').addClass('active');
+                        $(this).parents('li').addClass('active');
                     }
                 });
             }else{
