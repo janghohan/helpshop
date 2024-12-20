@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $basicFile = './cjBasic.xlsx';
     }
 
-    // 네이버
+    // 네이버파일로 택배사에 넣을 excel파일 만들기
     if (isset($_FILES['fileNaver'])) {
         // 파일 경로
         $fileAPath = $_FILES['fileNaver']['tmp_name'];
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // 결과 링크 출력
     }
 
-    // 쿠팡
+    // 쿠팡파일로 택배사에 넣을 excel파일 만들기
     if (isset($_FILES['fileCoupang'])) {
         // 파일 경로
         $fileAPath = $_FILES['fileCoupang']['tmp_name'];

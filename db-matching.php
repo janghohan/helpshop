@@ -4,67 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리 시스템</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/excel-order.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="./js/common.js"></script>
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-        }
-        header {
-            background: #007BFF;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 10;
-        }
-        header .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        header .account-info {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            padding-right: 30px;
-        }
-        aside {
-            width: 250px;
-            background: #F4F4F4;
-            padding-top: 60px;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-        }
-        aside ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        aside ul li {
-            padding: 15px 20px;
-            border-bottom: 1px solid #ddd;
-            cursor: pointer;
-        }
-        aside ul li:hover {
-            background: #E0E0E0;
-        }
-        main {
-            margin-left: 250px;
-            padding: 70px 20px;
-            flex-grow: 1;
-            background: #FFFFFF;
-        }
-        .dashboard {
-            background: #EFEFEF;
-            padding: 20px;
-            border-radius: 8px;
-        }
+       
 
         .syncBtn {
             display: flex;
@@ -130,22 +77,11 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">관리 시스템</div>
-        <div class="account-info">
-            <span>🔔 알림</span>
-            <span>👤 계정 정보</span>
-        </div>
-    </header>
-    <aside>
-        <ul>
-            <li>📦 상품등록</li>
-            <li>📇 거래처등록</li>
-            <li>📊 매출관리</li>
-            <li>💰 순수익</li>
-        </ul>
-    </aside>
-    <main>
+    <?php
+    include './header.php';
+    include './sidebar.html';
+    ?>
+    <div class="full-content">
         <div class="syncBtn">
             <button class="sync-button">동기화</button>
         </div>
@@ -324,6 +260,6 @@
             </div>
             <!-- More rows dynamically loaded here -->
         </div>
-    </main>
+    </div>
 </body>
 </html>
