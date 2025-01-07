@@ -54,17 +54,22 @@
                     <label for="datepicker">검색 입력 등록</label>
                     <div class="filter-group col-md-4">
                         <div class="form-group">
-                            <input type="text" class="form-control" placeholder="상품명">
+                            <input type="text" class="form-control" placeholder="상품명" id="searchKeyword">
                         </div>
                     </div>
                     <div class="filter-group col-md-1">
                         <div class="form-group">
-                            <button class="btn btn-primary" id="search-btn">검색</button>
+                            <button class="btn btn-primary" id="search-btn2">검색</button>
                         </div>
                     </div>
                 </div>
                 <div class="row" id="search-list">
-
+                    <div class="d-flex">
+                        <span>ns 로드스 알파 메탈리코 S-682MH-ST</span>
+                        <span>원가 : 45,000원</span>
+                        <span>판맴가 : 68,000원</span>
+                        <span>마켓 : 네이버</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -160,6 +165,23 @@
 
         $(document).on('click','.remove-btn',function(){
             $(this).parent().parent().parent().remove();
+        });
+
+        $("#search-btn2").click(function(){
+            var searchKeyword = $("#searchKeyword").val();
+            $.ajax({
+                url: './api/search_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: {'searchType':'product','searchKeyword':searchKeyword},
+                success: function(response) {
+                    console.log(response);
+                    // modalOpen("completeModal");
+                    // alert('전송 성공: ' + response);
+                },
+                error: function(xhr, status, error) {
+                    alert('전송 실패: ' + error);
+                }
+            });
         });
     </script>
 </body>
