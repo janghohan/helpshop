@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- 생성 시간: 24-12-20 10:43
+-- 생성 시간: 25-01-07 10:57
 -- 서버 버전: 10.4.32-MariaDB
 -- PHP 버전: 8.2.12
 
@@ -268,6 +268,7 @@ ALTER TABLE `market`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`ix`),
+  ADD UNIQUE KEY `idx_market_order` (`market_ix`,`order_number`),
   ADD KEY `fk_orders_user` (`user_ix`);
 
 --

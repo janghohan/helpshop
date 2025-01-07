@@ -9,6 +9,23 @@ require_once __DIR__ . '/SimpleXLSXGen.php'; // 실제 경로 확인
 use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
 use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
 
+// 임시 테이블 생성 (임시로 저장  => 주문이 추가되면 몇번이고 주문을 덮어쓸 수 있음)
+// $tmpOrdersSql = "CREATE TEMPORARY TABLE temp_orders (
+//     market_ix INT,
+//     order_number VARCHAR(50),
+//     order_date DATE,
+//     user_ix INT,
+//     payment DECIMAL(10,2),
+//     shipping DECIMAL(10,2),
+//     product_name VARCHAR(255),
+//     quantity INT,
+//     buyer_name VARCHAR(255),
+//     buyer_phone VARCHAR(50),
+//     address TEXT
+// )";
+
+// mysqli_query($conn,$tmpOrdersSql);
+
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -53,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if($indexA===0){
                 continue;
             }         
-
+            // 1 : 주문번호, 10 : 구매자, 17 : 주문일, 24 : 수량, 30 : 할인후 옵션별 주문금액, 40 : 배송비, 51 : 구매자연락처
             $name = $rowA[12]; // A 파일의 수취인 컬럼 값
             $phone = $rowA[46]; // A 파일의 전화번호 컬럼 값
             $code = $rowA[52]; // A 파일의 우편번호 컬럼 값
@@ -73,6 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $dataB[$indexA-1][6] = $memo;
 
             $combinedData[] = ["네이버",$rowA[24], $rowA[19]." : ".$rowA[22], $rowA[12], extractMiddlePhoneNumber($rowA[46]),$rowA[48],$rowA[53]];
+
+
+            // $tmpInsertStmt = $conn->prepare("INSERT INTO temp_orders(market_ix,order_number,order_date,user_ix,payment,shipping,product_name,quantity,buyer_name,buyer_phone,address) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+            // $tmpInsertStmt->bind_param("sssssssssss",$)
+
+            // $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
+            // $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
+            // $productStmt->execute();
         }
 
         // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
