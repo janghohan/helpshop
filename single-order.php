@@ -11,6 +11,22 @@
     
     <title>상품 관리</title>
 </head>
+<style>
+    .result-d{
+        display: none;
+    }
+    #search-list .d-flex{
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 5px;
+        padding-top: 5px;
+    }
+    #search-list .d-flex:first-child{
+        border-bottom:1px solid #aaa;
+        border-top:1px solid #aaa;
+        padding-bottom: 5px;
+        padding-top: 5px;
+    }
+</style>
 <body>
     <!-- 헤더 -->
     <?php 
@@ -65,10 +81,54 @@
                 </div>
                 <div class="row" id="search-list">
                     <div class="d-flex">
-                        <span>ns 로드스 알파 메탈리코 S-682MH-ST</span>
-                        <span>원가 : 45,000원</span>
-                        <span>판맴가 : 68,000원</span>
-                        <span>마켓 : 네이버</span>
+                        <div class="col-sm-4">
+                            <span>상품명</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span>규격</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span>단가</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span>상품가</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span>마켓</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span>선택</span>
+                        </div>
+                    </div>
+                    <div class="result-basic result-d">
+                        <span>검색결과가 보여집니다.</span>
+                    </div>
+                    <div class="result-no result-d">
+                        <span>검색결과가 없습니다.</span>
+                    </div>
+                    <div class="d-flex">
+                        <div class="col-sm-4">
+                            <span>NS 로드스 알파 메탈리코</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span>S-682MH-ST</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span>45,000</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span>68,000</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span>네이버</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <button>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
