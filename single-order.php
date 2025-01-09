@@ -123,7 +123,31 @@
                             <span>네이버</span>
                         </div>
                         <div class="col-sm-1">
-                            <button>
+                            <button class="btn btn-outline-secondary btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="col-sm-4">
+                            <span>NS 로드스 알파 메탈리코</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span>S-682MH-ST</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span>45,000</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span>68,000</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span>네이버</span>
+                        </div>
+                        <div class="col-sm-1">
+                            <button class="btn btn-outline-secondary btn-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
                                 </svg>
