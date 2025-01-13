@@ -2,7 +2,7 @@ $(document).ready(function () {
     
     // 버튼 클릭 이벤트 처리
     $('#search-btn').on('click', function () {
-        alert('Button clicked!');
+        // alert('Button clicked!');
     });
 
     //리셋 버튼
