@@ -20,6 +20,7 @@ input[type='number'] {
     border-color: #2f3b7e;
     color: white;
 }
+.btn-primary:hover{color:#fff;background-color:#3d4a9a ;border-color:#3d4a9a;}
 
 .field-input{
     padding: 10px;

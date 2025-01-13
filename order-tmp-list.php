@@ -48,6 +48,50 @@
     include './header.php';
     include './sidebar.html';
     include './dbConnect.php';
+
+    require_once __DIR__ . '/api/SimpleXLSX.php'; // 실제 경로 확인
+    require_once __DIR__ . '/api/SimpleXLSXGen.php'; // 실제 경로 확인
+
+    use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
+    use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
+    
+    $userIx = isset($_SESSION['user_ix']) ? : '1';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+        $orderExcelType = isset($_POST['orderExcelType']) ? $_POST['orderExcelType'] : '';
+
+        echo  $orderExcelType;
+        if (isset($_FILES['orderExcelFile'])) {
+            // 파일 경로
+            $filePath = $_FILES['orderExcelFile']['tmp_name'];
+            // $fileBPath = $_FILES['fileB']['tmp_name'];
+            // $fileBPath = './cjBasic.xlsx';
+            
+    
+            // 엑셀 파일 읽기
+            if ($xlsxA = SimpleXLSX::parse($filePath)) {
+                $dataA = $xlsxA->rows();
+            } else {
+                echo "Error reading Excel A: " . SimpleXLSX::parseError();
+                exit;
+            }
+        }
+
+        
+        //네이버 파일
+        if($orderExcelType=='naver'){
+            $marketName = "네이버";
+            
+        }
+    }else{
+        
+    }
+
+    function generateOrderNumber($userId) {
+        $timestamp = date('YmdHis'); // 현재 시간
+        return $timestamp . sprintf('%04d', $userId); // 예: 202401011230451001
+    }
+    
     
     ?>
     <!-- 헤더 -->
@@ -59,83 +103,8 @@
         <div class="container">
             <!-- 사이드바 -->
             <div class="main-content">
-                <h2>주문 조회</h2>
+                <h2>주문 리스트</h2>
                 <div class="container mt-4">
-                    <!-- Search Options -->
-                    <div class="search-options">
-                        <div class="row justify-content-between ">
-                            <div class="col-md-4 mb-3">
-                            <input type="text" class="form-control" id="datepicker" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
-                            </div>
-                            <!-- <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">이번 주</button>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">지난 주</button>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">이번 달</button>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">지난 달</button>
-                            </div> -->
-                        </div>
-                        <div class="row align-items-center">
-                            <div class="col-md-3">
-                                <select class="form-select" id="order-filter">
-                                    <option value="">주문번호</option>
-                                </select>
-                            </div>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" placeholder="주문번호 검색" id="order-search">
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-primary" id="search-btn">조회하기</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Summary Cards -->
-                    <div class="summary-cards d-flex justify-content-between">
-                        <div class="card">
-                            <h5>총 결제금액(상품)</h5>
-                            <div class="value">0</div>
-                        </div>
-                        <div class="card">
-                            <h5>총 결제금액(택배비)</h5>
-                            <div class="value">0</div>
-                        </div>
-                        <div class="card">
-                            <h5>총 예상순수익</h5>
-                            <div class="value">0</div>
-                        </div>
-                    </div>
-
-                    <!-- Filter Options and Table -->
-                    <div class="filter-options">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option>결제상태</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option>전체 주문처</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-secondary w-100">주문제품 펼쳐보기</button>
-                            </div>
-                            <div class="col-md-3 text-end">
-                                <button class="btn btn-custom">엑셀 출력</button>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Order Table -->
                     <div class="table-container">
                         <table class="table">
@@ -153,16 +122,55 @@
                             </thead>
                             <tbody id="order-list">
                             <!-- Order rows will be added dynamically -->
+                            <?php
+                            foreach ($dataA as $indexA => $rowA) {
+                                if($indexA===0){
+                                    continue;
+                                }         
+                                // 1 : 주문번호, 10 : 구매자, 17 : 주문일, 24 : 수량, 30 : 할인후 옵션별 주문금액, 40 : 배송비, 51 : 구매자연락처, 19:상품명, 22:옵션
+                                // $name = $rowA[12]; // A 파일의 수취인 컬럼 값
+                                // $phone = $rowA[46]; // A 파일의 전화번호 컬럼 값
+                                // $code = $rowA[52]; // A 파일의 우편번호 컬럼 값
+                                // $address = $rowA[48]; // A 파일의 주소 값
+                                // $memo = $rowA[53]; // A 파일의 배송메세지 컬럼 값
+                
+                
+                                // $dataB[$indexA] = []; //초기화
+                
+                
+                                // $dataB[$indexA-1][0] = $name;
+                                // $dataB[$indexA-1][1] = $phone;
+                                // $dataB[$indexA-1][2] = "";
+                                // $dataB[$indexA-1][3] = $address;
+                                // $dataB[$indexA-1][4] = "극소";
+                                // $dataB[$indexA-1][5] = "낚시용품";
+                                // $dataB[$indexA-1][6] = $memo;
+                
+                                // $combinedData[] = ["네이버",$rowA[24], $rowA[19]." : ".$rowA[22], $rowA[12], extractMiddlePhoneNumber($rowA[46]),$rowA[48],$rowA[53]];
+                
+                
+                                // $tmpInsertStmt = $conn->prepare("INSERT INTO temp_orders(market_ix,order_number,order_date,user_ix,payment,shipping,product_name,quantity,buyer_name,buyer_phone,address) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+                                // $tmpInsertStmt->bind_param("sssssssssss",$)
+                
+                                // $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
+                                // $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
+                                // $productStmt->execute();
+                            
+                            
+                            ?>
                                 <tr>
-                                    <td>네이버</td>
-                                    <td>2025-01-13</td>
-                                    <td>2025011134451</td>
+                                    <td><?=htmlspecialchars($marketName)?></td>
+                                    <td><?=htmlspecialchars($rowA[17])?></td>
+                                    <td><?=htmlspecialchars($rowA[1])?></td>
                                     <td>인터넷</td>
-                                    <td>다미끼 랜스 롱 지그</td>
-                                    <td>3개</td>
-                                    <td>15,000원</td>
-                                    <td>3,000원</td>
-                                </tr><tr>
+                                    <td><?=htmlspecialchars($rowA[19])." / ".htmlspecialchars($rowA[22])?></td>
+                                    <td><?=htmlspecialchars($rowA[24])?></td>
+                                    <td><?=htmlspecialchars($rowA[30])?></td>
+                                    <td><?=htmlspecialchars($rowA[40])?></td>
+                                </tr>
+
+                            <?php }?>
+                                <!-- <tr>
                                     <td>네이버</td>
                                     <td>2025-01-13</td>
                                     <td>2025011134451</td>
@@ -181,7 +189,7 @@
                                     <td>3개</td>
                                     <td>15,000원</td>
                                     <td>3,000원</td>
-                                </tr>
+                                </tr> -->
                             </tbody>
                         </table>
                     </div>
@@ -197,11 +205,7 @@
                 </div>
                 <div class="modal-body">
                     <form action="./order-tmp-list.php" id="orderExcelForm" method="post">
-                        <select name="orderExcelType" class="form-control" id="">
-                            <option value="naver">네이버 파일</option>
-                            <option value="coupang">쿠팡 파일</option>
-                        </select>
-                        <input type="file" name="orderExcelFile" class="form-control mt-3">
+                        <input type="file">
                     </form>
                 </div>
                 <div class="modal-footer">
