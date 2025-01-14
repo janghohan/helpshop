@@ -14,6 +14,13 @@
         body {
             background-color: #f9f9f9;
         }
+
+        @media (min-width: 1400px) {
+            .container{
+                max-width: 98%;
+                font-size: 14px;
+            }
+        }
         .search-options, .summary-cards, .filter-options {
             padding: 20px;
             margin-bottom: 20px;
@@ -56,14 +63,16 @@
     use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
     
     $userIx = isset($_SESSION['user_ix']) ? : '1';
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $orderExcelType = isset($_POST['orderExcelType']) ? $_POST['orderExcelType'] : '';
 
-        echo  $orderExcelType;
+        
         if (isset($_FILES['orderExcelFile'])) {
             // 파일 경로
             $filePath = $_FILES['orderExcelFile']['tmp_name'];
+            $fileName = $_FILES['orderExcelFile']['name'];
             // $fileBPath = $_FILES['fileB']['tmp_name'];
             // $fileBPath = './cjBasic.xlsx';
             
@@ -80,8 +89,9 @@
         
         //네이버 파일
         if($orderExcelType=='naver'){
-            $marketName = "네이버";
-            
+            $marketName = "네이버";       
+        }else if($orderExcelType=='coupang'){
+            $marketName = "쿠팡";       
         }
     }else{
         
@@ -103,7 +113,14 @@
         <div class="container">
             <!-- 사이드바 -->
             <div class="main-content">
-                <h2>주문 리스트</h2>
+                <div class="d-flex justify-content-between">
+                    <h2>주문 리스트</h2>
+                    <div class="d-flex">
+                        <button class="btn btn-secondary me-3" id="excel-btn">엑셀 재등록</button>
+                        <button class="btn btn-primary" id="upload-btn">주문등록</button>
+                    </div>
+                </div>
+                <p>확인용으로 보여지는 리스트입니다. 최종 주문으로 등록하시려면 왼쪽 상단 "주문등록" 버튼을 눌러주세요.</p>
                 <div class="container mt-4">
                     <!-- Order Table -->
                     <div class="table-container">
@@ -113,7 +130,6 @@
                                 <th>판매처</th>
                                 <th>주문일시</th>
                                 <th>주문번호</th>
-                                <th>주문종류</th>
                                 <th>주문제품</th>
                                 <th>수량</th>
                                 <th>주문금액</th>
@@ -123,73 +139,55 @@
                             <tbody id="order-list">
                             <!-- Order rows will be added dynamically -->
                             <?php
+                            $previousOrderNumber = null; // 이전 주문번호를 저장
+                            $toggle = true; // 색상을 변경하기 위한 토글 변수
+
+
                             foreach ($dataA as $indexA => $rowA) {
                                 if($indexA===0){
                                     continue;
                                 }         
-                                // 1 : 주문번호, 10 : 구매자, 17 : 주문일, 24 : 수량, 30 : 할인후 옵션별 주문금액, 40 : 배송비, 51 : 구매자연락처, 19:상품명, 22:옵션
-                                // $name = $rowA[12]; // A 파일의 수취인 컬럼 값
-                                // $phone = $rowA[46]; // A 파일의 전화번호 컬럼 값
-                                // $code = $rowA[52]; // A 파일의 우편번호 컬럼 값
-                                // $address = $rowA[48]; // A 파일의 주소 값
-                                // $memo = $rowA[53]; // A 파일의 배송메세지 컬럼 값
-                
-                
-                                // $dataB[$indexA] = []; //초기화
-                
-                
-                                // $dataB[$indexA-1][0] = $name;
-                                // $dataB[$indexA-1][1] = $phone;
-                                // $dataB[$indexA-1][2] = "";
-                                // $dataB[$indexA-1][3] = $address;
-                                // $dataB[$indexA-1][4] = "극소";
-                                // $dataB[$indexA-1][5] = "낚시용품";
-                                // $dataB[$indexA-1][6] = $memo;
-                
-                                // $combinedData[] = ["네이버",$rowA[24], $rowA[19]." : ".$rowA[22], $rowA[12], extractMiddlePhoneNumber($rowA[46]),$rowA[48],$rowA[53]];
-                
-                
-                                // $tmpInsertStmt = $conn->prepare("INSERT INTO temp_orders(market_ix,order_number,order_date,user_ix,payment,shipping,product_name,quantity,buyer_name,buyer_phone,address) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-                                // $tmpInsertStmt->bind_param("sssssssssss",$)
-                
-                                // $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
-                                // $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
-                                // $productStmt->execute();
+
+                                if($orderExcelType=='naver'){
+                                    $orderNumber = $rowA[1];
+                                    $orderDate = $rowA[17];
+                                    $orderName = $rowA[19]." / ".$rowA[22];
+                                    $orderQuantity = $rowA[24];
+                                    $orderPrice = $rowA[30];
+                                    $orderShipping = $rowA[40];
+                                    $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                                }else if($orderExcelType=='coupang'){
+                                    $orderNumber = $rowA[2];
+                                    $orderDate = $rowA[9];
+                                    $orderName = $rowA[12];
+                                    $orderQuantity = $rowA[22];
+                                    $orderPrice = $rowA[23];
+                                    $orderShipping = $rowA[20];
+                                    $currentOrderNumber = $rowA[2]; // 현재 주문번호
+                                }
+                                
                             
+                                if ($currentOrderNumber !== $previousOrderNumber) {
+                                    // 주문번호가 변경될 때마다 토글 값을 변경
+                                    $toggle = !$toggle;
+                                }
+                                $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
+                                $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
+
+
                             
                             ?>
-                                <tr>
+                                <tr style="background-color: <?= $backgroundColor ?>;">
                                     <td><?=htmlspecialchars($marketName)?></td>
-                                    <td><?=htmlspecialchars($rowA[17])?></td>
-                                    <td><?=htmlspecialchars($rowA[1])?></td>
-                                    <td>인터넷</td>
-                                    <td><?=htmlspecialchars($rowA[19])." / ".htmlspecialchars($rowA[22])?></td>
-                                    <td><?=htmlspecialchars($rowA[24])?></td>
-                                    <td><?=htmlspecialchars($rowA[30])?></td>
-                                    <td><?=htmlspecialchars($rowA[40])?></td>
+                                    <td><?=htmlspecialchars($orderDate)?></td>
+                                    <td><?=htmlspecialchars($orderNumber)?></td>
+                                    <td><?=htmlspecialchars($orderName)?></td>
+                                    <td><?=htmlspecialchars($orderQuantity)?></td>
+                                    <td><?=htmlspecialchars($orderPrice)?></td>
+                                    <td><?=htmlspecialchars($orderShipping)?></td>
                                 </tr>
 
                             <?php }?>
-                                <!-- <tr>
-                                    <td>네이버</td>
-                                    <td>2025-01-13</td>
-                                    <td>2025011134451</td>
-                                    <td>인터넷</td>
-                                    <td>다미끼 랜스 롱 지그</td>
-                                    <td>3개</td>
-                                    <td>15,000원</td>
-                                    <td>3,000원</td>
-                                </tr>
-                                <tr>
-                                    <td>네이버</td>
-                                    <td>2025-01-13</td>
-                                    <td>2025011134451</td>
-                                    <td>인터넷</td>
-                                    <td>다미끼 랜스 롱 지그</td>
-                                    <td>3개</td>
-                                    <td>15,000원</td>
-                                    <td>3,000원</td>
-                                </tr> -->
                             </tbody>
                         </table>
                     </div>
@@ -204,8 +202,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post">
-                        <input type="file">
+                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
+                        <select name="orderExcelType" class="form-control" id="">
+                            <option value="naver">네이버 파일</option>
+                            <option value="coupang">쿠팡 파일</option>
+                        </select>
+                        <input type="file" name="orderExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -229,6 +231,27 @@
         function tmpExcel(){
             $("#orderExcelForm").submit();
         }
+
+        $("#upload-btn").click(function(){
+            // const formData = new FormData();
+            
+            // // a.php에서 받은 데이터 추가
+            // formData.append('orderExcelType', '<?= $orderExcelType ?>');
+            // formData.append('type', 'dump');
+            
+            // // 파일 데이터를 포함
+            // const fileInput = new File(['<?= addslashes(file_get_contents($filePath)) ?>'], '<?= $fileName ?>');
+            // formData.append('file', fileInput);
+
+            // // c.php로 전송
+            // fetch('./order-tmp-list.php', {
+            //     method: 'POST',
+            //     body: formData
+            // })
+            // .then(response => response.text())
+            // .then(data => console.log(data))
+            // .catch(error => console.error(error));
+        });
 
         $("#excel-btn").click(function(){
             modalOpen("excelModal");

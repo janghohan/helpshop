@@ -196,12 +196,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post">
+                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
                         <select name="orderExcelType" class="form-control" id="">
                             <option value="naver">네이버 파일</option>
                             <option value="coupang">쿠팡 파일</option>
                         </select>
-                        <input type="file" name="orderExcelFile" class="form-control mt-3">
+                        <input type="file" name="orderExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
                     </form>
                 </div>
                 <div class="modal-footer">
