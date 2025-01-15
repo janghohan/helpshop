@@ -60,9 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $row = $result->fetch_assoc();
         $marketName = $row['market_name'];
 
-        echo 'aa';
-        echo $orderExcelFile;
-        
         // 엑셀 파일 읽기
         if ($xlsxA = SimpleXLSX::parse("../".$orderExcelFile)) {
             $dataA = $xlsxA->rows();
@@ -73,6 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $groupedOrders = [];
 
+        // 진행률 바
+        $_SESSION['orderDumpProgress'] = 0;
         foreach ($dataA as $indexA => $rowA) {
             if($indexA===0){
                 continue;
@@ -105,9 +104,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
             }
 
+            $_SESSION['orderDumpProgress'] = intval((30 * $indexA) / count($dataA));
+
             
             $groupedOrders[$orderNumber]['total_payment'] += (Int)$orderPrice;
-            $groupedOrders[$orderNumber]['total_shipping'] += (Int)$orderShipping;
+            if($groupedOrders[$orderNumber]['total_shipping'] == 0){
+                $groupedOrders[$orderNumber]['total_shipping'] += (Int)$orderShipping;
+            }
             $groupedOrders[$orderNumber]['order_date'] = $orderDate;
 
         }
@@ -115,23 +118,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
 
         //orders table
+        
         try {
+            // $conn->rollback();
             $orderIxMap = [];
 
+            $totalOrders = count($groupedOrders);
+            $currentOrder = 0;
             foreach($groupedOrders as $orderNumber => $data){
-                echo 'a';
+                
                 $orderStmt = $conn->prepare("INSERT INTO orders(global_order_number,order_number,order_date,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?)");
                 $orderStmt->bind_param("sssssss", $data['global_order_number'],$orderNumber,$data['order_date'],$orderMarketIx,$userIx,$data['total_payment'],$data['total_shipping']);
                 $orderStmt->execute();
+                $conn->commit(); // 성공 시 커밋
+                
+                // if (!$orderStmt->execute()) {
+                //     echo "Error: " . $orderStmt->error;
+                // }
         
                 $ordersIx = $orderStmt->insert_id;
                 $ordersResult = $orderStmt->get_result();
 
                 $orderIxMap[$orderNumber] = $ordersIx;
-
-                $orderStmt->close();
+                
+                $currentOrder++;
+                $_SESSION['orderDumpProgress'] = 30 + intval((40 * $currentOrder) / $totalOrders);
+                
             }
             //order_details table
+            $totalDetails = count($dataA) - 1; // 첫 행 제외
+            $currentDetail = 0;
             foreach ($dataA as $indexA => $rowA) {
                 if($indexA===0){
                     continue;
@@ -159,15 +175,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $orderDetailStmt = $conn->prepare("INSERT INTO order_details(orders_ix,name,cost,quantity,price) VALUES(?,?,?,?,?)");
                 $orderDetailStmt->bind_param("ssiii",$orderIxMap[$orderNumber],$orderName,$zeroCost,$orderQuantity,$orderPrice);
                 $orderDetailStmt->execute();
-        
-                $orderDetailStmt->close();
+                
+                $currentDetail++;
+                $_SESSION['orderDumpProgress'] = 70 + intval((30 * $currentDetail) / $totalDetails);
+                // $orderDetailStmt->close();
             }
         }   catch (Exception $e) {
             // 롤백
             $conn->rollback();
             echo "오류 발생: " . $e->getMessage();
         }    
+        
         $conn->close();
+
+        $response['msg'] = 200;
+        echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     }
     
 

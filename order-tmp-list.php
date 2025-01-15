@@ -293,22 +293,22 @@
         
         // 주문 등록 버튼
         $("#upload-btn").click(function(){
-            $("#orderListForm").submit();
-            // modalOpen("progressModal");
-            // $.ajax({
-            //     url: './api/order_api.php', // 데이터를 처리할 서버 URL
-            //     type: 'POST',
-            //     dataType : 'json',
-            //     data: $("#orderListForm").serialize(),
-            //     success: function(response) { 
-            //         // console.log(response);
-            //         // checkProgress();
+            // $("#orderListForm").submit();
+            modalOpen("progressModal");
+            $.ajax({
+                url: './api/order_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                dataType : 'json',
+                data: $("#orderListForm").serialize(),
+                success: function(response) { 
+                    // console.log(response);
+                    checkProgress();
 
-            //     },
-            //     error: function(xhr, status, error) {
-            //         alert('전송 실패: ' + error);
-            //     }
-            // });
+                },
+                error: function(xhr, status, error) {
+                    alert('전송 실패: ' + error);
+                }
+            });
         });
 
         //엑셀 등록 버튼
@@ -330,18 +330,18 @@
                     },
                     body: JSON.stringify({ type: 'orderList' }),
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        const progressBarInner = document.getElementById('progress-bar');
-                        progressBarInner.style.width = data.progress + '%';
-                        progressBarInner.textContent = data.progress + '%';
-
-                        if (data.progress >= 100) {
-                            clearInterval(interval);
-                            alert('작업 완료!');
-                        }
-                    });
-            }, 500); // 0.5초마다 상태 확인
+                .then(response => response.json())
+                .then(data => {
+                    const progressBarInner = document.getElementById('progress-bar');
+                    progressBarInner.style.width = data.progress + '%';
+                    progressBarInner.textContent = data.progress + '%';
+                    console.log('progress',data.progress);
+                    if (data.progress >= 100) {
+                        clearInterval(interval);
+                        // alert('작업 완료!');
+                    }
+                });
+            }, 3000); // 0.5초마다 상태 확인
         }
         
 
