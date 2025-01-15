@@ -197,9 +197,24 @@
                 </div>
                 <div class="modal-body">
                     <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
-                        <select name="orderExcelType" class="form-control" id="">
-                            <option value="naver">네이버 파일</option>
-                            <option value="coupang">쿠팡 파일</option>
+                        <select name="orderMarketIx" class="form-control" id="">
+                            <?php
+                                $searchResult = [];
+                                
+                                $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                                $result = $conn->query($query);
+                        
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        $searchResult[] = $row;
+                                    }
+                                }
+
+                                foreach($searchResult as $marketRow){
+                            
+                            ?>
+                                <option value="<?=htmlspecialchars($marketRow['ix'])?>"><?=htmlspecialchars($marketRow['market_name'])?></option>
+                            <?php }?>
                         </select>
                         <input type="file" name="orderExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
                     </form>

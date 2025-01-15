@@ -66,19 +66,36 @@
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-        $orderExcelType = isset($_POST['orderExcelType']) ? $_POST['orderExcelType'] : '';
+        $orderMarketIx = isset($_POST['orderMarketIx']) ? $_POST['orderMarketIx'] : ''; //마켓 ix
+
+        //네이버 파일인지 쿠팡파일인지 확인
+        $marketQuery = "SELECT market_name FROM market WHERE user_ix='$user_ix' AND ix='$orderMarketIx'";
+        $result = $conn->query($marketQuery);
+        $row = $result->fetch_assoc();
+        $marketName = $row['market_name'];
 
         
         if (isset($_FILES['orderExcelFile'])) {
             // 파일 경로
             $filePath = $_FILES['orderExcelFile']['tmp_name'];
-            $fileName = $_FILES['orderExcelFile']['name'];
+
+            $fileUploadPath = 'tmpUploads/'.date("Ymd")."/".$marketName.$userIx."orderExcel.xls" ;
+
+            //저장위치 -> tmpUploads에 그날 date -> 폴더 없으면 생성성
+            $destinationFolder = "./tmpUploads/".date("Ymd");
+            if (!is_dir($destinationFolder)) {
+                if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                    die("폴더를 생성할 수 없습니다: $destinationFolder");
+                }
+            }
+
+            move_uploaded_file($_FILES['orderExcelFile']['tmp_name'], "./".$fileUploadPath);
             // $fileBPath = $_FILES['fileB']['tmp_name'];
             // $fileBPath = './cjBasic.xlsx';
             
     
             // 엑셀 파일 읽기
-            if ($xlsxA = SimpleXLSX::parse($filePath)) {
+            if ($xlsxA = SimpleXLSX::parse($fileUploadPath)) {
                 $dataA = $xlsxA->rows();
             } else {
                 echo "Error reading Excel A: " . SimpleXLSX::parseError();
@@ -86,13 +103,7 @@
             }
         }
 
-        
-        //네이버 파일
-        if($orderExcelType=='naver'){
-            $marketName = "네이버";       
-        }else if($orderExcelType=='coupang'){
-            $marketName = "쿠팡";       
-        }
+               
     }else{
         
     }
@@ -148,7 +159,7 @@
                                     continue;
                                 }         
 
-                                if($orderExcelType=='naver'){
+                                if($marketName=='네이버'){
                                     $orderNumber = $rowA[1];
                                     $orderDate = $rowA[17];
                                     $orderName = $rowA[19]." / ".$rowA[22];
@@ -156,7 +167,7 @@
                                     $orderPrice = $rowA[30];
                                     $orderShipping = $rowA[40];
                                     $currentOrderNumber = $rowA[1]; // 현재 주문번호
-                                }else if($orderExcelType=='coupang'){
+                                }else if($marketName=='쿠팡'){
                                     $orderNumber = $rowA[2];
                                     $orderDate = $rowA[9];
                                     $orderName = $rowA[12];
@@ -203,9 +214,24 @@
                 </div>
                 <div class="modal-body">
                     <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
-                        <select name="orderExcelType" class="form-control" id="">
-                            <option value="naver">네이버 파일</option>
-                            <option value="coupang">쿠팡 파일</option>
+                        <select name="orderMarketIx" class="form-control" id="">
+                            <?php
+                                $searchResult = [];
+                                
+                                $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                                $result = $conn->query($query);
+                        
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        $searchResult[] = $row;
+                                    }
+                                }
+
+                                foreach($searchResult as $marketRow){
+                            
+                            ?>
+                                <option value="<?=htmlspecialchars($marketRow['ix'])?>"><?=htmlspecialchars($marketRow['market_name'])?></option>
+                            <?php }?>
                         </select>
                         <input type="file" name="orderExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
                     </form>
@@ -217,6 +243,34 @@
                 </div>
             </div>
         </div>
+        <form action="./api/order_api.php" id="orderListForm" method="post" style="display:none;">
+            <input type="hidden" name="type" class="form-control mt-3"  value="dump">
+            <input type="hidden" name="orderMarketIx" class="form-control" value="<?=$orderMarketIx?>">
+            <input type="hidden" name="orderExcelFile" class="form-control mt-3"  value="<?=$fileUploadPath?>">
+        </form>
+
+
+        <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">주문 등록 진행률</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" id="progress-bar" aria-label="Example with label" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        
 
     </div>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
@@ -227,36 +281,6 @@
     <script src="./js/common.js"></script>
     
     <script>
-
-        function tmpExcel(){
-            $("#orderExcelForm").submit();
-        }
-
-        $("#upload-btn").click(function(){
-            // const formData = new FormData();
-            
-            // // a.php에서 받은 데이터 추가
-            // formData.append('orderExcelType', '<?= $orderExcelType ?>');
-            // formData.append('type', 'dump');
-            
-            // // 파일 데이터를 포함
-            // const fileInput = new File(['<?= addslashes(file_get_contents($filePath)) ?>'], '<?= $fileName ?>');
-            // formData.append('file', fileInput);
-
-            // // c.php로 전송
-            // fetch('./order-tmp-list.php', {
-            //     method: 'POST',
-            //     body: formData
-            // })
-            // .then(response => response.text())
-            // .then(data => console.log(data))
-            // .catch(error => console.error(error));
-        });
-
-        $("#excel-btn").click(function(){
-            modalOpen("excelModal");
-        });
-
         $(document).ready(function() {
             $('#datepicker').datepicker({
                 format: 'yyyy-mm-dd',
@@ -266,6 +290,60 @@
             });
 
         });
+        
+        // 주문 등록 버튼
+        $("#upload-btn").click(function(){
+            $("#orderListForm").submit();
+            // modalOpen("progressModal");
+            // $.ajax({
+            //     url: './api/order_api.php', // 데이터를 처리할 서버 URL
+            //     type: 'POST',
+            //     dataType : 'json',
+            //     data: $("#orderListForm").serialize(),
+            //     success: function(response) { 
+            //         // console.log(response);
+            //         // checkProgress();
+
+            //     },
+            //     error: function(xhr, status, error) {
+            //         alert('전송 실패: ' + error);
+            //     }
+            // });
+        });
+
+        //엑셀 등록 버튼
+        $("#excel-btn").click(function(){
+            modalOpen("excelModal");
+        });
+
+        // 엑셀 모달에서 등록버튼
+        function tmpExcel(){
+            $("#orderExcelForm").submit();
+        }
+
+        function checkProgress(){
+            const interval = setInterval(() => {
+                fetch('./api/progress_status.php',{
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ type: 'orderList' }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const progressBarInner = document.getElementById('progress-bar');
+                        progressBarInner.style.width = data.progress + '%';
+                        progressBarInner.textContent = data.progress + '%';
+
+                        if (data.progress >= 100) {
+                            clearInterval(interval);
+                            alert('작업 완료!');
+                        }
+                    });
+            }, 500); // 0.5초마다 상태 확인
+        }
+        
 
        
     </script>

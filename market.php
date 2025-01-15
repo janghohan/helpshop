@@ -98,7 +98,10 @@
                         <form action="" id="newMarketForm" method="post">
                             <input type="hidden" name="type" value="create">
                             <p class="mt-4 mb-1 mb-n2">마켓명을 입력하세요.</p>
-                            <input type="text" name="marketName" class="form-control col-3" placeholder="ex) 스마트스토어">
+                            <select name="marketName" id="marketName" class="form-control">
+                                <option value="네이버">네이버</option>
+                                <option value="쿠팡">쿠팡</option>
+                            </select>
                             <p class="mt-4 mb-1 mb-n2">수수료 입력(숫자만 입력하세요)</p>
                             <div class="row">
                                 <div class="col-4">
