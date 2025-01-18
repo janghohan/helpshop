@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     
     <title>상품 관리</title>
@@ -57,7 +57,7 @@
                     <div class="filter-group col-md-2">
                         <div class="form-group">
                             <label for="datepicker">날짜 선택</label>
-                            <input type="text" class="form-control" id="datepicker" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
+                            <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
                         </div>
                     </div>  
                 </div>
@@ -244,17 +244,20 @@
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="./js/common.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
     <script src="./js/product.js"></script>
+    
     
     <script>
 
         $(document).ready(function() {
-            $('#datepicker').datepicker({
-                format: 'yyyy-mm-dd',
-                autoclose: true,
-                todayHighlight: true,
-                language: 'ko'
+            flatpickr("#flatpickr", {
+                defaultDate: "today",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                theme: "material_blue",
+                locale: "ko",
             });
 
         });

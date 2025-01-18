@@ -9,6 +9,21 @@ a{
   text-decoration: none;
 }
 
+@keyframes spin {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+}
+
+/* 아이콘에 애니메이션 적용 */
+.rotating-icon {
+  display: inline-block; /* 블록 요소로 설정 */
+  animation: spin 1s linear infinite; /* 1초마다 360도 회전, 무한 반복 */
+}
+
 /* Firefox  */
 input[type='number'] {
   -moz-appearance: textfield;

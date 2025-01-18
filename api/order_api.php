@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $orderStmt = $conn->prepare("INSERT INTO orders(global_order_number,order_number,order_date,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?)");
         $orderStmt->bind_param("sssssss", $globalOrderNumber,$globalOrderNumber,$orderDate,$orderMarkets[0],$userIx,$totalPrice,$totalShipping);
         $orderStmt->execute();
+        
 
         $ordersIx = $orderStmt->insert_id;
         $ordersResult = $orderStmt->get_result();
@@ -72,10 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 진행률 바
         $_SESSION['orderDumpProgress'] = 0;
-        foreach ($dataA as $indexA => $rowA) {
-            if($indexA===0){
-                continue;
-            }         
+
+        $isOrderNumberStart = false;
+        $totalDetails = 0; //details의 progress바 진행률 확인을 위한 주문 리스트 총 숫자
+
+        foreach ($dataA as $indexA => $rowA) {   
 
             if($marketName=='네이버'){
                 $orderNumber = $rowA[1];
@@ -95,6 +97,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $currentOrderNumber = $rowA[2]; // 현재 주문번호
             }
 
+            if($orderNumber=='주문번호'){
+                $isOrderNumberStart = true;
+                continue;
+            }
+            if(!$isOrderNumberStart) {
+                continue;
+            }
+
+
+            $totalDetails++;
             if (!isset($groupedOrders[$orderNumber])) {
                 $groupedOrders[$orderNumber] = [
                     'global_order_number' => generateOrderNumber($userIx),
@@ -125,10 +137,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $totalOrders = count($groupedOrders);
             $currentOrder = 0;
+            $orderIndex = 0;
             foreach($groupedOrders as $orderNumber => $data){
                 
+                $orderIndex ++;
+                $globalOrderNumber = generateOrderNumber($userIx).$orderIndex;
                 $orderStmt = $conn->prepare("INSERT INTO orders(global_order_number,order_number,order_date,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?)");
-                $orderStmt->bind_param("sssssss", $data['global_order_number'],$orderNumber,$data['order_date'],$orderMarketIx,$userIx,$data['total_payment'],$data['total_shipping']);
+                $orderStmt->bind_param("sssssss", $globalOrderNumber,$orderNumber,$data['order_date'],$orderMarketIx,$userIx,$data['total_payment'],$data['total_shipping']);
                 $orderStmt->execute();
                 $conn->commit(); // 성공 시 커밋
                 
@@ -146,13 +161,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
             }
             //order_details table
-            $totalDetails = count($dataA) - 1; // 첫 행 제외
-            $currentDetail = 0;
-            foreach ($dataA as $indexA => $rowA) {
-                if($indexA===0){
-                    continue;
-                }         
 
+            $currentDetail = 0;
+            $isOrderNumberStart = false; //실제 주문번호부터 데이터를 저장하기 위한 구별 변수
+            foreach ($dataA as $indexA => $rowA) {     
                 if($marketName=='네이버'){
                     $orderNumber = $rowA[1];
                     $orderDate = $rowA[17];
@@ -170,6 +182,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $orderShipping = $rowA[20];
                     $currentOrderNumber = $rowA[2]; // 현재 주문번호
                 }
+
+                if($orderNumber=='주문번호'){
+                    $isOrderNumberStart = true;
+                    continue;
+                }
+                if(!$isOrderNumberStart) {
+                    continue;
+                }
+
                 $zeroCost = 0;
 
                 $orderDetailStmt = $conn->prepare("INSERT INTO order_details(orders_ix,name,cost,quantity,price) VALUES(?,?,?,?,?)");
@@ -183,6 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }   catch (Exception $e) {
             // 롤백
             $conn->rollback();
+            $_SESSION['orderDumpProgress'] = -1;
             echo "오류 발생: " . $e->getMessage();
         }    
         

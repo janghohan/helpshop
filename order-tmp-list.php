@@ -153,52 +153,52 @@
                             $previousOrderNumber = null; // 이전 주문번호를 저장
                             $toggle = true; // 색상을 변경하기 위한 토글 변수
 
+                            if(isset($dataA)){
+                                foreach ($dataA as $indexA => $rowA) {
+                                    if($indexA===0){
+                                        continue;
+                                    }         
 
-                            foreach ($dataA as $indexA => $rowA) {
-                                if($indexA===0){
-                                    continue;
-                                }         
-
-                                if($marketName=='네이버'){
-                                    $orderNumber = $rowA[1];
-                                    $orderDate = $rowA[17];
-                                    $orderName = $rowA[19]." / ".$rowA[22];
-                                    $orderQuantity = $rowA[24];
-                                    $orderPrice = $rowA[30];
-                                    $orderShipping = $rowA[40];
-                                    $currentOrderNumber = $rowA[1]; // 현재 주문번호
-                                }else if($marketName=='쿠팡'){
-                                    $orderNumber = $rowA[2];
-                                    $orderDate = $rowA[9];
-                                    $orderName = $rowA[12];
-                                    $orderQuantity = $rowA[22];
-                                    $orderPrice = $rowA[23];
-                                    $orderShipping = $rowA[20];
-                                    $currentOrderNumber = $rowA[2]; // 현재 주문번호
-                                }
+                                    if($marketName=='네이버'){
+                                        $orderNumber = $rowA[1];
+                                        $orderDate = $rowA[17];
+                                        $orderName = $rowA[19]." / ".$rowA[22];
+                                        $orderQuantity = $rowA[24];
+                                        $orderPrice = $rowA[30];
+                                        $orderShipping = $rowA[40];
+                                        $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                                    }else if($marketName=='쿠팡'){
+                                        $orderNumber = $rowA[2];
+                                        $orderDate = $rowA[9];
+                                        $orderName = $rowA[12];
+                                        $orderQuantity = $rowA[22];
+                                        $orderPrice = $rowA[23];
+                                        $orderShipping = $rowA[20];
+                                        $currentOrderNumber = $rowA[2]; // 현재 주문번호
+                                    }
+                                    
                                 
-                            
-                                if ($currentOrderNumber !== $previousOrderNumber) {
-                                    // 주문번호가 변경될 때마다 토글 값을 변경
-                                    $toggle = !$toggle;
-                                }
-                                $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
-                                $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
+                                    if ($currentOrderNumber !== $previousOrderNumber) {
+                                        // 주문번호가 변경될 때마다 토글 값을 변경
+                                        $toggle = !$toggle;
+                                    }
+                                    $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
+                                    $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
 
 
-                            
-                            ?>
-                                <tr style="background-color: <?= $backgroundColor ?>;">
-                                    <td><?=htmlspecialchars($marketName)?></td>
-                                    <td><?=htmlspecialchars($orderDate)?></td>
-                                    <td><?=htmlspecialchars($orderNumber)?></td>
-                                    <td><?=htmlspecialchars($orderName)?></td>
-                                    <td><?=htmlspecialchars($orderQuantity)?></td>
-                                    <td><?=htmlspecialchars($orderPrice)?></td>
-                                    <td><?=htmlspecialchars($orderShipping)?></td>
-                                </tr>
+                                
+                                ?>
+                                    <tr style="background-color: <?= $backgroundColor ?>;">
+                                        <td><?=htmlspecialchars($marketName)?></td>
+                                        <td><?=htmlspecialchars($orderDate)?></td>
+                                        <td><?=htmlspecialchars($orderNumber)?></td>
+                                        <td><?=htmlspecialchars($orderName)?></td>
+                                        <td><?=htmlspecialchars($orderQuantity)?></td>
+                                        <td><?=htmlspecialchars($orderPrice)?></td>
+                                        <td><?=htmlspecialchars($orderShipping)?></td>
+                                    </tr>
 
-                            <?php }?>
+                            <?php }}?>
                             </tbody>
                         </table>
                     </div>
@@ -250,21 +250,25 @@
         </form>
 
 
-        <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="exampleModalLabel">주문 등록 진행률</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
                 </div>
                 <div class="modal-body">
                     <div class="progress">
-                        <div class="progress-bar" role="progressbar" id="progress-bar" aria-label="Example with label" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                        <div class="progress-bar" role="progressbar" id="progress-bar" aria-label="Example with label" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">25%</div>
+                    </div>
+                    <div class="text-primary mt-2" id="ok-text" style="display:none;">주문 등록이 완료되었습니다.</div>
+                    <div class="text-danger mt-2" id="error-text" style="display:none;">문제가 발생했습니다. 관리자에게 문의해주세요.
+                        <p>중복된 주문은 등록할 수 없습니다.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="location.href='./order-tmp-list.php'">새로 등록하기</button>
+                    <button type="button" class="btn btn-primary" onclick="location.href='./order.php'">목록 보기</button>
                 </div>
                 </div>
             </div>
@@ -278,9 +282,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
     <script src="./js/product.js"></script>
-    <script src="./js/common.js"></script>
+
     
     <script>
+        var interval;
         $(document).ready(function() {
             $('#datepicker').datepicker({
                 format: 'yyyy-mm-dd',
@@ -295,6 +300,7 @@
         $("#upload-btn").click(function(){
             // $("#orderListForm").submit();
             modalOpen("progressModal");
+            checkProgress();
             $.ajax({
                 url: './api/order_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
@@ -302,11 +308,11 @@
                 data: $("#orderListForm").serialize(),
                 success: function(response) { 
                     // console.log(response);
-                    checkProgress();
 
                 },
-                error: function(xhr, status, error) {
-                    alert('전송 실패: ' + error);
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
                 }
             });
         });
@@ -322,28 +328,42 @@
         }
 
         function checkProgress(){
-            const interval = setInterval(() => {
-                fetch('./api/progress_status.php',{
+            interval = setInterval(() => {
+                console.log("1");
+                fetch('./api/progress_status.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ type: 'orderList' }),
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    // console.log("response",response);
+                    return response.json(); // JSON 변환 시도
+                })
                 .then(data => {
+                    if(data.progress < 0){
+                        clearInterval(interval);
+                        $("#error-text").css("display","block");
+                    }
                     const progressBarInner = document.getElementById('progress-bar');
                     progressBarInner.style.width = data.progress + '%';
                     progressBarInner.textContent = data.progress + '%';
-                    console.log('progress',data.progress);
+
                     if (data.progress >= 100) {
                         clearInterval(interval);
-                        // alert('작업 완료!');
+                        $("#ok-text").css("display","block");
                     }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
                 });
-            }, 3000); // 0.5초마다 상태 확인
+            }, 500); // 3초마다 상태 확인
         }
-        
+       
 
        
     </script>

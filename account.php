@@ -95,7 +95,7 @@
 
                 <div class="account-item">
                     <div class="account-info col-10">
-                        <h3><?=$accountRow['name']?></h3>
+                        <h3><?=htmlspecialchars($accountRow['name'])?></h3>
                         <table class="table">
                             <thead>
                                 <th>대표번호</th>
@@ -105,14 +105,14 @@
                                 <th>주소</th>
                             </thead>
                             <tbody>
-                                <td><?=$accountRow['contact']?></td>
-                                <td><?=$accountRow['account_manager']?></td>
-                                <td><?=$accountRow['manager_contact']?></td>
+                                <td><?=htmlspecialchars($accountRow['contact'])?></td>
+                                <td><?=htmlspecialchars($accountRow['account_manager'])?></td>
+                                <td><?=htmlspecialchars($accountRow['manager_contact'])?></td>
                                 <td>
-                                    <a href="<?=$accountRow['site']?>" target="_blank"><?=$accountRow['site']?></a>
+                                    <a href="<?=htmlspecialchars($accountRow['site'])?>" target="_blank"><?=htmlspecialchars($accountRow['site'])?></a>
                                 </td>
                                 <td>
-                                    <?=$accountRow['address']?>
+                                    <?=htmlspecialchars($accountRow['address'])?>
                                 </td>
                             </tbody>
                         </table>
@@ -120,11 +120,11 @@
                     <div class="account-controls col-2">
                         <button class="btn btn-primary btn-memo"  data-bs-toggle="modal" data-bs-target="#accountModal">메모</button>
                         <button class="btn btn-secondary">
-                            <a href="./account-manage.php?ix=<?=$accountRow['ix']?>" class="text-white">수정</a>
+                            <a href="./account-manage.php?ix=<?=htmlspecialchars($accountRow['ix'])?>" class="text-white">수정</a>
                         </button>
                     </div>
                     <textarea name="memo" class="memo" style="visibility:hidden;">
-                        <?=$accountRow['memo']?>
+                        <?=htmlspecialchars($accountRow['memo'])?>
                     </textarea>
                 </div>
                 <?php } 
