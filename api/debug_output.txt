@@ -1,0 +1,8 @@
+<br />
+<b>Warning</b>:  Undefined variable $today in <b>C:\xampp\htdocs\helpshop\api\margin_api.php</b> on line <b>63</b><br />
+<br />
+<b>Warning</b>:  Undefined variable $userIx in <b>C:\xampp\htdocs\helpshop\api\margin_api.php</b> on line <b>63</b><br />
+<br />
+<b>Warning</b>:  Undefined variable $userIx in <b>C:\xampp\htdocs\helpshop\api\margin_api.php</b> on line <b>78</b><br />
+<br />
+<b>Warning</b>:  Undefined variable $today in <b>C:\xampp\htdocs\helpshop\api\margin_api.php</b> on line <b>78</b><br />

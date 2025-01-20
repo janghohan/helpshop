@@ -207,12 +207,11 @@
 
                     <!-- Summary Cards -->
                     <div class="summary-cards d-flex justify-content-between" id="marginCard">
-                        <button class="btn">테스트</button>
                         <div class="card">
                             <h5>총 결제금액(상품)</h5>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalPayment" onclick="calculateMargin()">
-                                    <i class="bi bi-arrow-clockwise rotating-icon"></i>
+                                <button class="btn btn-lg" data-v="totalPayment">
+                                    <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
                         </div>
@@ -415,14 +414,24 @@
         $("#marginCard .btn").click(function(){
             console.log("button");
             calculateType = $(this).attr('data-v');
-            console.log("<?=$orderQuery?>");
+            const thisBtn = $(this);
+            const formData = new FormData();
+            formData.append('calculateType', calculateType);
+            formData.append('startDate', startDate);
+            formData.append('endDate', endDate);
+            formData.append('searchType', $("#order-filter option:selected").val());
+            formData.append('searchKeyword', $("#order-search").val());
+
+            $(thisBtn).find('i').addClass("rotating-icon");
             $.ajax({
                 url: './api/margin_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
-                dataType : 'json',
-                data: {'calculateType':calculateType, 'query':"<?=$orderQuery?>"},
+                processData: false,
+                contentType: false,
+                data: formData,
                 success: function(response) { 
                     console.log(response);
+                    $(thisBtn).text(response.result);
 
                 },
                 error: function(xhr, status, error) {                  
@@ -430,26 +439,9 @@
                     console.log(error);
                 }
             });
+
         });
 
-        // function calculateMargin(){
-        //     calculateType = $(this).attr('data-v');
-        //     console.log("<?=$orderQuery?>");
-        //     $.ajax({
-        //         url: './api/margin_api.php', // 데이터를 처리할 서버 URL
-        //         type: 'POST',
-        //         dataType : 'json',
-        //         data: {'calculateType':calculateType, 'query':"<?=$orderQuery?>"},
-        //         success: function(response) { 
-        //             console.log(response);
-
-        //         },
-        //         error: function(xhr, status, error) {                  
-        //             // alert("관리자에게 문의해주세요.");
-        //             console.log(error);
-        //         }
-        //     });
-        // }
        
     </script>
 </body>

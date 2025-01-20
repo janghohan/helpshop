@@ -252,8 +252,8 @@
       <li>
         <a href="#" class="menu-link has-submenu">키워드관리</a>
         <ul class="submenu">
-          <li><a href="#">키워드 리스트</a></li>
-          <li><a href="#">상품리스트</a></li>
+          <li><a href="a.php">키워드 리스트</a></li>
+          <li><a href="b.php">상품리스트</a></li>
         </ul>
       </li>
       <li>
@@ -314,7 +314,7 @@
         });
 
         // Highlight current page
-        const currentPage = window.location.href;
+        const currentPage = window.location.pathname;
         console.log(currentPage,"currentPage");
         $('.menu-link').each(function () {
             const link = $(this).attr("href")
@@ -323,16 +323,18 @@
                 const submenu = $(this).parent().find('.submenu');
                 const aa = submenu.find('a');
                 aa.each(function(){
-                    console.log($(this).prop("href"),"is #");
-                    if ($(this).prop("href")==currentPage) {
+                    const submenuLink = new URL($(this).prop("href"), window.location.origin).pathname;
+                    console.log(submenuLink,"is #");
+                    if (submenuLink==currentPage) {
                         submenu.show();
                         // submenu.prev('.has-submenu').addClass('active');
                         $(this).parents('li').addClass('active');
                     }
                 });
             }else{
-                console.log($(this).prop("href"),"not #");
-                if ($(this).prop("href") === currentPage) {
+                const menuLink = new URL($(this).prop("href"), window.location.origin).pathname;
+                console.log(menuLink,"not #");
+                if (menuLink === currentPage) {
                     $(this).addClass('active');
                 }
             }
