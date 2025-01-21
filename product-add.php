@@ -304,7 +304,7 @@
         $.ajax({
             url: './api/product_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
-            data: {'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':JSON.stringify(optionsArray), 'formCombination':JSON.stringify(formCombinations)},
+            data: {'addCount':1,'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':JSON.stringify(optionsArray), 'formCombination':JSON.stringify(formCombinations)},
             success: function(response) {
                 modalOpen("completeModal");
                 alert('전송 성공: ' + response);

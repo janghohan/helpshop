@@ -82,123 +82,34 @@
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-        $productMarketIx = isset($_POST['productMarketIx']) ? $_POST['productMarketIx'] : ''; //마켓 ix
-
-        //네이버 파일인지 쿠팡파일인지 확인
-        $marketQuery = "SELECT market_name FROM market WHERE user_ix='$user_ix' AND ix='$productMarketIx'";
-        $result = $conn->query($marketQuery);
-        $row = $result->fetch_assoc();
-        $marketName = $row['market_name'];
-
-        
-        if (isset($_FILES['productExcelFile'])) {
-            // 파일 경로
-            $filePath = $_FILES['productExcelFile']['tmp_name'];
-
-            // 엑셀 파일 읽기
-            if ($xlsxA = SimpleXLSX::parse($filePath)) {
-                $dataA = $xlsxA->rows();
-            } else {
-                echo "Error reading Excel A: " . SimpleXLSX::parseError();
-                exit;
-            }
+        $startTime = isset($_POST['startTime']) ? $_POST['startTime'] : date("Y-m-d");
+        $endTime = isset($_POST['endTime']) ? $_POST['endTime'] : date("Y-m-d");
+       
+        $listStmt = $conn->prepare("SELECT poc.ix as combIx, pomp.ix as mpIx, 
+        m.market_name, p.name, poc.combination_key, poc.cost_price, poc.stock, pomp.price FROM product p 
+        JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=? 
+        JOIN product_option_market_price pomp ON poc.ix = pomp.product_option_comb_ix 
+        JOIN market m ON m.ix = pomp.market_ix AND p.create_at >= ? AND p.create_at <= ?");
+        if (!$listStmt) {
+            throw new Exception("Error preparing list statement: " . $conn->error); // *** 수정 ***
+        }
+        $listStmt->bind_param("sss",$userIx,$startTime,$endTime);
+        if (!$listStmt->execute()) {
+            throw new Exception("Error executing list statement: " . $listStmt->error); // *** 수정 ***
         }
 
-               
+        $result = $listStmt->get_result();
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $listResult[] = $row;
+            }
+        }
     }else{
         
     }
 
-    if(isset($dataA)){
-
-        $groupedProducts = [];
-        foreach ($dataA as $indexA => $rowA) {
-            if($indexA<=1){
-                continue;
-            }
-
-            $name = $rowA[0];
-            $option = $rowA[1];
-            $optionValue = $rowA[2];
-            $price = $rowA[3];
-            $cost = $rowA[4];
-            $quantity = $rowA[5];
-
-            $currentProductName = $name;
-            if ($currentProductName !== $previousProductName) {
-                // 상품명이 바뀐다.
-                $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
-                $productStmt->bind_param("sssss",$userIx,'','',$name,'');
-                $productStmt->execute();
-                
-                $productIx = $productStmt->insert_id;
-                $productResult = $productStmt->get_result();
-            }
-
-
-
-            if (!isset($groupedProducts[$orderNumber])) {
-                $groupedProducts[$orderNumber] = [
-                    'global_order_number' => generateOrderNumber($userIx),
-                    'order_date' => '',
-                    'total_payment' => 0,
-                    'total_shipping' => 0,
-                ];
-            }
-
-
-            $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
-            $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
-
-
-
-
-            $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
-            $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
-            $productStmt->execute();
-
-            $productIx = $productStmt->insert_id;
-            $productResult = $productStmt->get_result();
-
-            //product_option
-            $options = isset($_POST['options']) ? json_decode($_POST['options'], true) : [];
-            foreach ($options as $option){
-                $optionName = $option['name'];
-                $optionValues = $option['value'];
-                foreach($optionValues as $optionValue) {
-                    $optionStmt = $conn->prepare("INSERT INTO product_option(product_ix,name,value) VALUES(?,?,?)");
-                    $optionStmt->bind_param("sss",$productIx,$optionName,$optionValue);
-                    $optionStmt->execute();
-                }
-            }
-
-            //product_option_combination
-            foreach ($formCombination as $combination) {
-                $name = $combination['name'];
-                $price = str_replace(",", "", $combination['price']);
-                $stock = $combination['stock'];
-                $sellings = $combination['selling'];   
-
-                $combiStmt = $conn->prepare("INSERT INTO product_option_combination(product_ix,combination_key,cost_price,stock) VALUES(?,?,?,?)");
-                $combiStmt -> bind_param("ssss",$productIx,$name,$price,$stock);
-                $combiStmt->execute();
-
-                $combiIx = $combiStmt->insert_id;
-
-                // 옵션 데이터
-                foreach ($sellings as $selling) {
-                    $marketStmt = $conn->prepare("INSERT INTO product_option_market_price(product_option_comb_ix,market_ix,price) VALUES(?,?,?)");
-                    $sellingPrice = str_replace("","",$selling['value']);
-                    $marketStmt->bind_param("sss",$combiIx,$selling['ix'],$sellingPrice);
-                    $marketStmt->execute();
-                    // echo "Market ID $marketIx: $sellingPrice<br>";
-                }
-            }
-
-            $conn->commit();
-
-        }
-    }
+    
     ?>
     <!-- 헤더 -->
 
@@ -231,7 +142,6 @@
                         <tr>
                             <th>판매처</th>
                             <th>제품이름</th>
-                            <th>옵션구별값</th>
                             <th>옵션값</th>
                             <th>판매가</th>
                             <th>원가</th>
@@ -241,43 +151,41 @@
                         <tbody id="order-list">
                         <!-- Order rows will be added dynamically -->
                             <?php
-                                $previousProductName = null; // 이전 주문번호를 저장
-                                $toggle = true; // 색상을 변경하기 위한 토글 변수
+                                // $previousProductName = null; // 이전 주문번호를 저장
+                                // $toggle = true; // 색상을 변경하기 위한 토글 변수
 
-                                if(isset($dataA)){
-                                    foreach ($dataA as $indexA => $rowA) {
-                                        if($indexA<=1){
-                                            continue;
-                                        }
+                                if(isset($listResult)){
+                                    foreach ($listResult as $index => $row) {
 
-                                        $name = $rowA[0];
-                                        $option = $rowA[1];
-                                        $optionValue = $rowA[2];
-                                        $price = $rowA[3];
-                                        $cost = $rowA[4];
-                                        $quantity = $rowA[5];
+                                        $combIx = $row['combIx'];
+                                        $mpIx = $row['mpIx'];
+                                        $market_name = $row['market_name'];
+                                        $name = $row['name'];
+                                        $combination_key = $row['combination_key'];
+                                        $cost = $row['cost_price'];
+                                        $stock = $row['stock'];
+                                        $price = $row['price'];
 
-                                        $currentProductName = $name;
-                                        if ($currentProductName !== $previousProductName) {
-                                            // 상품명이 바뀐다.
-                                            $toggle = !$toggle;
-                                            $shipping = $orderRow['total_shipping'];
-                                        }else{
-                                            $shipping = 0;
-                                        }
-                                        $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
-                                        $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
+                                        // $currentProductName = $name;
+                                        // if ($currentProductName !== $previousProductName) {
+                                        //     // 상품명이 바뀐다.
+                                        //     $toggle = !$toggle;
+                                        //     $shipping = $orderRow['total_shipping'];
+                                        // }else{
+                                        //     $shipping = 0;
+                                        // }
+                                        // $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
+                                        // $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
 
 
                                 ?>        
-                                <tr style="background-color: <?= $backgroundColor ?>;">
-                                    <td><?=htmlspecialchars($orderRow['market_name'])?></td>
-                                    <td><?=htmlspecialchars($orderRow['order_date'])?></td>
-                                    <td><?=htmlspecialchars($orderRow['global_order_number'])?></td>
-                                    <td><?=htmlspecialchars($orderRow['name'])?></td>
-                                    <td><?=htmlspecialchars($orderRow['quantity'])?></td>
-                                    <td><?=htmlspecialchars(number_format($orderRow['price']))."원"?></td>
-                                    <td><?=htmlspecialchars(number_format($shipping))."원"?></td>
+                                <tr>
+                                    <td><?=htmlspecialchars($market_name)?></td>
+                                    <td><?=htmlspecialchars($name)?></td>
+                                    <td><?=htmlspecialchars($combination_key)?></td>
+                                    <td><?=htmlspecialchars(number_format($price))."원"?></td>
+                                    <td><?=htmlspecialchars(number_format($cost))."원"?></td>
+                                    <td><?=htmlspecialchars(number_format($stock))?></td>
                                 </tr>
                                 
                             <?php
@@ -288,7 +196,7 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="excelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                 <div class="modal-header">
@@ -297,7 +205,8 @@
                     
                 </div>
                 <div class="modal-body">
-                    <form action="./product-add-dump.php" id="productExcelForm" method="post" enctype="multipart/form-data">
+                    <form action="./api/product_api.php" id="productExcelForm" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="addCount" value="100">
                         <select name="productMarketIx" class="form-control" id="">
                             <?php
                                 $searchResult = [];
@@ -322,11 +231,36 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
+                    <button type="button" class="btn btn-primary" onclick="dumpExcel()">등록</button>
                 </div>
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"  data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title fs-5" id="loadingText">파일이 등록중입니다. 창을 닫지 마세요.</p>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="display:none;">닫기</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <form action="./product-add-dump.php" id="listForm" method="post" style="display:none;">
+            <input type="hidden" name="startTime">
+            <input type="hidden" name="endTime">
+        </form>
 
     </div>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
@@ -339,32 +273,46 @@
     
     
     <script>
-        var startDate = "<?=$startDate?>";
-        var endDate = "<?=$endDate?>";
 
-        $(document).ready(function() {
-            flatpickr("#flatpickr", {
-                defaultDate: ["<?=$startDate?>","<?=$endDate?>"],
-                dateFormat: "Y-m-d",
-                mode: "range",
-                altInput: true,
-                theme: "material_blue",
-                locale: "ko",
-                onChange: function(selectedDates, dateStr, instance) {
-                    if(dateStr.includes('~')) changeRageText(dateStr);
-                    
+
+
+        function dumpExcel(){
+            // $("#productExcelForm").submit();
+            modalClose("productModal");
+            modalOpen("loadingModal");
+
+            var formData = new FormData($("#productExcelForm")[0]); 
+            $.ajax({
+                url: './api/product_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function(response) { 
+                    console.log(response);
+                    if(response.status=="success"){
+                        listUp(response.startTime,response.endTime);
+                        $("#loadingText").text("파일등록이 완료되었습니다.");
+                        // $("#loadingModal .modal-body").css("display","none");
+                        $("#loadingModal .btn").css("display","block");
+                    }
+
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
                 }
             });
+        }
 
-        });
-
-
-        function tmpExcel(){
-            $("#productExcelForm").submit();
+        function listUp(startTime,endTime){
+            $("input[name='startTime']").val(startTime);
+            $("input[name='endTime']").val(endTime);
+            $("#listForm").submit();
         }
 
         $("#excel-btn").click(function(){
-            modalOpen("excelModal");
+            modalOpen("productModal");
         });
 
        
@@ -390,36 +338,6 @@
                 location.href = './order.php?start='+startDate+"&end="+endDate+"&searchType="+searchType+"&searchKeyword="+$("#order-search").val();
             }
         }
-        $("#marginCard .btn").click(function(){
-            console.log("button");
-            calculateType = $(this).attr('data-v');
-            const thisBtn = $(this);
-            const formData = new FormData();
-            formData.append('calculateType', calculateType);
-            formData.append('startDate', startDate);
-            formData.append('endDate', endDate);
-            formData.append('searchType', $("#order-filter option:selected").val());
-            formData.append('searchKeyword', $("#order-search").val());
-
-            $(thisBtn).find('i').addClass("rotating-icon");
-            $.ajax({
-                url: './api/margin_api.php', // 데이터를 처리할 서버 URL
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                data: formData,
-                success: function(response) { 
-                    console.log(response);
-                    $(thisBtn).text(response.result);
-
-                },
-                error: function(xhr, status, error) {                  
-                    // alert("관리자에게 문의해주세요.");
-                    console.log(error);
-                }
-            });
-
-        });
 
        
     </script>
