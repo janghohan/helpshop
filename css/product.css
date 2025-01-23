@@ -30,25 +30,6 @@
 }
 
 
-.product-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.product-item {
-    align-items: center;
-    background-color: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-.product-image {
-    width: 60px;
-    height: 60px;
-    background-color: #ddd;
-    border-radius: 8px;
-    margin-right: 20px;
-}
 
 h3 {
     font-size: 16px;

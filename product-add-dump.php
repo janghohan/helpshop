@@ -148,7 +148,7 @@
                             <th>재고수량</th>
                         </tr>
                         </thead>
-                        <tbody id="order-list">
+                        <tbody id="product-list">
                         <!-- Order rows will be added dynamically -->
                             <?php
                                 // $previousProductName = null; // 이전 주문번호를 저장

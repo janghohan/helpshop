@@ -18,6 +18,20 @@ a{
   }
 }
 
+@media (min-width: 1400px) {
+  .container{
+      max-width: 98%;
+  }
+}
+
+/* page 색상 */
+.page-link, .page-link:hover {
+  color: #2f3b7e;
+}
+.page-item.active .page-link {
+  background-color: #2f3b7e;
+  border-color: #2f3b7e;
+}
 /* 아이콘에 애니메이션 적용 */
 .rotating-icon {
   display: inline-block; /* 블록 요소로 설정 */

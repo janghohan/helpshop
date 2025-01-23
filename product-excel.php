@@ -28,17 +28,11 @@
     $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
     $startIndex = ($page - 1) * $itemsPerPage;
     
-    // $listStmt = $conn->prepare("SELECT IFNULL(a.name,'') as acName,IFNULL(c.name,'') as cateName, poc.ix as combIx, pomp.ix as mpIx, 
-    // m.market_name, p.name, poc.combination_key, poc.cost_price, poc.stock, pomp.price FROM product p 
-    // JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=? 
-    // JOIN product_option_market_price pomp ON poc.ix = pomp.product_option_comb_ix 
-    // JOIN market m ON m.ix = pomp.market_ix LEFT JOIN account a ON p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix LIMIT ? OFFSET ?");
-
-    $listStmt = $conn->prepare("SELECT  IFNULL(a.name, '') AS acName, IFNULL(c.name, '') AS cateName, p.ix AS pIx, p.name AS productName,  p.create_at, poc.combination_key,
-    SUM(poc.stock) AS total_stock, poc.cost_price FROM  product p JOIN  product_option_combination poc ON  p.ix = poc.product_ix AND p.user_ix = ? LEFT JOIN account a ON 
-    p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix GROUP BY p.ix, p.name, p.create_at, a.name, c.name LIMIT ? OFFSET ?");
-
-// SELECT IFNULL(a.name,'') as acName,IFNULL(c.name,'') as cateName, poc.ix as combIx,p.ix as pIx, p.name, p.create_at, poc.combination_key, poc.cost_price, poc.stock FROM product p JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=1 LEFT JOIN account a ON p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix LIMIT 20 OFFSET 0;
+    $listStmt = $conn->prepare("SELECT IFNULL(a.name,'') as acName,IFNULL(c.name,'') as cateName, poc.ix as combIx, pomp.ix as mpIx, 
+    m.market_name, p.name, poc.combination_key, poc.cost_price, poc.stock, pomp.price FROM product p 
+    JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=? 
+    JOIN product_option_market_price pomp ON poc.ix = pomp.product_option_comb_ix 
+    JOIN market m ON m.ix = pomp.market_ix LEFT JOIN account a ON p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix LIMIT ? OFFSET ?");
 
     if (!$listStmt) {
         throw new Exception("Error preparing list statement: " . $conn->error); // *** 수정 ***
@@ -133,23 +127,19 @@
                     </select>
                 </div>
                 </div>
-                <div class="table-container table-responsive">
-                    <table class="table table-hover">
-                        <colgroup>
-                            <col style="width: 40%;"> <!-- 첫 번째 열은 30% -->
-                            <col style="width: 15%;"> <!-- 두 번째 열은 50% -->
-                            <col style="width: 15%;"> <!-- 세 번째 열은 20% -->
-                            <col style="width: 10%;"> <!-- 세 번째 열은 20% -->
-                            <col style="width: 20%;"> <!-- 세 번째 열은 20% -->
-                        </colgroup>
-                        <thead class=" table-light">
-                            <tr>
-                                <th>제품이름</th>
-                                <th>도매처</th>
-                                <th>카테고리</th>
-                                <th>재고수량</th>
-                                <th>생성일</th>
-                            </tr>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>판매처</th>
+                            <th>거래처</th>
+                            <th>카테고리</th>
+                            <th>제품이름</th>
+                            <th>옵션값</th>
+                            <th>판매가</th>
+                            <th>원가</th>
+                            <th>재고수량</th>
+                        </tr>
                         </thead>
                         <tbody id="product-list">
                             <?php
@@ -159,12 +149,16 @@
                             if(isset($listResult)){
                                 foreach ($listResult as $index => $row) {
 
-                                    $procut_ix = $row['pIx'];
+                                    $combIx = $row['combIx'];
+                                    $mpIx = $row['mpIx'];
                                     $cate_name = $row['cateName'];
                                     $account_name = $row['acName'];
-                                    $product_name = $row['productName'];
-                                    $total_stock = $row['total_stock'];
-                                    $create_at = $row['create_at'];
+                                    $market_name = $row['market_name'];
+                                    $name = $row['name'];
+                                    $combination_key = $row['combination_key'];
+                                    $cost = $row['cost_price'];
+                                    $stock = $row['stock'];
+                                    $price = $row['price'];
                                                                    
 
                                     // $currentProductName = $name;
@@ -180,12 +174,15 @@
 
 
                             ?>        
-                            <tr data-ix="<?=htmlspecialchars($procut_ix)?>">
-                                <td><?=htmlspecialchars($product_name)?></td>
-                                <td><?=htmlspecialchars($account_name)?></td>
-                                <td><?=htmlspecialchars($cate_name)?></td>
-                                <td><?=htmlspecialchars($total_stock)?></td>
-                                <td><?=htmlspecialchars($create_at)?></td>
+                            <tr>
+                                <td class=""><?=htmlspecialchars($market_name)?></td>
+                                <td class=""><?=htmlspecialchars($account_name)?></td>
+                                <td class=""><?=htmlspecialchars($cate_name)?></td>
+                                <td><?=htmlspecialchars($name)?></td>
+                                <td><?=htmlspecialchars($combination_key)?></td>
+                                <td><?=htmlspecialchars(number_format($price))."원"?></td>
+                                <td><?=htmlspecialchars(number_format($cost))."원"?></td>
+                                <td><?=htmlspecialchars(number_format($stock))?></td>
                             </tr>
                             
                             <?php
@@ -244,10 +241,6 @@
 
             $("#itemsPerPage").change(function(){
                 location.href='./product.php?itemsPerPage='+$(this).val();
-            });
-
-            $("#product-list tr").click(function(){
-                location.href='./product-edit.php?ix='+$(this).attr('data-ix');
             });
         });
     </script>
