@@ -24,6 +24,11 @@ a{
   }
 }
 
+.text-bg-primary{
+  color: #fff !important;
+  background-color: #007bff !important;
+}
+
 /* page 색상 */
 .page-link, .page-link:hover {
   color: #2f3b7e;

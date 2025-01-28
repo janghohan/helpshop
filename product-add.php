@@ -34,7 +34,7 @@
         <!-- 메인 컨테이너 -->
     <div class="container">
         <!-- 카테고리 선택 섹션 -->
-        <div class="category-section">
+        <div class="product-section">
             <!-- 거래처 선택 -->
             <div class="category-box">
                 <label><span class="required">•</span>거래처</label>

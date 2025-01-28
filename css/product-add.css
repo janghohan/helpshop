@@ -1,12 +1,13 @@
- /* 카테고리 선택 섹션 */
- .category-section {
+.product-section {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: 960px;
     margin: 0 auto;
     margin-top: 20px;
 }
+
+/* 카테고리 선택 섹션 */
+
 .category-box {
     background-color: white;
     padding: 20px;
