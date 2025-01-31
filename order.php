@@ -100,7 +100,7 @@
         $endDate = $_GET['end'];
         
         $orderQuery = "
-            SELECT o.order_date, o.global_order_number, m.market_name, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            SELECT o.order_date, o.global_order_number, m.market_name,od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
@@ -125,7 +125,7 @@
         }
     }else{
 
-        $orderQuery = "SELECT o.order_date,o.global_order_number,m.market_name,od.name,od.quantity,od.price,o.total_payment,o.total_shipping 
+        $orderQuery = "SELECT o.order_date,o.global_order_number,m.market_name,od.ix as detailIx, od.name,od.quantity,od.price,o.total_payment,o.total_shipping 
         FROM orders o JOIN order_details od ON o.order_date='$today' AND o.user_ix='$userIx' AND o.ix = od.orders_ix $orderTypeSearchKeyworSql JOIN market m ON m.ix = o.market_ix";
         
         $orderQuery = "
@@ -256,10 +256,21 @@
                     </div>
 
                     <!-- Order Table -->
-                    <div class="table-container">
+                    <div class="table-container" style="caret-color: transparent;">
+                        <div class="dropdown float-end mb-3">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                선택한 상품 일괄적용
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="#" id="orderCancel">주문취소</a>
+                                </li>
+                            </ul>
+                        </div>
                         <table class="table">
                             <thead>
                             <tr>
+                                <th>주문</th>
                                 <th>판매처</th>
                                 <th>주문일시</th>
                                 <th>주문번호</th>
@@ -292,13 +303,16 @@
 
                                     ?>        
                                     <tr style="background-color: <?= $backgroundColor ?>;">
+                                        <td>
+                                            <input type="checkbox" class="form-check-input" name="orderCheck[]" value="<?=htmlspecialchars($orderRow['detailIx'])?>">
+                                        </td>
                                         <td><?=htmlspecialchars($orderRow['market_name'])?></td>
                                         <td><?=htmlspecialchars($orderRow['order_date'])?></td>
                                         <td><?=htmlspecialchars($orderRow['global_order_number'])?></td>
                                         <td><?=htmlspecialchars($orderRow['name'])?></td>
                                         <td><?=htmlspecialchars($orderRow['quantity'])?></td>
                                         <td><?=htmlspecialchars(number_format($orderRow['price']))."원"?></td>
-                                        <td><?=htmlspecialchars(number_format($shipping))."원"?></td>
+                                        <td><?=htmlspecialchars(number_format($shipping))."원"?></td>                                        
                                     </tr>
                                     
                                 <?php
@@ -355,6 +369,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="./js/product.js"></script>
     <script src="./js/common.js"></script>
     
@@ -442,7 +457,69 @@
 
         });
 
-       
+        $(document).on("click", "#orderCancel", function (event) {
+            event.preventDefault(); // 기본 동작(링크 이동) 막기
+            orderSwal();
+        });
+
+        function orderSwal(){          
+            Swal.fire({
+                html: `
+                    <div style="font-size: 16px; text-align: left;">
+                        <strong>취소후 복구가 불가능합니다. 취소하시겠습니까? </strong><br><br>
+                        
+                    </div>
+                `,
+                customClass: {
+                    confirmButton: "btn btn-primary",
+                    cancelButton: "btn btn-danger"
+                },
+                showCancelButton: true,
+                confirmButtonText: "확인",
+                cancelButtonText: "취소", 
+                reverseButtons: true,
+                allowOutsideClick:false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    orderCancel();
+                }
+            });
+
+        }
+
+        function orderCancel(){
+            let checkedValues = [];
+
+            $("input[name='orderCheck[]']:checked").each(function () {
+                checkedValues.push($(this).val());
+            });
+
+            // if (checkedValues.length === 0) {
+            //     alert("체크된 주문이 없습니다.");
+            //     return;
+
+            // }
+
+            console.log(checkedValues);
+
+            $.ajax({
+                url: './api/order_edit_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: {'type':'orderCancel', 'checkList':checkedValues },
+                success: function(response) { 
+                    console.log(response);
+                    if(response.status=='success'){
+                        location.reload();
+                    }
+
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
+                }
+            });
+        }
+
     </script>
 </body>
 </html>

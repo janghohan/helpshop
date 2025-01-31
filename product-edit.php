@@ -146,7 +146,7 @@
                 <!-- 거래처 선택 -->
                 <div class="category-box">
                     <label><span class="required">•</span>거래처</label>
-                    <select name="accountIx">
+                    <select name="accountIx" id="accountIx">
                         <option value="0">선택안함</option>
                         <?php
                         $accountResult = [];
@@ -171,7 +171,7 @@
                 <!-- 카테고리 선택 -->
                 <div class="category-box">
                     <label><span class="required">•</span>카테고리</label>
-                    <select class="category" name="categoryIx">
+                    <select class="category" name="categoryIx" id="categoryIx">
                     <option value="0">선택안함</option>
                     <?php
                         $categoryResult = [];
@@ -203,7 +203,7 @@
                             </div>
                             <div class="field">
                                 <label>상품별 메모</label>
-                                <textarea placeholder="상품별 메모" maxlength="200" name="productMemo" value="<?=htmlspecialchars($memo)?>"></textarea>
+                                <textarea placeholder="상품별 메모" maxlength="200" name="productMemo"><?=htmlspecialchars($memo)?></textarea>
                                 <div class="char-count">0 / 200</div>
                             </div>
                         </div>
@@ -318,21 +318,17 @@
                                 <?php } 
                                 $previousCombIx = $currentCombIx;
                                 } } ?>
-                        <button class="apply-btn" onclick="generateCombinations()">적용</button>
+                        <!-- <button class="apply-btn" onclick="generateCombinations()">적용</button> -->
                     </div>
 
-                    <div class="option-list">
+                    <!-- <div class="option-list">
                         <label>옵션 목록 (총 4개)</label>
                         <button class="add-row-btn">추가</button>
                         <div class="option-table">
                             <div class="option-row op-header">
-                                <!-- <div class="option-checkbox"><input type="checkbox"></div> -->
                                 <div class="option-name-group">
                                     <div class="main-header">옵션명</div>
                                     <div class="sub-headers">
-                                        <!-- <div class="sub-header">색상</div>
-                                        <div class="sub-header">크기</div> -->
-                                        <!-- <div class="sub-header">호환</div> -->
                                     </div>
                                 </div>
                                 <div class="option-price">매입가</div>
@@ -340,28 +336,11 @@
                                 <div class="buying-price">판매가</div>
                                 <div class="delete">삭제</div>
                             </div>
-
-                            <!-- Row example -->
-                            <!-- <div class="option-row" >
-                                <div class="option-checkbox"><input type="checkbox"></div>
-                                <div class="option-name-group">
-                                </div>
-                                <div class="option-price">
-                                    <input type="text" class="option-input" value="0">
-                                </div>
-                                <div class="stock">
-                                    <input type="text" class="option-input" value="0">
-                                </div>
-                                <div class="memo">
-                                    <input type="text" class="option-input" value="메모">
-                                </div>
-                                <div class="op-delete"><button>×</button></div>
-                            </div> -->
                         </div>
                     </div>
                     <div id="result">
 
-                    </div>
+                    </div> -->
 
                     <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
                         <div class="d-flex">
@@ -372,8 +351,8 @@
                         </div>
                     </div>
                 </div>
-                <div>
-                    <button class="btn btn-primary float-md-end" onclick="productAdd();">등록</button>
+                <div class="mb-5">
+                    <button class="btn btn-primary float-md-end" onclick="productEdit();">수정</button>
                 </div>
                 <div class="modal fade" id="priceModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-id="">
                     <div class="modal-dialog modal-dialog-centered">
@@ -413,12 +392,15 @@
                 <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
-                        <div class="modal-body">
-                        <div class="d-flex justify-content-center" style="gap:15px;">
-                                <button class="btn btn-outline-secondary"  onclick = "location.href ='./product.php';">상품 목록으로 가기</button>
-                                <button class="btn btn-primary" onclick = "location.href ='./product-add.php';">상품 새로 등록하기</button>
-                        </div>
-                        </div>
+                            <div class="modal-body">
+                                <div class="d-flex justify-content-center mb-3">
+                                    <h5>수정이 완료되었습니다.</h5>
+                                </div>
+                                <div class="d-flex justify-content-center" style="gap:15px;">
+                                    <button class="btn btn-outline-secondary"  onclick = "location.href ='./product.php';">상품 목록으로 가기</button>
+                                    <button class="btn btn-primary" onclick = "location.reload();">상품 다시 수정하기</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -430,7 +412,10 @@
 <script src="./js/product-add.js"></script>
 <script>
     
-    
+    $(document).ready(function(){
+        $("#categoryIx").val("<?=$categoryIx?>").trigger('change');
+        $("#accountIx").val("<?=$accountIx?>").trigger('change');
+    });
     //옵션 목록중 옵션 삭제
     $(document).on('click','.option-del',function(){
         if(confirm('삭제 하시겠습니까?')){
@@ -485,7 +470,6 @@
     });
 
     function toast(button){
-
         const toastElement = document.getElementById('myToast');
         const toast = new bootstrap.Toast(toastElement);
 
@@ -493,7 +477,7 @@
         toast.show();
     }
 
-    function productAdd(){
+    function productEdit(){
         const productName = $("input[name='productName']").val();
         const productMemo = $("textarea[name='productMemo']").val();
         const accountIx = $("select[name='accountIx']").val();
@@ -503,17 +487,17 @@
             alert('상품명을 입력해주세요.');
             return false;
         }
-        insertPriceAndStock();
-        
 
-        console.log(formCombinations);
+
         $.ajax({
-            url: './api/product_api.php', // 데이터를 처리할 서버 URL
+            url: './api/product_edit_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
-            data: {'addCount':1,'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':JSON.stringify(optionsArray), 'formCombination':JSON.stringify(formCombinations)},
+            data: {'type':'productEdit','productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'productIx':"<?=$productIx?>"},
             success: function(response) {
-                modalOpen("completeModal");
-                alert('전송 성공: ' + response);
+                console.log(response.status);
+                if(response.status=='success'){
+                    modalOpen("completeModal");
+                }
             },
             error: function(xhr, status, error) {
                 alert('전송 실패: ' + error);

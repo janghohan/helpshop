@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $type = isset($_POST['type']) ? $_POST['type'] : ''; // option-edit 구별 타입입
 
+    //옵션삭제 
     if($type=='opDel'){
         $combIx = isset($_POST['combIx']) ? $_POST['combIx'] : '';
         $mPriceIx = isset($_POST['mPriceIx']) ? $_POST['mPriceIx'] : '';
@@ -39,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo json_encode(['status' => 'success', 'message' => 'op delete processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
 
+    //옵션 수정
     }else if($type=='opEdit'){
         $combIx = isset($_POST['combIx']) ? $_POST['combIx'] : '';
         $mPriceIx = isset($_POST['mPriceIx']) ? $_POST['mPriceIx'] : '';
@@ -63,6 +65,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $marketPriceStmt->bind_param("ss",$optionPrice,$mPriceIx);
         if(!$marketPriceStmt->execute()){
             throw new Exception("Error executing priceUpdateStmt statement: " . $marketPriceStmt->error); // *** 수정 ***
+        }
+
+        echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+    
+    }else if($type=='productEdit'){
+        $productName = isset($_POST['productName']) ? $_POST['productName'] : '';
+        $productMemo = isset($_POST['productMemo']) ? $_POST['productMemo'] : '';
+        $accountIx = isset($_POST['accountIx']) ? $_POST['accountIx'] : '';
+        $categoryIx = isset($_POST['categoryIx']) ? $_POST['categoryIx'] : '';
+        $productIx = isset($_POST['productIx']) ? $_POST['productIx'] : '';
+        $updateTime = date("Y-m-d H:i:s");
+
+        //옵션값, 원가, 재고 수정
+        $productStmt = $conn->prepare("UPDATE product SET name=?, memo=?, account_ix=?, category_ix=?, update_at=? WHERE ix=? AND user_ix=?");
+        $productStmt->bind_param("sssssss",$productName,$productMemo,$accountIx,$categoryIx,$updateTime,$productIx,$userIx);
+        if(!$productStmt->execute()){
+            throw new Exception("Error executing productUpdateStmt statement: " . $productStmt->error); // *** 수정 ***
         }
 
         echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);

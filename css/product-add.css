@@ -170,7 +170,7 @@
 
 .add-option-btn, .del-option-btn, .apply-btn {
     padding: 8px 12px;
-    background-color: #007bff;
+    background-color: #2f3b7e;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -180,7 +180,7 @@
 
 .apply-btn {
     padding: 8px 20px;
-    background-color: #007bff;
+    background-color: #2f3b7e;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -215,7 +215,7 @@
 }
 
 .add-row-btn {
-    background-color: #007bff;
+    background-color: #2f3b7e;
     color: #fff;
     border: none;
     padding: 8px 12px;
