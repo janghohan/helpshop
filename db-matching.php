@@ -82,183 +82,187 @@
     include './sidebar.html';
     ?>
     <div class="full-content">
-        <div class="syncBtn">
-            <button class="sync-button">동기화</button>
-        </div>
-        <div class="data-list">
-            <!-- Example Row -->
-            <div class="data-row" style="font-weight:bold;">
-                <div class="source">판매처</div>
-                <div class="input-container">상품명</div>
-                <div class="input-container">
-                    매칭 상품
-                </div>
-                <div class="checkbox-container">
-                    체크박스
-                </div>
+        <div class="container">
+            <div class="main-content">
+                <div class="syncBtn">
+                <button class="sync-button">동기화</button>
             </div>
-            <div class="data-row">
-                <div class="source">쿠팡</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
+            <div class="data-list">
+                <!-- Example Row -->
+                <div class="data-row" style="font-weight:bold;">
+                    <div class="source">판매처</div>
+                    <div class="input-container">상품명</div>
+                    <div class="input-container">
+                        매칭 상품
+                    </div>
+                    <div class="checkbox-container">
+                        체크박스
+                    </div>
                 </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
+                <div class="data-row">
+                    <div class="source">쿠팡</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
                 </div>
+                <!-- Example Row -->
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="source">네이버</div>
+                    <div class="input-container">아부가르시아 새턴3 802l</div>
+                    <div class="input-container">
+                        <input type="text" placeholder="값 입력">
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox">
+                    </div>
+                </div>
+                <!-- More rows dynamically loaded here -->
             </div>
-            <!-- Example Row -->
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
             </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <div class="data-row">
-                <div class="source">네이버</div>
-                <div class="input-container">아부가르시아 새턴3 802l</div>
-                <div class="input-container">
-                    <input type="text" placeholder="값 입력">
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox">
-                </div>
-            </div>
-            <!-- More rows dynamically loaded here -->
         </div>
     </div>
 </body>
