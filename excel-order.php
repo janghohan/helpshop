@@ -28,7 +28,8 @@
                     <label for="file-naver">네이버:</label>
                     <input type="file" name="fileNaver" id="file-naver" accept=".xlsx, .xls">
                 </div>
-                <div class="upload-group">
+                <input type="text" class="form-control" name="naverPwd" placeholder="네이버 파일 비밀번호" required>
+                <div class="upload-group mt-3">
                     <label for="file-coupang">쿠팡:</label>
                     <input type="file" name="fileCoupang" id="file-coupang" accept=".xlsx, .xls">
                 </div>
@@ -54,23 +55,30 @@
         <!-- 송장 파일 등록 -->
         <div class="section">
             <h2>송장 파일 등록</h2>
-            <div class="upload-group">
-                <label for="invoice-naver">네이버:</label>
-                <input type="file" id="invoice-naver">
-            </div>
-            <div class="upload-group">
-                <label for="invoice-coupang">쿠팡:</label>
-                <input type="file" id="invoice-coupang">
-            </div>
-            <div class="upload-group">
-                <label for="invoice-auction">옥션:</label>
-                <input type="file" id="invoice-auction">
-            </div>
-            <div class="upload-group">
-                <label for="invoice-gmarket">G마켓:</label>
-                <input type="file" id="invoice-gmarket">
-            </div>
-            <button class="convert-button">변환</button>
+            <form action="" method="post" id="deliver_to_file">
+            <input type="hidden" name="type" value="songjang">
+                <div class="border border-2 p-2 rounded mb-3">
+                    <div class="upload-group">
+                        <label for="invoice-naver">네이버 주문파일: (비밀번호 없는파일)</label>
+                        <input type="file" name="">
+                    </div>
+                    <div class="upload-group">
+                        <label for="invoice-naver">네이버 송장파일:</label>
+                        <input type="file" >
+                    </div>
+                </div>
+                <div class="border border-2 p-2 rounded">
+                    <div class="upload-group">
+                        <label for="invoice-coupang">쿠팡 주문파일:</label>
+                        <input type="file" >
+                    </div>
+                    <div class="upload-group">
+                        <label for="invoice-auction">쿠팡 송장파일:</label>
+                        <input type="file">
+                    </div>
+                </div>
+            </form>
+            <button class="convert-button" id="songjangBtn"></button>>변환</button>
             <div class="generated-files">
                 <h3>생성된 파일</h3>
                 <ul>
@@ -93,7 +101,38 @@
                 processData: false,
                 success: function(response) {
                     let files = JSON.parse(response);
-                    console.log(response);
+                    $("#downloadLink1").empty();
+                    
+                    if (files.length > 0) {
+                        files.forEach(file => {
+                            let link = $('<a></a>')
+                                .attr('href', file.url)
+                                .attr('download', file.name)
+                                .text(`Download ${file.name}`);
+                            $('#downloadLink1').append(link).append('<br>');
+                        });
+                    } else {
+                        $('#downloadLinks').text('No files returned.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('전송 실패: ' + error);
+                }
+            });
+        });
+
+        $("#songjangBtn").click(function(){
+            let formData = new FormData($('#file_to_deliver')[0]);
+
+            console.log(formData,"formDAta");
+            $.ajax({
+                url: './api/excel_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    let files = JSON.parse(response);
                     $("#downloadLink1").empty();
                     
                     if (files.length > 0) {

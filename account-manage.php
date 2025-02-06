@@ -74,7 +74,7 @@
             $stmt->close();
         } else {
             // 생성 처리
-            $stmt = $pdo->prepare("INSERT INTO account (user_ix,name,account_manager,manager_contact,contact,site,address,account_number,memo) VALUES (?,?,?,?,?,?,?,?,?)");
+            $stmt = $conn->prepare("INSERT INTO account (user_ix,name,account_manager,manager_contact,contact,site,address,account_number,memo) VALUES (?,?,?,?,?,?,?,?,?)");
             $stmt->bind_param(
                 "sssssssss", 
                 $user_ix, 

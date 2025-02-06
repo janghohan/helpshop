@@ -9,226 +9,238 @@ require_once __DIR__ . '/SimpleXLSXGen.php'; // 실제 경로 확인
 use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
 use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
 
-// 임시 테이블 생성 (임시로 저장  => 주문이 추가되면 몇번이고 주문을 덮어쓸 수 있음)
-// $tmpOrdersSql = "CREATE TEMPORARY TABLE temp_orders (
-//     market_ix INT,
-//     order_number VARCHAR(50),
-//     order_date DATE,
-//     user_ix INT,
-//     payment DECIMAL(10,2),
-//     shipping DECIMAL(10,2),
-//     product_name VARCHAR(255),
-//     quantity INT,
-//     buyer_name VARCHAR(255),
-//     buyer_phone VARCHAR(50),
-//     address TEXT
-// )";
+
 
 // mysqli_query($conn,$tmpOrdersSql);
-
+$userIx = isset($_SESSION['user_ix']) ? : '1';
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 택배사
     $deliveryCompany = $_POST['deliveryCompany'];
     $type = $_POST['type'];
-    $processedFiles = [];
 
-    // 주문한꺼번에 확인 하는 파일 만들기기
-    $combinedData = [];
-    $combinedData[] = ['판매처','수량','옵션','수취인','전화번호','주소','배송메모'];
+    if($type=='deliver'){
+        $processedFiles = [];
 
-    if($deliveryCompany=='cj'){
-        $basicFile = './cjBasic.xlsx';
-    }
+        // 주문한꺼번에 확인 하는 파일 만들기기
+        $combinedData = [];
+        $combinedData[] = ['판매처','수량','옵션','수취인','전화번호','주소','배송메모'];
 
-    // 네이버파일로 택배사에 넣을 excel파일 만들기
-    if (isset($_FILES['fileNaver'])) {
-        // 파일 경로
-        $fileAPath = $_FILES['fileNaver']['tmp_name'];
-        // $fileBPath = $_FILES['fileB']['tmp_name'];
-        // $fileBPath = './cjBasic.xlsx';
-        
-
-        // 엑셀 파일 읽기
-        if ($xlsxA = SimpleXLSX::parse($fileAPath)) {
-            $dataA = $xlsxA->rows();
-        } else {
-            echo "Error reading Excel A: " . SimpleXLSX::parseError();
-            exit;
+        if($deliveryCompany=='cj'){
+            $basicFile = './cjBasic.xlsx';
         }
 
-        if ($xlsxB = SimpleXLSX::parse($basicFile)) {
-            $dataB = $xlsxB->rows();
-        } else {
-            echo "Error reading Excel B: " . SimpleXLSX::parseError();
-            exit;
+        // 네이버파일로 택배사에 넣을 excel파일 만들기
+        if (isset($_FILES['fileNaver'])  && $_FILES["fileNaver"]["error"] == UPLOAD_ERR_OK) {
+            // 파일 경로
+            $fileAPath = $_FILES['fileNaver']['tmp_name'];
+            $pwd = $_POST['naverPwd'];
+
+            $originalFileName = $_FILES["fileNaver"]["name"];
+
+            $inputFile = 'smartStoreExcel_'.date("Y-m-d_His").'_'.$userIx.'.xlsx';
+            $outputFile = "unlocked_" . basename($inputFile);
+
+
+            // 파일 이동 (업로드 처리)
+            if (!move_uploaded_file($fileAPath, $inputFile)) {
+                die("파일 업로드 실패");
+            }
+
+
+
+            // Python 스크립트 실행 : 비밀번호 삭제
+            exec("python unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
+
+
+
+            // 엑셀 파일 읽기
+            if ($xlsxA = SimpleXLSX::parse($outputFile)) {
+                $dataA = $xlsxA->rows();
+            } else {
+                echo "Error reading Excel A: " . SimpleXLSX::parseError();
+                exit;
+            }
+
+            if ($xlsxB = SimpleXLSX::parse($basicFile)) {
+                $dataB = $xlsxB->rows();
+            } else {
+                echo "Error reading Excel B: " . SimpleXLSX::parseError();
+                exit;
+            }
+
+            // B 파일의 B 컬럼과 A 파일의 B 컬럼을 비교하여 A 파일을 업데이트
+            foreach ($dataA as $indexA => $rowA) {
+                if($indexA===0){
+                    continue;
+                }         
+                // 1 : 주문번호, 10 : 구매자, 17 : 주문일, 24 : 수량, 30 : 할인후 옵션별 주문금액, 40 : 배송비, 51 : 구매자연락처
+                $name = $rowA[12]; // A 파일의 수취인 컬럼 값
+                $phone = $rowA[46]; // A 파일의 전화번호 컬럼 값
+                $code = $rowA[52]; // A 파일의 우편번호 컬럼 값
+                $address = $rowA[48]; // A 파일의 주소 값
+                $memo = $rowA[53]; // A 파일의 배송메세지 컬럼 값
+
+
+                $dataB[$indexA] = []; //초기화
+
+
+                $dataB[$indexA-1][0] = $name;
+                $dataB[$indexA-1][1] = $phone;
+                $dataB[$indexA-1][2] = "";
+                $dataB[$indexA-1][3] = $address;
+                $dataB[$indexA-1][4] = "극소";
+                $dataB[$indexA-1][5] = "낚시용품";
+                $dataB[$indexA-1][6] = $memo;
+
+                $combinedData[] = ["네이버",$rowA[24], $rowA[19]." : ".$rowA[22], $rowA[12], extractMiddlePhoneNumber($rowA[46]),$rowA[48],$rowA[53]];
+
+
+                // $tmpInsertStmt = $conn->prepare("INSERT INTO temp_orders(market_ix,order_number,order_date,user_ix,payment,shipping,product_name,quantity,buyer_name,buyer_phone,address) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+                // $tmpInsertStmt->bind_param("sssssssssss",$)
+
+                // $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
+                // $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
+                // $productStmt->execute();
+            }
+
+            // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
+            $xlsx = SimpleXLSXGen::fromArray($dataB);
+            $day = date("m-d");
+            $newFileName = '택배사등록파일(네이버)_'.$day.'.xlsx';
+            $xlsx->saveAs($newFileName);
+
+            $processedFiles[] = [
+                'name' => $newFileName,
+                'url' => 'api/'.$newFileName
+            ];
+
+            // 결과 링크 출력
         }
 
-        // B 파일의 B 컬럼과 A 파일의 B 컬럼을 비교하여 A 파일을 업데이트
-        foreach ($dataA as $indexA => $rowA) {
-            if($indexA===0){
-                continue;
-            }         
-            // 1 : 주문번호, 10 : 구매자, 17 : 주문일, 24 : 수량, 30 : 할인후 옵션별 주문금액, 40 : 배송비, 51 : 구매자연락처
-            $name = $rowA[12]; // A 파일의 수취인 컬럼 값
-            $phone = $rowA[46]; // A 파일의 전화번호 컬럼 값
-            $code = $rowA[52]; // A 파일의 우편번호 컬럼 값
-            $address = $rowA[48]; // A 파일의 주소 값
-            $memo = $rowA[53]; // A 파일의 배송메세지 컬럼 값
-
-
-            $dataB[$indexA] = []; //초기화
-
-
-            $dataB[$indexA-1][0] = $name;
-            $dataB[$indexA-1][1] = $phone;
-            $dataB[$indexA-1][2] = "";
-            $dataB[$indexA-1][3] = $address;
-            $dataB[$indexA-1][4] = "극소";
-            $dataB[$indexA-1][5] = "낚시용품";
-            $dataB[$indexA-1][6] = $memo;
-
-            $combinedData[] = ["네이버",$rowA[24], $rowA[19]." : ".$rowA[22], $rowA[12], extractMiddlePhoneNumber($rowA[46]),$rowA[48],$rowA[53]];
-
-
-            // $tmpInsertStmt = $conn->prepare("INSERT INTO temp_orders(market_ix,order_number,order_date,user_ix,payment,shipping,product_name,quantity,buyer_name,buyer_phone,address) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-            // $tmpInsertStmt->bind_param("sssssssssss",$)
-
-            // $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
-            // $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
-            // $productStmt->execute();
-        }
-
-        // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
-        $xlsx = SimpleXLSXGen::fromArray($dataB);
-        $day = date("m-d");
-        $newFileName = '택배사등록파일(네이버)_'.$day.'.xlsx';
-        $xlsx->saveAs($newFileName);
-
-        $processedFiles[] = [
-            'name' => $newFileName,
-            'url' => 'api/'.$newFileName
-        ];
-
-        // 결과 링크 출력
-    }
-
-    // 쿠팡파일로 택배사에 넣을 excel파일 만들기
-    if (isset($_FILES['fileCoupang'])) {
-        // 파일 경로
-        $fileAPath = $_FILES['fileCoupang']['tmp_name'];
-        // $fileBPath = $_FILES['fileB']['tmp_name'];
-        // $fileBPath = './cjBasic.xlsx';
-        
-
-        // 엑셀 파일 읽기
-        if ($xlsxA = SimpleXLSX::parse($fileAPath)) {
-            $dataA = $xlsxA->rows();
-        } else {
-            echo "Error reading Excel A: " . SimpleXLSX::parseError();
-            exit;
-        }
-
-        if ($xlsxB = SimpleXLSX::parse($basicFile)) {
-            $dataB = $xlsxB->rows();
-        } else {
-            echo "Error reading Excel B: " . SimpleXLSX::parseError();
-            exit;
-        }
-
-        // B 파일의 B 컬럼과 A 파일의 B 컬럼을 비교하여 A 파일을 업데이트
-        foreach ($dataA as $indexA => $rowA) {
-            if($indexA===0){
-                continue;
-            }         
-
-            $name = $rowA[26]; // A 파일의 수취인 컬럼 값
-            $phone = $rowA[27]; // A 파일의 전화번호 컬럼 값
-            $code = $rowA[28]; // A 파일의 우편번호 컬럼 값
-            $address = $rowA[29]; // A 파일의 주소 값
-            $memo = $rowA[30]; // A 파일의 배송메세지 컬럼 값
-
-
-            $dataB[$indexA] = []; //초기화
-
-
-            $dataB[$indexA][0] = $name;
-            $dataB[$indexA][1] = $phone;
-            $dataB[$indexA][2] = "";
-            $dataB[$indexA][3] = $address;
-            $dataB[$indexA][4] = "극소";
-            $dataB[$indexA][5] = "낚시용품";
-            $dataB[$indexA][6] = $memo;
-
-            $combinedData[] = ["쿠팡",$rowA[22], $rowA[10]." : ".$rowA[11], $rowA[26], extractMiddlePhoneNumber($rowA[27]),$rowA[29],$rowA[30]];
+        // 쿠팡파일로 택배사에 넣을 excel파일 만들기
+        if (isset($_FILES['fileCoupang']) && $_FILES["fileCoupang"]["error"] == UPLOAD_ERR_OK) {
+            // 파일 경로
+            $fileAPath = $_FILES['fileCoupang']['tmp_name'];
+            // $fileBPath = $_FILES['fileB']['tmp_name'];
+            // $fileBPath = './cjBasic.xlsx';
             
+
+            // 엑셀 파일 읽기
+            if ($xlsxA = SimpleXLSX::parse($fileAPath)) {
+                $dataA = $xlsxA->rows();
+            } else {
+                echo "Error reading Excel A: " . SimpleXLSX::parseError();
+                exit;
+            }
+
+            if ($xlsxB = SimpleXLSX::parse($basicFile)) {
+                $dataB = $xlsxB->rows();
+            } else {
+                echo "Error reading Excel B: " . SimpleXLSX::parseError();
+                exit;
+            }
+
+            // B 파일의 B 컬럼과 A 파일의 B 컬럼을 비교하여 A 파일을 업데이트
+            foreach ($dataA as $indexA => $rowA) {
+                if($indexA===0){
+                    continue;
+                }         
+
+                $name = $rowA[26]; // A 파일의 수취인 컬럼 값
+                $phone = $rowA[27]; // A 파일의 전화번호 컬럼 값
+                $code = $rowA[28]; // A 파일의 우편번호 컬럼 값
+                $address = $rowA[29]; // A 파일의 주소 값
+                $memo = $rowA[30]; // A 파일의 배송메세지 컬럼 값
+
+
+                $dataB[$indexA] = []; //초기화
+
+
+                $dataB[$indexA][0] = $name;
+                $dataB[$indexA][1] = $phone;
+                $dataB[$indexA][2] = "";
+                $dataB[$indexA][3] = $address;
+                $dataB[$indexA][4] = "극소";
+                $dataB[$indexA][5] = "낚시용품";
+                $dataB[$indexA][6] = $memo;
+
+                $combinedData[] = ["쿠팡",$rowA[22], $rowA[10]." : ".$rowA[11], $rowA[26], extractMiddlePhoneNumber($rowA[27]),$rowA[29],$rowA[30]];
+                
+            }
+
+            // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
+            $xlsx = SimpleXLSXGen::fromArray($dataB);
+            $day = date("m-d");
+            $newFileName = '택배사등록파일(쿠팡)_'.$day.'.xlsx';
+            $xlsx->saveAs($newFileName);
+
+            $processedFiles[] = [
+                'name' => $newFileName,
+                'url' => 'api/'.$newFileName
+            ];
+
+            // 결과 링크 출력
         }
 
-        // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
-        $xlsx = SimpleXLSXGen::fromArray($dataB);
-        $day = date("m-d");
-        $newFileName = '택배사등록파일(쿠팡)_'.$day.'.xlsx';
-        $xlsx->saveAs($newFileName);
+        // 쿠팡,네이버 합친 엑셀 파일 생성
+        $xlsx = $combinedData;
 
-        $processedFiles[] = [
-            'name' => $newFileName,
-            'url' => 'api/'.$newFileName
-        ];
-
-        // 결과 링크 출력
-    }
-
-    // 쿠팡,네이버 합친 엑셀 파일 생성
-    $xlsx = $combinedData;
-
-    // D 컬럼 값으로 행을 그룹화
-    $dColumnGroups = [];
-    for ($i = 1; $i < count($xlsx); $i++) {
-         $dValue = $xlsx[$i][5];  // D 컬럼 값 (4번째 컬럼)
-         
-         if ($dValue !== "") {  // D 컬럼 값이 비어 있지 않을 경우만 처리
-             // D 컬럼 값이 이미 배열에 있다면 해당 그룹에 추가
-             if (!isset($dColumnGroups[$dValue])) {
-                 $dColumnGroups[$dValue] = [];
-             }
-             $dColumnGroups[$dValue][] = $i;
-         }
-    }
-
-     // 행 재배치
-    $newData = [$xlsx[0]];  // 첫 번째 행(헤더)은 그대로 둠
-    $usedRows = [];
-
-    foreach ($dColumnGroups as $group) {
-         // 그룹에 속한 행들을 한꺼번에 이동
-        foreach ($group as $rowIndex) {
-            if (!in_array($rowIndex, $usedRows)) {  // 중복된 행 이동 방지
-                $newData[] = $xlsx[$rowIndex];
-                $usedRows[] = $rowIndex;
+        // D 컬럼 값으로 행을 그룹화
+        $dColumnGroups = [];
+        for ($i = 1; $i < count($xlsx); $i++) {
+            $dValue = $xlsx[$i][5];  // D 컬럼 값 (4번째 컬럼)
+            
+            if ($dValue !== "") {  // D 컬럼 값이 비어 있지 않을 경우만 처리
+                // D 컬럼 값이 이미 배열에 있다면 해당 그룹에 추가
+                if (!isset($dColumnGroups[$dValue])) {
+                    $dColumnGroups[$dValue] = [];
+                }
+                $dColumnGroups[$dValue][] = $i;
             }
         }
-    }
 
-    // 남은 행들 추가 (중복되지 않은 행)
-    for ($i = 1; $i < count($xlsx); $i++) {
-        if (!in_array($i, $usedRows)) {
-            $newData[] = $xlsx[$i];
+        // 행 재배치
+        $newData = [$xlsx[0]];  // 첫 번째 행(헤더)은 그대로 둠
+        $usedRows = [];
+
+        foreach ($dColumnGroups as $group) {
+            // 그룹에 속한 행들을 한꺼번에 이동
+            foreach ($group as $rowIndex) {
+                if (!in_array($rowIndex, $usedRows)) {  // 중복된 행 이동 방지
+                    $newData[] = $xlsx[$rowIndex];
+                    $usedRows[] = $rowIndex;
+                }
+            }
         }
+
+        // 남은 행들 추가 (중복되지 않은 행)
+        for ($i = 1; $i < count($xlsx); $i++) {
+            if (!in_array($i, $usedRows)) {
+                $newData[] = $xlsx[$i];
+            }
+        }
+
+        // 새로운 엑셀 파일 생성 및 저장
+        $xlsx = SimpleXLSXGen::fromArray($newData);
+        $day = date("m-d");
+        $filename = '주문파일(합본)'.$day.'.xlsx';
+        $xlsx->saveAs($filename);
+
+        $processedFiles[] = [
+            'name' => $filename,
+            'url' => 'api/'.$filename,
+        ];
+
+        echo json_encode($processedFiles);
+    
+    
+    // 
+    }else if($type=='songjang'){
+
     }
-
-    // 새로운 엑셀 파일 생성 및 저장
-    $xlsx = SimpleXLSXGen::fromArray($newData);
-    $day = date("m-d");
-    $filename = '주문파일(합본)'.$day.'.xlsx';
-    $xlsx->saveAs($filename);
-
-    $processedFiles[] = [
-        'name' => $filename,
-        'url' => 'api/'.$filename
-    ];
-
-    echo json_encode($processedFiles);
+    
 }
 
 
