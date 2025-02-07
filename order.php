@@ -234,24 +234,10 @@
                     </div>
 
                     <!-- Filter Options and Table -->
-                    <div class="filter-options">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option>결제상태</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option>전체 주문처</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-secondary w-100">주문제품 펼쳐보기</button>
-                            </div>
-                            <div class="col-md-3 text-end">
-                                <button class="btn btn-secondary" id="expenseBtn">지출 내역 등록</button>
-                            </div>
+                    <div class="filter-options mb-1 pb-2">
+                        <div class="text-end">
+                            <a href="./expense.php" class="d-block pb-2" style="justify-self: end;">지출내역 리스트</a>
+                            <button class="btn btn-secondary" id="expenseOpenBtn">지출 내역 등록</button>
                         </div>
                     </div>
 
@@ -371,9 +357,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
-                        <input type="text" class="form-control mb-3" id="expenseFlatpickr" placeholder="MM/DD/YYYY">
-                        <select name="orderMarketIx" class="form-control" id="">
+                    <form action="./api/expense_api.php" id="expenseForm" method="post" enctype="multipart/form-data">
+                        <input type="text" class="form-control mb-3" name="expenseDate" id="expenseFlatpickr" placeholder="MM/DD/YYYY">
+                        <select name="expenseType" class="form-control" id="">
                             <option value="광고비">광고비</option>
                             <option value="자재비">자재비</option>
                             <option value="택배비">택배비</option>
@@ -386,7 +372,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
+                    <button type="button" class="btn btn-primary" onclick="expensAddBtn()">등록</button>
                 </div>
                 </div>
             </div>
@@ -462,8 +448,8 @@
                 location.href = './order.php?start='+startDate+"&end="+endDate+"&searchType="+searchType+"&searchKeyword="+$("#order-search").val();
             }
         }
+
         $("#marginCard .btn").click(function(){
-            console.log("button");
             calculateType = $(this).attr('data-v');
             const thisBtn = $(this);
             const formData = new FormData();
@@ -530,14 +516,6 @@
                 checkedValues.push($(this).val());
             });
 
-            // if (checkedValues.length === 0) {
-            //     alert("체크된 주문이 없습니다.");
-            //     return;
-
-            // }
-
-            console.log(checkedValues);
-
             $.ajax({
                 url: './api/order_edit_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
@@ -556,9 +534,51 @@
             });
         }
 
-        $("#expenseBtn").click(function(){
+        // 지출내역
+        $("#expenseOpenBtn").click(function(){
             modalOpen("expenseModal");
         });
+
+        function expensAddBtn(){
+            $.ajax({
+                url: './api/expense_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: $("#expenseForm").serialize(),
+                success: function(response) { 
+                    // console.log(response);
+                    if(response.status=='success'){
+                        Swal.fire({
+                            html: `
+                                <div style="font-size: 16px; text-align: left;">
+                                    <strong>등록 완료. 계속 하시겠습니까? </strong><br><br>
+                                    
+                                </div>
+                            `,
+                            customClass: {
+                                confirmButton: "btn btn-primary",
+                                cancelButton: "btn btn-danger"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: "예",
+                            cancelButtonText: "아니오", 
+                            reverseButtons: true,
+                            allowOutsideClick:false,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                
+                            }else{
+                                modalClose('expenseModal');
+                            }
+                        });
+                    }
+
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
+                }
+            });
+        }
 
     </script>
 </body>
