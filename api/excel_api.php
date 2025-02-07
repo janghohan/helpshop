@@ -238,6 +238,108 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // 
     }else if($type=='songjang'){
+       
+
+        if (isset($_FILES['naverFile']) && isset($_FILES['naverSongjang']) && $_FILES["naverFile"]["error"] == UPLOAD_ERR_OK && $_FILES["naverSongjang"]["error"] == UPLOAD_ERR_OK) {
+
+            // 파일 경로
+            $fileAPath = $_FILES['naverFile']['tmp_name'];
+            $fileBPath = $_FILES['naverSongjang']['tmp_name'];
+    
+            // 엑셀 파일 읽기
+            if ($xlsxA = SimpleXLSX::parse($fileAPath)) {
+                $dataA = $xlsxA->rows();
+            } else {
+                echo "Error reading Excel A: " . SimpleXLSX::parseError();
+                exit;
+            }
+    
+            if ($xlsxB = SimpleXLSX::parse($fileBPath)) {
+                $dataB = $xlsxB->rows();
+            } else {
+                echo "Error reading Excel B: " . SimpleXLSX::parseError();
+                exit;
+            }
+    
+            // B 파일의 B 컬럼과 A 파일의 B 컬럼을 비교하여 A 파일을 업데이트
+            foreach ($dataB as $rowB) {
+                $valueInBColumn = $rowB[23]; // B 파일의 B 컬럼 값
+                foreach ($dataA as &$rowA) {
+                    if ($rowA[48] == $valueInBColumn) { // A 파일의 B 컬럼 값과 비교
+                        $rowA[6] = "CJ대한통운";
+                        $rowA[7] = $rowB[7]; // B 파일의 A 컬럼 값을 A 파일의 A 컬럼에 삽입
+                    }
+                }
+            }
+    
+            // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
+            $xlsx = SimpleXLSXGen::fromArray($dataA);
+            $day = date("m-d_His");
+            $newFileName = '송장등록(네이버)_'.$day.'_'.$userIx.'.xlsx';
+            $xlsx->saveAs($newFileName);
+            
+            exec("python change_excel.py $newFileName", $output, $return_var);
+
+            $processedFiles[] = [
+                'name' => $newFileName,
+                'url' => 'api/'.$newFileName,
+            ];
+
+        }
+        
+        
+        if (isset($_FILES['coupangFile']) && isset($_FILES['coupangSongjang']) && $_FILES["coupangFile"]["error"] == UPLOAD_ERR_OK && $_FILES["coupangSongjang"]["error"] == UPLOAD_ERR_OK) {
+            // 파일 경로
+            $fileAPath = $_FILES['coupangFile']['tmp_name'];
+            $fileBPath = $_FILES['coupangSongjang']['tmp_name'];
+    
+    
+            // 엑셀 파일 읽기
+            if ($xlsxA = SimpleXLSX::parse($fileAPath)) {
+                $dataA = $xlsxA->rows();
+            } else {
+                echo "Error reading Excel A: " . SimpleXLSX::parseError();
+                exit;
+            }
+    
+            if ($xlsxB = SimpleXLSX::parse($fileBPath)) {
+                $dataB = $xlsxB->rows();
+            } else {
+                echo "Error reading Excel B: " . SimpleXLSX::parseError();
+                exit;
+            }
+    
+            foreach ($dataB as $rowB) {
+                $valueInBColumn = $rowB[23]; // B 파일의 x 컬럼 값 : 주소
+                // echo $valueInBColumn;
+                foreach ($dataA as $rowIndex => &$rowA) {
+                    if ($rowA[29] == $valueInBColumn) { // A 파일의 AD 컬럼 값과 비교
+                        // echo removeHyphens($rowA[1]);
+                        $rowA[4] = removeHyphens($rowB[7]); // B 파일의  H 컬럼 값을 A 파일의 E 컬럼에 삽입 : 송장번호
+                        
+    
+                    }
+                }
+            }
+    
+    
+            // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
+            $xlsx = SimpleXLSXGen::fromArray($dataA);
+            $day = date("m-d_His");
+            $newFileName = '송장등록(쿠팡)_'.$day.'_'.$userIx.'.xlsx';
+            $xlsx->saveAs($newFileName);
+
+            $processedFiles[] = [
+                'name' => $newFileName,
+                'url' => 'api/'.$newFileName,
+            ];        
+        }
+
+        // $response = [
+        //     'status'=>'success',
+        // ];
+        ob_clean();
+        echo json_encode($processedFiles);
 
     }
     
@@ -257,5 +359,11 @@ function extractMiddlePhoneNumber($phoneNumber) {
 
     // 유효하지 않은 전화번호 형식일 경우 빈 문자열 반환
     return '';
+}
+
+
+function removeHyphens($phoneNumber) {
+    // str_replace 함수를 사용하여 '-'를 제거
+    return str_replace('-', '', $phoneNumber);
 }
 ?>
