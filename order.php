@@ -107,7 +107,7 @@
             JOIN market m ON m.ix = o.market_ix
             WHERE o.user_ix = ? 
             AND o.order_date >= ?
-            AND o.order_date <= ?
+            AND o.order_date <= ? AND od.status='completed'
             $orderTypeSearchKeyworSql
         ";
         $orderStmt = $conn->prepare($orderQuery);
@@ -135,7 +135,7 @@
             JOIN order_details od ON o.ix = od.orders_ix
             JOIN market m ON m.ix = o.market_ix
             WHERE o.user_ix = ? 
-            AND o.order_date = ?
+            AND o.order_date = ? AND od.status='completed'
             $orderTypeSearchKeyworSql";
         
         $orderStmt = $conn->prepare($orderQuery);
@@ -171,7 +171,7 @@
                     <div class="search-options">
                         <div class="row justify-content-between ">
                             <div class="col-md-4 mb-3">
-                            <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
+                                <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
                             </div>
                             <div class="col-md-2 mb-3">
                                 <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
@@ -250,7 +250,7 @@
                                 <button class="btn btn-outline-secondary w-100">주문제품 펼쳐보기</button>
                             </div>
                             <div class="col-md-3 text-end">
-                                <button class="btn btn-custom">엑셀 출력</button>
+                                <button class="btn btn-secondary" id="expenseBtn">지출 내역 등록</button>
                             </div>
                         </div>
                     </div>
@@ -363,6 +363,35 @@
             </div>
         </div>
 
+        <div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">지출내역 등록</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
+                        <input type="text" class="form-control mb-3" id="expenseFlatpickr" placeholder="MM/DD/YYYY">
+                        <select name="orderMarketIx" class="form-control" id="">
+                            <option value="광고비">광고비</option>
+                            <option value="자재비">자재비</option>
+                            <option value="택배비">택배비</option>
+                            <option value="매입비용">매입비용</option>
+                            <option value="기타">기타</option>
+                        </select>
+                        <input type="text" name="expenseMemo" class="form-control mt-3"  placeholder="메모">                       
+                        <input type="text" class="localeNumber form-control mt-3" name="expensePrice" placeholder="금액">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="./js/common.js"></script>
@@ -390,6 +419,13 @@
                     if(dateStr.includes('~')) changeRageText(dateStr);
                     
                 }
+            });
+
+            flatpickr("#expenseFlatpickr", {
+                defaultDate: "today",
+                dateFormat: "Y-m-d",
+                theme: "material_blue",
+                locale: "ko",
             });
 
         });
@@ -519,6 +555,10 @@
                 }
             });
         }
+
+        $("#expenseBtn").click(function(){
+            modalOpen("expenseModal");
+        });
 
     </script>
 </body>
