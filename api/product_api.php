@@ -67,6 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
     
             $conn->commit();
+
+            ob_clean();
+            $response['status'] = 'success';
+            echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     
             
         } else {

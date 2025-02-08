@@ -71,11 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $totalPayment = 0;
     $totalShipping = 0;
     $totalProfit = 0;
+    $totalSaleVat = 0; //매출부가세
     $previousOrderNumber = null; // 이전 주문번호를 저장
     $toggle = true; // 색상을 변경하기 위한 토글 변수
 
-    $id = 0;
+    $vatRate = 0.1;  // 부가가치세 (10%)
 
+    $id = 0;
     foreach($orderResult as $orderRow) {
         $currentOrderNumber = $orderRow['global_order_number'];
         if ($currentOrderNumber !== $previousOrderNumber) {
@@ -95,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cost = $orderRow['cost'];
 
         // 마진 계산
-        $vatRate = 0.1;  // 부가가치세 (10%)
         $incomeTaxRate = 0.033; // 소득세 (3.3%)
         
         // 1. 상품가에 대한 수수료 계산 (기본 수수료 + 연동 수수료)
@@ -112,8 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $salesVat = ($price + $shipping) * $vatRate;
 
         // 5. 소득세 계산 (부가세 제외한 매출에서 소득세 적용)
-        $taxableIncome = ($price + $shipping) - $totalFees - $salesVat; 
-        $incomeTax = $taxableIncome * $incomeTaxRate;
+        $taxableIncome = ($price + $shipping) - $totalFees - $salesVat;
+        $incomeTax = getIncomTax($taxableIncome);
 
         // 6. 최종 마진 계산
         $netProfit = ($price + $shipping) - $cost - $totalFees - $salesVat - $incomeTax;
@@ -122,11 +123,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id ++;
 
         // 최종 판매금액, 택배 금액, 마진
-        $totalPayment += $orderRow['price'];
+        $totalPayment += $orderRow['price']; //매출
         $totalShipping += $orderRow['total_shipping'];
         $totalProfit += $netProfit;
+        $totalSaleVat += $salesVat;
 
     }
+
+    // 지출내역 확인 쿼리
+    $expenseStmt = $conn->prepare("SELECT SUM(expense_price) AS totalPurchase FROM expense WHERE user_ix=? AND expense_date >=? AND expense_date<=?");
+    $expenseStmt->bind_param('sss',$userIx,$startDate,$endDate);
+    $expenseResult = $expenseStmt->get_result();
+    $expenseRow = $expenseResult->fetch_assoc();
+    $totalPurchase = $expenseRow['totalPurchase'] ?? 0; //매입
+
+    $totalVat = ($totalPayment - $totalPurchase) * $vatRate; //최종 부가세
+    
 
     if($calculateType=='totalPayment'){
         $response['result'] = number_format($totalPayment)."원";
@@ -134,6 +146,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response['result'] =  number_format($totalShipping)."원";
     }else if($calculateType=='totalProfit'){
         $response['result'] =  number_format($totalProfit)."원";
+    }else if($calculateType=='totalDuty'){
+        $response['result'] =  number_format($salesVat+$incomeTax)."원";
+    }else if($calculateType=='totalPurchase'){
+        $response['result'] =  number_format($totalPurchase)."원";
+    }else if($calculateType=='totalCommission'){
+        $response['result'] =  number_format($totalFees)."원";
     }
 
     // $response['result'] = $totalPayment;
@@ -153,6 +171,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
 }
 
+function getIncomTax($taxableIncome){
+    if($taxableIncome<=12000000){
+        return $taxableIncome * 0.06;
+    }else if($taxableIncome>12000000 && $taxableIncome <=46000000){
+        return $taxableIncome * 0.15 + 1080000;
+    }else if($taxableIncome>46000000 && $taxableIncome <=88000000){
+        return $taxableIncome * 0.24 + 5220000;
+    }else if($taxableIncome>88000000 && $taxableIncome <=150000000){
+        return $taxableIncome * 0.35 + 14900000;
+    }else if($taxableIncome>150000000 && $taxableIncome <=300000000){
+        return $taxableIncome * 0.38 + 19400000;
+    }else if($taxableIncome>300000000 && $taxableIncome <=500000000){
+        return $taxableIncome * 0.40 + 25400000;
+    }else if($taxableIncome>500000000 && $taxableIncome <=1000000000){
+        return $taxableIncome * 0.42 + 35400000;
+    }else if($taxableIncome>1000000000){
+        return $taxableIncome * 0.45 + 65400000;
+    }
+}
 
 
 ?>

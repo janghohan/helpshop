@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $expenseMemo = isset($_POST['expenseMemo']) ? $_POST['expenseMemo'] : '';
     $expensePrice = isset($_POST['expensePrice']) ? $_POST['expensePrice'] : '';
 
-    $$expensePrice = str_replace(",","",$expensePrice);
+    $expensePrice = str_replace(",","",$expensePrice);
 
     $expenseStmt = $conn->prepare("INSERT INTO expense(user_ix,expense_type,expense_price,expense_memo,expense_date) VALUES(?,?,?,?,?)");
     $expenseStmt->bind_param("sssss", $userIx,$expenseType,$expensePrice,$expenseMemo,$expenseDate);

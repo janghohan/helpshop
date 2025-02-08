@@ -30,12 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $totalPrice = $totalPrice + (changeTextToIntForMoney($orderPrices[$index]) * changeTextToIntForMoney($orderQuantitys[$index]));
             $totalShipping = $totalShipping + changeTextToIntForMoney($orderShipping[$index]);
 
-        
         }
 
         $orderStmt = $conn->prepare("INSERT INTO orders(global_order_number,order_number,order_date,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?)");
         $orderStmt->bind_param("sssssss", $globalOrderNumber,$globalOrderNumber,$orderDate,$orderMarkets[0],$userIx,$totalPrice,$totalShipping);
-        $orderStmt->execute();
+        if(!$orderStmt->execute()){
+            $response['status'] = 'fail';
+            $response['msg'] = 'order Stmt Fail';
+        }
         
 
         $ordersIx = $orderStmt->insert_id;
@@ -44,12 +46,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($orderNames as $index => $orderName){
             if($index==0) continue;
 
-            $orderPrice = changeTextToIntForMoney($orderPrices[$index]);
+            $orderPrice = changeTextToIntForMoney($orderPrices[$index]) * $orderQuantitys[$index];
             $orderCost = changeTextToIntForMoney($orderCosts[$index]);
             $orderDetailStmt = $conn->prepare("INSERT INTO order_details(orders_ix,name,cost,quantity,price) VALUES(?,?,?,?,?)");
             $orderDetailStmt->bind_param("ssiii",$ordersIx,$orderName,$orderCost,$orderQuantitys[$index],$orderPrice);
-            $orderDetailStmt->execute();
+            if(!$orderDetailStmt->execute()){
+                $response['status'] = 'fail';
+                $response['msg'] = 'orderDetail Stmt Fail';
+            }
         }
+
+        $response['status'] = 'success';
+        echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+
         
     }else if($orderType=='dump'){
         $orderExcelFile = isset($_POST['orderExcelFile']) ? $_POST['orderExcelFile'] :'';

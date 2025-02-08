@@ -56,3 +56,66 @@ function modalClose(modalId){
 
     $('#'+modalId).modal('hide');
 }
+
+// 스왈
+function swalConfirm(title, text, confirmCallback, cancelCallback) {
+    Swal.fire({
+        title: title,  // 제목
+        text: text,    // 내용
+        icon: "warning",
+        showCancelButton: true,       // 취소 버튼 표시
+        confirmButtonColor: "#3085d6", // 확인 버튼 색상
+        cancelButtonColor: "#d33",    // 취소 버튼 색상
+        confirmButtonText: "확인",     // 확인 버튼 텍스트
+        cancelButtonText: "취소"      // 취소 버튼 텍스트
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // 확인 버튼 클릭 시 실행
+            if (confirmCallback) confirmCallback();
+        } else if (result.isDismissed) {
+            // 취소 버튼 클릭 시 실행
+            if (cancelCallback) cancelCallback();
+        }
+    });
+}
+
+function basicSwal(text){
+    Swal.fire({
+        html: `
+            <div style="font-size: 16px; text-align: center;">
+                <strong>`+text+`</strong><br>
+            </div>
+        `,
+        customClass: {
+            confirmButton: "btn btn-primary",
+        },
+        confirmButtonText: "확인",
+        reverseButtons: true,
+        allowOutsideClick:false,
+    });
+}
+
+function basicFunctionSwal(text,confirmCallback){
+    Swal.fire({
+        html: `
+            <div style="font-size: 16px; text-align: center;">
+                <strong>`+text+`</strong><br>
+            </div>
+        `,
+        customClass: {
+            confirmButton: "btn btn-primary",
+        },
+        confirmButtonText: "확인",
+        reverseButtons: true,
+        allowOutsideClick:false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // 확인 버튼 클릭 시 실행
+            if (confirmCallback) confirmCallback();
+        } 
+    });
+}
+//  사용예시
+// basicFunctionSwal('주문이 등록되었습니다.',function() {
+//     location.reload();
+// });

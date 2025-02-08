@@ -185,7 +185,7 @@
                         </div>
                         <div class="filter-group col-md-1">
                             <div class="form-group">
-                                <input type="text" class="form-control localeNumber" name="orderCost[]" placeholder="원가">
+                                <input type="text" class="form-control localeNumber" name="orderCost[]" placeholder="원가" >
                             </div>
                         </div>
                         <div class="filter-group col-md-1">
@@ -200,7 +200,7 @@
                         </div>
                         <div class="filter-group col-md-1">
                             <div class="form-group">
-                                <input type="text" class="form-control localeNumber" name="orderShipping[]" placeholder="택배비">
+                                <input type="text" class="form-control localeNumber" name="orderShipping[]" placeholder="택배비" >
                             </div>
                         </div>
                         <div class="filter-group col-md-2">
@@ -246,6 +246,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="./js/product.js"></script>
     
     
@@ -274,6 +275,7 @@
             $(this).parent().parent().parent().remove();
         });
 
+        // 상품 검색 
         $("#search-btn").click(function(){
             var searchKeyword = $("#search-input").val();
             $.ajax({
@@ -392,12 +394,52 @@
             }
         });
 
-        $("#order-add").click(function(){
-            $("input[name='orderDate']").val($("#datepicker").val());
+        $("#order-add").click(function(event){
+            event.preventDefault();
+            $("input[name='orderDate']").val($("#flatpickr").val());
 
-            console.log($("#order-form").serialize());
-            $("#order-form").submit();
+            console.log($("#order-form .single-order").length);
+            if($("#order-form .single-order").length<=1){
+                basicSwal("주문을 등록해주세요.");
+                return false;
+            }   
 
+            let isValid = true; // 모든 input이 채워졌는지 체크하는 변수
+            $("#order-form .single-order").each(function(index, element) {
+                if(index==0) return;
+
+                $(element).find("input").each(function () {
+                    if ($(this).val().trim() === "") {
+                        isValid = false; // 하나라도 비어 있으면 false 설정
+                        return false; // 반복문 종료
+                    }
+                });
+
+                if (!isValid) {
+                    basicSwal("빈칸을 채워주세요.");
+                    return false; // `each` 루프 종료
+                }
+
+            });
+
+            
+            $.ajax({
+                url: './api/order_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                dataType : 'json',
+                data: $("#order-form").serialize(),
+                success: function(response) { 
+                    if(response.status=='success'){
+                        basicFunctionSwal('주문이 등록되었습니다.',function() {
+                            location.reload();
+                        });
+                    }
+
+                },
+                error: function(xhr, status, error) {
+                    alert('전송 실패: ' + error);
+                }
+            });
             
         });
     </script>

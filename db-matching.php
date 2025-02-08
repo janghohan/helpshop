@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="./css/excel-order.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script src="./js/common.js"></script>
     <style>
        
 
@@ -17,13 +16,13 @@
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            background: #007bff;
+            background: #2f3b7e;
             color: white;
             padding: 10px 20px;
         }
         .syncBtn .sync-button {
             padding: 10px 20px;
-            background: #0056b3;
+            background: #7cc576;
             color: white;
             border: none;
             border-radius: 4px;
@@ -44,11 +43,8 @@
         .data-row {
             display: flex;
             align-items: center;
-            padding: 10px 0;
+            padding: 6px 0;
             border-bottom: 1px solid #eee;
-        }
-        .data-row:last-child {
-            border-bottom: none;
         }
         .source {
             width: 10%;
@@ -58,6 +54,7 @@
         .input-container {
             width: 40%;
             padding: 0 10px;
+            position: relative;
         }
         .input-container input {
             width: 100%;
@@ -74,18 +71,66 @@
             transform: scale(1.5);
         }
 
+
+        /* 검색화면 보이기 */
+        .autocomplete-results {
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            position: absolute;
+            width: calc(100% - 20px);
+            background-color: white;
+            top: 100%;  
+            left: 10px;
+            z-index: 100;
+        }
+
+        .result-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .result-item:hover {
+            background-color: #f1f1f1;
+        }
+
     </style>
 </head>
 <body>
     <?php
     include './header.php';
     include './sidebar.html';
+    include './dbConnect.php';
+    
+    $userIx = isset($_SESSION['user_ix']) ? : '1';
+
+    $listStmt = $conn->prepare("SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            od.cost, m.basic_fee, m.linked_fee, m.ship_fee
+            FROM orders o
+            JOIN order_details od ON o.ix = od.orders_ix
+            JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
+            WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name");
+
+    $listStmt->bind_param("s",$userIx);
+
+    // Execute and Fetch Results
+    $listStmt->execute();
+    $result = $listStmt->get_result();
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $listResult[] = $row;
+        }
+    }
+
+
     ?>
     <div class="full-content">
         <div class="container">
             <div class="main-content">
                 <div class="syncBtn">
-                <button class="sync-button">동기화</button>
+                <button class="sync-button" onclick="synchronize();">동기화</button>
             </div>
             <div class="data-list">
                 <!-- Example Row -->
@@ -96,174 +141,121 @@
                         매칭 상품
                     </div>
                     <div class="checkbox-container">
-                        체크박스
+                        <input type="checkbox" class="allCheckbox">
                     </div>
                 </div>
-                <div class="data-row">
-                    <div class="source">쿠팡</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
+                <?php
+                foreach($listResult as $listRow) {
+
+                ?>
+                <form action="" method="post" id="matchingList">
+                    <div class="data-row">
+                        <div class="source"><?=htmlspecialchars($listRow['market_name'])?></div>
+                        <div class="input-container"><?=htmlspecialchars($listRow['name'])?></div>
+                        <input type="hidden" name="matchingData[]" value="<?=htmlspecialchars($listRow['name'])?>">
+                        <div class="input-container">
+                            <input type="text" placeholder="값 입력" class="matchingText">
+                            <input type="hidden" name="matchingValue[]" class="matchingValue" >
+                            <div class="autocomplete-results"></div>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]">
+                        </div>
                     </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
+                </form>
+                <?php } ?>
                 <!-- Example Row -->
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="source">네이버</div>
-                    <div class="input-container">아부가르시아 새턴3 802l</div>
-                    <div class="input-container">
-                        <input type="text" placeholder="값 입력">
-                    </div>
-                    <div class="checkbox-container">
-                        <input type="checkbox">
-                    </div>
-                </div>
+                
                 <!-- More rows dynamically loaded here -->
             </div>
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./js/common.js"></script>
+
+    <script>
+
+        //매칭할 상품 찾기 
+        $(document).on('input', '.matchingText', function() {
+            var query = $(this).val();
+            var thisInput = $(this);
+            if (query.length >= 2) {  // 두 글자 이상 입력 시 자동완성 시작
+                $.ajax({
+                    url: './api/search_api.php',  // 이 부분은 서버에서 검색 결과를 받을 PHP 파일 경로로 수정
+                    method: 'POST',
+                    dataType : 'json',
+                    data: { searchKeyword: query, searchType :'matching' },
+                    success: function(response) {
+                        console.log(response);
+                        // $(".autocomplete-results").show();
+                        var resultsContainer = thisInput.siblings('.autocomplete-results');
+                        resultsContainer.empty();  // 기존 결과 초기화
+
+                        
+                        if (response.length > 0) {
+                            resultsContainer.show();
+                            response.forEach(item => {
+                                resultsContainer.append('<div class="result-item" data-v='+item.combIx+'>' + item.name+' / '+ item.combination_key +'</div>');
+                            });
+                        } else {
+                            resultsContainer.hide();
+                        }
+                    }
+                });
+            } else {
+                $('#autocomplete-results').hide();  // 입력이 두 글자 미만이면 결과 숨김
+            }
+        });
+
+
+        // 검색된 항목 클릭 시 검색어로 채우기
+        $(document).on('click', '.result-item', function() {
+            var selectedValue = $(this).text();
+            $(this).parent().parent().find(".matchingText").val(selectedValue);
+            $(this).parent().parent().find(".matchingValue").val($(this).attr('data-v'));
+            $(this).parent().hide();
+        });
+
+        $(".allCheckbox").click(function(){
+            $(".matchingCheckbox").trigger('click');
+        });
+
+
+        function synchronize(){
+
+            let isCheck = false;
+            $(".matchingCheckbox").each(function () {
+                console.log($(this).prop('checked'));
+                if($(this).prop('checked')==true){
+                    isCheck = true;
+                    return false;
+                }
+            });
+            if(!isCheck) {
+                console.log('체크필요');
+            }
+
+            // $.ajax({
+            //     url: './api/order_edit_api.php', // 데이터를 처리할 서버 URL
+            //     type: 'POST',
+            //     data: {'type':'orderCancel', 'checkList':checkedValues },
+            //     success: function(response) { 
+            //         console.log(response);
+            //         if(response.status=='success'){
+            //             location.reload();
+            //         }
+
+            //     },
+            //     error: function(xhr, status, error) {                  
+            //         // alert("관리자에게 문의해주세요.");
+            //         console.log(error);
+            //     }
+            // });
+        }
+    </script>
+
 </body>
 </html>

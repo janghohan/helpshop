@@ -239,6 +239,7 @@
     </div>
 </body>
 <script src="./js/product-add.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     
     $(document).on('click', '.add-option-btn', function() {
@@ -306,14 +307,18 @@
             type: 'POST',
             data: {'addCount':1,'productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'options':JSON.stringify(optionsArray), 'formCombination':JSON.stringify(formCombinations)},
             success: function(response) {
-                modalOpen("completeModal");
-                alert('전송 성공: ' + response);
+                if(response.status=='success'){
+                    basicFunctionSwal('상품이 등록되었습니다.',function() {
+                        location.reload();
+                    });
+                }
             },
             error: function(xhr, status, error) {
                 alert('전송 실패: ' + error);
             }
         });
     }
+
 
 </script>
 </html>

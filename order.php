@@ -23,7 +23,6 @@
         }
         .search-options, .summary-cards, .filter-options {
             padding: 20px;
-            margin-bottom: 20px;
         }
         .summary-cards .card {
             border: none;
@@ -100,7 +99,7 @@
         $endDate = $_GET['end'];
         
         $orderQuery = "
-            SELECT o.order_date, o.global_order_number, m.market_name,od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
@@ -129,7 +128,7 @@
         FROM orders o JOIN order_details od ON o.order_date='$today' AND o.user_ix='$userIx' AND o.ix = od.orders_ix $orderTypeSearchKeyworSql JOIN market m ON m.ix = o.market_ix";
         
         $orderQuery = "
-            SELECT o.order_date, o.global_order_number, m.market_name, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
@@ -219,6 +218,32 @@
                             <h5>총 결제금액(택배비)</h5>
                             <div class="value">
                                 <button class="btn btn-lg" data-v="totalShipping">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h5>총 매입내역</h5>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="totalPurchase">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-cards d-flex justify-content-between" id="marginCard">
+                        <div class="card">
+                            <h5>총 마켓수수료</h5>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="totalCommission">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h5>총 세금금액</h5>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="totalDuty">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -380,7 +405,6 @@
 
     </div>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
-    <script src="./js/common.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
@@ -539,6 +563,7 @@
             modalOpen("expenseModal");
         });
 
+        //지출 등록
         function expensAddBtn(){
             $.ajax({
                 url: './api/expense_api.php', // 데이터를 처리할 서버 URL
