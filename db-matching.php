@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리 시스템</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./css/bootstrap.min.css">
     <link rel="stylesheet" href="./css/common.css">
     <link rel="stylesheet" href="./css/excel-order.css">
@@ -130,7 +131,7 @@
         <div class="container">
             <div class="main-content">
                 <div class="syncBtn">
-                <button class="sync-button" onclick="synchronize();">동기화</button>
+                <button class="sync-button" onclick="synchronizeChk();">동기화</button>
             </div>
             <div class="data-list">
                 <!-- Example Row -->
@@ -144,11 +145,11 @@
                         <input type="checkbox" class="allCheckbox">
                     </div>
                 </div>
+                <form action="" method="post" id="matchingList">
                 <?php
                 foreach($listResult as $listRow) {
 
-                ?>
-                <form action="" method="post" id="matchingList">
+                ?>  
                     <div class="data-row">
                         <div class="source"><?=htmlspecialchars($listRow['market_name'])?></div>
                         <div class="input-container"><?=htmlspecialchars($listRow['name'])?></div>
@@ -162,8 +163,9 @@
                             <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]">
                         </div>
                     </div>
-                </form>
+                
                 <?php } ?>
+                </form>
                 <!-- Example Row -->
                 
                 <!-- More rows dynamically loaded here -->
@@ -224,7 +226,7 @@
         });
 
 
-        function synchronize(){
+        function synchronizeChk(){
 
             let isCheck = false;
             $(".matchingCheckbox").each(function () {
@@ -235,25 +237,45 @@
                 }
             });
             if(!isCheck) {
-                console.log('체크필요');
+                basicSwal("하나 이상의 상품을 체크해주세요.", true);
+                return false;
             }
 
-            // $.ajax({
-            //     url: './api/order_edit_api.php', // 데이터를 처리할 서버 URL
-            //     type: 'POST',
-            //     data: {'type':'orderCancel', 'checkList':checkedValues },
-            //     success: function(response) { 
-            //         console.log(response);
-            //         if(response.status=='success'){
-            //             location.reload();
-            //         }
+            swalConfirm('동기화를 진행하시겠습니까?',synchronize);
+        }
 
-            //     },
-            //     error: function(xhr, status, error) {                  
-            //         // alert("관리자에게 문의해주세요.");
-            //         console.log(error);
-            //     }
-            // });
+        function synchronize(){
+            // console.log($("#matchingList").serialize());
+
+            var formData = [];
+
+            // 체크된 체크박스가 포함된 div만 선택
+            $("#matchingList .data-row").each(function() {
+                if ($(this).find(".matchingCheckbox").is(":checked")) {
+                    var data = {
+                        matchingData: $(this).find('input[name="matchingData[]"]').val(),
+                        matchingValue: $(this).find('input[name="matchingValue[]"]').val()
+                    };
+                    formData.push(data);
+                }
+            });
+
+            basicSwal("<i class='bi bi-arrow-clockwise rotating-icon' style='font-size:30px;'></i> <p>동기화가 진행중입니다.</p>",false);
+            $.ajax({
+                url: './api/matching_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: {'formData':formData},
+                success: function(response) { 
+                    if(response.status=='success'){
+                        basicSwal("동기화가 완료되었습니다.",true);
+                    }
+
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
+                }
+            });
         }
     </script>
 

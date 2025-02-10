@@ -58,11 +58,13 @@ function modalClose(modalId){
 }
 
 // 스왈
-function swalConfirm(title, text, confirmCallback, cancelCallback) {
+function swalConfirm(text, confirmCallback, cancelCallback) {
     Swal.fire({
-        title: title,  // 제목
-        text: text,    // 내용
-        icon: "warning",
+        html: `
+            <div style="font-size: 16px; text-align: center;">
+                <strong>`+text+`</strong><br>
+            </div>
+        `,
         showCancelButton: true,       // 취소 버튼 표시
         confirmButtonColor: "#3085d6", // 확인 버튼 색상
         cancelButtonColor: "#d33",    // 취소 버튼 색상
@@ -79,7 +81,7 @@ function swalConfirm(title, text, confirmCallback, cancelCallback) {
     });
 }
 
-function basicSwal(text){
+function basicSwal(text,showConfirmButton){
     Swal.fire({
         html: `
             <div style="font-size: 16px; text-align: center;">
@@ -89,6 +91,7 @@ function basicSwal(text){
         customClass: {
             confirmButton: "btn btn-primary",
         },
+        showConfirmButton: showConfirmButton,
         confirmButtonText: "확인",
         reverseButtons: true,
         allowOutsideClick:false,
