@@ -37,7 +37,7 @@ if (!isset($_SESSION['user_ix'])) {
     }
     .header button {
         background: none;
-        border: 1px solid #fff;
+        border: none;
         color: #343434;
         padding: 5px 10px;
         border-radius: 5px;
@@ -69,4 +69,10 @@ if (!isset($_SESSION['user_ix'])) {
             </svg>
         </button>
     </div>
+</div>
+<div>
+    <ul>
+        <li>마켓 등록</li>
+        <li>거래처 등록</li>
+    </ul>
 </div>

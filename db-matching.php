@@ -241,7 +241,7 @@
                 return false;
             }
 
-            swalConfirm('동기화를 진행하시겠습니까?',synchronize);
+            swalConfirm("동기화를 진행하시겠습니까? <p>매칭 상품이 없는 상품은 동기화가 진행되지 않습니다.</p>",synchronize);
         }
 
         function synchronize(){
