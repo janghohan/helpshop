@@ -23,31 +23,47 @@
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
+    $userIx = $_SESSION['user_ix'] ?? '1';
+
+    $page = $_GET['page'] ?? 1;
+    $itemsPerPage = $_GET['itemsPerPage'] ?? 20;
+       
 
     // 검색 처리
     $searchResult = [];
     if (isset($_GET['searchKey']) && !empty($_GET['searchKey'])) {
         $searchTerm = $conn->real_escape_string($_GET['searchKey']); // 사용자 입력값
-        $query = "SELECT * FROM account WHERE name LIKE '%$searchTerm%' AND user_ix='$user_ix'";
-        $result = $conn->query($query);
-
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $searchResult[] = $row;
-            }
-        }
+        $totalItems = $conn->query("SELECT COUNT(*) as total FROM account WHERE name LIKE '%$searchTerm%' AND user_ix='$userIx'")->fetch_assoc()['total'];
+        $startIndex = ($page - 1) * $itemsPerPage;
+        $query = "SELECT * FROM account WHERE name LIKE '%$searchTerm%' AND user_ix='$userIx' LIMIT $itemsPerPage OFFSET $startIndex";
+        
     }else{
-        $query = "SELECT * FROM account WHERE user_ix='1'";
-        $result = $conn->query($query);
-
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $searchResult[] = $row;
-            }
-        }
+        $totalItems = $conn->query("SELECT COUNT(*) as total FROM account WHERE user_ix='$userIx'")->fetch_assoc()['total'];
+        $startIndex = ($page - 1) * $itemsPerPage;
+        $query = "SELECT * FROM account WHERE user_ix='$userIx' LIMIT $itemsPerPage OFFSET $startIndex";
     }
 
+    $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
     
+
+    $result = $conn->query($query);
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $searchResult[] = $row;
+        }
+    }
+    
+    // 페이지 링크 범위 설정 (예: 현재 페이지를 기준으로 ±2개의 링크 표시)
+    $visibleRange = 2;
+    $startPage = max(1, $page - $visibleRange);
+    $endPage = min($totalPages, $page + $visibleRange);
+
+    // 이전/다음 페이지 계산
+    $hasPrev = $page > 1;
+    $hasNext = $page < $totalPages;
+    $prevPage = $hasPrev ? $page - 1 : null;
+    $nextPage = $hasNext ? $page + 1 : null;
+
     ?>
     
     <!-- 헤더 -->
@@ -102,7 +118,7 @@
                         <?php
                             foreach($searchResult as $accountRow) {
                         ?>
-                        <tr>
+                        <tr id="<?=htmlspecialchars($accountRow['ix'])?>">
                             <td><?=htmlspecialchars($accountRow['name'])?></td>
                             <td><?=htmlspecialchars($accountRow['contact'])?></td>
                             <td>
@@ -136,12 +152,30 @@
             </div>
         </div>
         <!-- 페이지네이션 -->
-        <div class="pagination">
-            <select>
-                <option>10개 보기</option>
-            </select>
-            <span>1 / 1</span>
-        </div>
+        <!-- 페이지네이션 -->
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <?php if($hasPrev): ?>
+                    <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Previous</a></li>
+                <?php else: ?>
+                    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                <?php endif; ?>
+
+                <?php for($i = $startPage; $i <= $endPage; $i++): ?>
+                    <?php if ($i == $page): ?>
+                        <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
+                    <?php else: ?>
+                        <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&itemsPerPage=<?= $itemsPerPage ?>"><?= $i ?></a></li>
+                    <?php endif; ?>
+                <?php endfor; ?>
+
+                <?php if ($hasNext): ?>
+                    <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Next</a></li>
+                <?php else: ?>
+                    <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                <?php endif; ?>
+            </ul>
+        </nav>
         <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -158,6 +192,13 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
                     <button type="button" class="btn btn-primary memoEditBtn" >수정</button>
                 </div>
+                </div>
+            </div>
+            <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
+                <div class="d-flex">
+                    <div class="toast-body">
+                    수정 되었습니다.
+                    </div>
                 </div>
             </div>
         </div>
@@ -181,7 +222,7 @@
 
         $(".memoEditBtn").click(function(){
             console.log(dataIx);
-            console.log($("#modalMemo").val() );
+            const tmpMemo = $("#modalMemo").val();
             $.ajax({
                 url: './api/account_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
@@ -190,6 +231,8 @@
                     console.log(response);
                     if(response.status=='success'){
                         console.log('suc');
+                        $("#"+dataIx).find('.memo').text(tmpMemo);
+                        toast();
                     }
 
                 },
@@ -199,6 +242,14 @@
                 }
             });
         });
+
+        function toast(){
+            const toastElement = document.getElementById('myToast');
+            const toast = new bootstrap.Toast(toastElement);
+
+            // 토스트 표시
+            toast.show();
+        }
 
 
     </script>

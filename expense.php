@@ -168,67 +168,44 @@
                 <div class="container mt-4">
                     <!-- Search Options -->
                     <div class="search-options">
-                        <div class="row justify-content-between ">
+                        <div class="d-flex justify-content-start gap-3">
                             <div class="col-md-4 mb-3">
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
-                            </div>
-                            <!-- <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">이번 주</button>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">지난 주</button>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">이번 달</button>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-outline-secondary w-100">지난 달</button>
-                            </div> -->
-                        </div>
-                        <div class="row align-items-center">
                             <div class="col-md-3">
                                 <select class="form-select" id="order-filter">
-                                    <option value="global_order_number">주문번호</option>
-                                    <option value="name">상품명</option>
+                                    <option value="광고비">광고비</option>
+                                    <option value="자재비">자재비</option>
+                                    <option value="택배비">택배비</option>
+                                    <option value="매입비용">매입비용</option>
+                                    <option value="기타">기타</option>
                                 </select>
-                            </div>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" placeholder="주문번호 검색" id="order-search">
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-primary" id="search-btn">조회하기</button>
                             </div>
                         </div>
+                        
                     </div>
+                    <!-- Filter Options and Table -->
+                    <div class="filter-options mb-1 pb-2">
+                        <div class="text-end">
+                            <button class="btn btn-secondary" id="expenseOpenBtn">지출 내역 등록</button>
+                        </div>
+                    </div>
+
                     <!-- Order Table -->
                     <div class="table-container" style="caret-color: transparent;">
-                        <div class="dropdown float-end mb-3">
-                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                선택한 상품 일괄적용
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="#" id="orderCancel">주문취소</a>
-                                </li>
-                            </ul>
-                        </div>
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>주문</th>
-                                <th>판매처</th>
-                                <th>주문일시</th>
-                                <th>주문번호</th>
-                                <th>주문제품</th>
-                                <th>수량</th>
-                                <th>주문금액</th>
-                                <th>택배비</th>
+                                <th>지출내역</th>
+                                <th>금액</th>
+                                <th>메모</th>
+                                <th>날짜</th>
                             </tr>
                             </thead>
-                            <tbody id="order-list">
+                            <tbody id="expense-list">
                             <!-- Order rows will be added dynamically -->
                                 <?php
                                     $previousOrderNumber = null; // 이전 주문번호를 저장
@@ -311,6 +288,35 @@
             </div>
         </div>
 
+        <div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">지출내역 등록</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="./api/expense_api.php" id="expenseForm" method="post" enctype="multipart/form-data">
+                        <input type="text" class="form-control mb-3" name="expenseDate" id="expenseFlatpickr" placeholder="MM/DD/YYYY">
+                        <select name="expenseType" class="form-control" id="">
+                            <option value="광고비">광고비</option>
+                            <option value="자재비">자재비</option>
+                            <option value="택배비">택배비</option>
+                            <option value="매입비용">매입비용</option>
+                            <option value="기타">기타</option>
+                        </select>
+                        <input type="text" name="expenseMemo" class="form-control mt-3"  placeholder="메모">                       
+                        <input type="text" class="localeNumber form-control mt-3" name="expensePrice" placeholder="금액">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" onclick="expensAddBtn()">등록</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
@@ -348,15 +354,6 @@
 
         });
 
-
-        function tmpExcel(){
-            $("#orderExcelForm").submit();
-        }
-
-        $("#excel-btn").click(function(){
-            modalOpen("excelModal");
-        });
-
        
         $("#search-btn").click(function(){
             searchOrderList();
@@ -369,63 +366,46 @@
 
 		}
 
-        function searchOrderList(){
-            console.log("start",startDate);
-            console.log("end",endDate);
-            
-            if($("#order-search").val()==''){
-                location.href = './order.php?start='+startDate+"&end="+endDate;
-            }else{
-                const searchType = $("#order-filter option:selected").val();
-                location.href = './order.php?start='+startDate+"&end="+endDate+"&searchType="+searchType+"&searchKeyword="+$("#order-search").val();
-            }
-        }
 
-        $(document).on("click", "#orderCancel", function (event) {
-            event.preventDefault(); // 기본 동작(링크 이동) 막기
-            orderSwal();
+
+
+        // 지출내역
+        $("#expenseOpenBtn").click(function(){
+            modalOpen("expenseModal");
         });
 
-        function orderSwal(){          
-            Swal.fire({
-                html: `
-                    <div style="font-size: 16px; text-align: left;">
-                        <strong>취소후 복구가 불가능합니다. 취소하시겠습니까? </strong><br><br>
-                        
-                    </div>
-                `,
-                customClass: {
-                    confirmButton: "btn btn-primary",
-                    cancelButton: "btn btn-danger"
-                },
-                showCancelButton: true,
-                confirmButtonText: "확인",
-                cancelButtonText: "취소", 
-                reverseButtons: true,
-                allowOutsideClick:false,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    orderCancel();
-                }
-            });
-
-        }
-
-        function orderCancel(){
-            let checkedValues = [];
-
-            $("input[name='orderCheck[]']:checked").each(function () {
-                checkedValues.push($(this).val());
-            });
-
+        //지출 등록
+        function expensAddBtn(){
             $.ajax({
-                url: './api/order_edit_api.php', // 데이터를 처리할 서버 URL
+                url: './api/expense_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
-                data: {'type':'orderCancel', 'checkList':checkedValues },
+                data: $("#expenseForm").serialize(),
                 success: function(response) { 
-                    console.log(response);
+                    // console.log(response);
                     if(response.status=='success'){
-                        location.reload();
+                        Swal.fire({
+                            html: `
+                                <div style="font-size: 16px; text-align: left;">
+                                    <strong>등록 완료. 계속 하시겠습니까? </strong><br><br>
+                                    
+                                </div>
+                            `,
+                            customClass: {
+                                confirmButton: "btn btn-primary",
+                                cancelButton: "btn btn-danger"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: "예",
+                            cancelButtonText: "아니오", 
+                            reverseButtons: true,
+                            allowOutsideClick:false,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                
+                            }else{
+                                modalClose('expenseModal');
+                            }
+                        });
                     }
 
                 },
@@ -435,7 +415,8 @@
                 }
             });
         }
-        
+
     </script>
 </body>
 </html>
+s
