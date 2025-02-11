@@ -79,6 +79,7 @@
                 <h2 class="flex-grow-1">거래처 관리</h2>
                 <button class="btn flex-shrink-0">
                     <a href="./account-manage.php">
+                        <!-- <span>+ NEW</span> -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
                             <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
@@ -89,50 +90,49 @@
             <div class="account-list">
                 <!-- 상품 아이템 -->
 
-                <?php
-                    foreach($searchResult as $accountRow) {
-                ?>
+                <table class="table">
+                    <thead>
+                        <th>이름</th>
+                        <th>대표번호</th>
+                        <th>홈페이지</th>
+                        <th>주소</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        <?php
+                            foreach($searchResult as $accountRow) {
+                        ?>
+                        <tr>
+                            <td><?=htmlspecialchars($accountRow['name'])?></td>
+                            <td><?=htmlspecialchars($accountRow['contact'])?></td>
+                            <td>
+                                <a href="<?=htmlspecialchars($accountRow['site'])?>" target="_blank">바로가기</a>
+                            </td>
+                            <td><?=htmlspecialchars($accountRow['address'])?></td>
+                            <td>
+                                <textarea style="display:none;" class="memo" data-ix="<?=htmlspecialchars($accountRow['ix'])?>">
+                                    <?=htmlspecialchars($accountRow['memo'])?>
+                                </textarea>
+                                <button class="btn btn-primary btn-memo"  data-bs-toggle="modal" data-bs-target="#accountModal">메모</button>
+                                <button class="btn btn-secondary">
+                                    <a href="./account-manage.php?ix=<?=htmlspecialchars($accountRow['ix'])?>" class="text-white">수정</a>
+                                </button>
+                            </td>
+                        </tr>
+                        <?php } 
+                        if(count($searchResult)===0){
+                        ?>       
+                        <tr>
+                            <td>
+                                <br><br>
+                                <p>검색 결과가 없습니다.</p>    
+                            </td>
+                        </tr> 
+                        <?php }?>
 
-                <div class="account-item">
-                    <div class="account-info col-10">
-                        <h3><?=htmlspecialchars($accountRow['name'])?></h3>
-                        <table class="table">
-                            <thead>
-                                <th>대표번호</th>
-                                <th>담당자</th>
-                                <th>담당자 번호</th>
-                                <th>홈페이지</th>
-                                <th>주소</th>
-                            </thead>
-                            <tbody>
-                                <td><?=htmlspecialchars($accountRow['contact'])?></td>
-                                <td><?=htmlspecialchars($accountRow['account_manager'])?></td>
-                                <td><?=htmlspecialchars($accountRow['manager_contact'])?></td>
-                                <td>
-                                    <a href="<?=htmlspecialchars($accountRow['site'])?>" target="_blank"><?=htmlspecialchars($accountRow['site'])?></a>
-                                </td>
-                                <td>
-                                    <?=htmlspecialchars($accountRow['address'])?>
-                                </td>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="account-controls col-2">
-                        <button class="btn btn-primary btn-memo"  data-bs-toggle="modal" data-bs-target="#accountModal">메모</button>
-                        <button class="btn btn-secondary">
-                            <a href="./account-manage.php?ix=<?=htmlspecialchars($accountRow['ix'])?>" class="text-white">수정</a>
-                        </button>
-                    </div>
-                    <textarea name="memo" class="memo" style="visibility:hidden;">
-                        <?=htmlspecialchars($accountRow['memo'])?>
-                    </textarea>
-                </div>
-                <?php } 
-                
-                if(count($searchResult)===0){
-                ?>       
-                <p>검색 결과가 없습니다.</p>     
-                <?php }?>
+
+                    </tbody>
+                </table>
             </div>
         </div>
         <!-- 페이지네이션 -->
@@ -151,19 +151,22 @@
                 </div>
                 <div class="modal-body">
                     <form action="" id="newMarketForm" method="post">
-                        <textarea name="modalMemo" id="modalMemo" class="form-control" rows="5" readonly></textarea>
+                        <textarea name="modalMemo" id="modalMemo" class="form-control" rows="5"></textarea>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary memoEditBtn" >수정</button>
                 </div>
                 </div>
             </div>
         </div>
     </div>
     <script>
+        var dataIx;
         $(".btn-memo").click(function(){
-            $("#modalMemo").val($(this).parent().parent().find(".memo").val().trim());
+            dataIx = $(this).parent().find(".memo").attr('data-ix');
+            $("#modalMemo").val($(this).parent().find(".memo").text().trim());
         });
 
         $("#search-btn").click(function(){
@@ -175,6 +178,29 @@
                 alert('검색어를 입력하세요.');
             }
         });
+
+        $(".memoEditBtn").click(function(){
+            console.log(dataIx);
+            console.log($("#modalMemo").val() );
+            $.ajax({
+                url: './api/account_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: {'accountIx':dataIx, 'memo':$("#modalMemo").val() },
+                success: function(response) { 
+                    console.log(response);
+                    if(response.status=='success'){
+                        console.log('suc');
+                    }
+
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
+                }
+            });
+        });
+
+
     </script>
 </body>
 <script>

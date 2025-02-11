@@ -13,11 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userIx = isset($_SESSION['user_ix']) ? : '1';
     // JSON 문자열로 받은 데이터를 파싱
     $formCombination = isset($_POST['formCombination']) ? json_decode($_POST['formCombination'], true) : [];
-    $accountIx = isset($_POST['accountIx']) ? $_POST['accountIx'] : '';
-    $categoryIx = isset($_POST['categoryIx']) ? $_POST['categoryIx'] : '1';
-    $productName = isset($_POST['productName']) ? $_POST['productName'] : '';
-    $productMemo = isset($_POST['productMemo']) ? $_POST['productMemo'] : '';
-    $addCount = isset($_POST['addCount']) ? $_POST['addCount'] : ''; // 단일등록인지, 대량등록인지 구별 [단일 : 1]
+    $accountIx = $_POST['accountIx'] ?? '';
+    $categoryIx = $_POST['categoryIx'] ?? '1';
+    $productName = $_POST['productName'] ?? '';
+    $productMemo = $_POST['productMemo'] ?? '';
+    $addCount = $_POST['addCount'] ?? ''; // 단일등록인지, 대량등록인지 구별 [단일 : 1]
 
     // echo $formCombination[0]['name'];
     // echo $_POST['productName'];
