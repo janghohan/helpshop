@@ -177,10 +177,15 @@
                 <form action="./api/order_api.php" id="order-form" method="post">
                     <input type="hidden" name="type" value="single">
                     <input type="hidden" name="orderDate" >
-                    <div class="row single-order" style="display:none;">
-                        <div class="filter-group col-md-4">
+                    <div class="single-order gap-2" style="display:none;">
+                        <div class="filter-group col-md-3">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="orderName[]" placeholder="상품명" readonly>
+                            </div>
+                        </div>
+                        <div class="filter-group col-md-2">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="orderNumber[]" placeholder="주문번호" >
                             </div>
                         </div>
                         <div class="filter-group col-md-1">
@@ -203,9 +208,9 @@
                                 <input type="text" class="form-control localeNumber" name="orderShipping[]" placeholder="택배비" >
                             </div>
                         </div>
-                        <div class="filter-group col-md-2">
+                        <div class="filter-group col-md-1">
                             <div class="form-group">
-                                <select name="orderMarket[]" class="form-control" id="">
+                                <select name="orderMarket[]" class="form-select" id="">
                                 <?php
                                     $searchResult = [];
                                     
@@ -346,11 +351,16 @@
 
                 // 주문 리스트의 HTML 구조 생성
                 const orderRow = document.createElement("div");
-                orderRow.className = "row single-order mb-2";
+                orderRow.className = "d-flex gap-2 single-order mb-2";
                 orderRow.innerHTML = `
-                    <div class="filter-group col-md-4">
+                    <div class="filter-group col-md-3">
                         <div class="form-group">
                             <input type="text" class="form-control" name="orderName[]" placeholder="상품명" readonly="" value="${productData.product_name} - ${productData.combination_key}">
+                        </div>
+                    </div>
+                    <div class="filter-group col-md-2">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="orderNumber[]" placeholder="주문번호" value="">
                         </div>
                     </div>
                     <div class="filter-group col-md-1">
@@ -373,9 +383,9 @@
                             <input type="text" class="form-control localeNumber" name="orderShipping[]" placeholder="택배비">
                         </div>
                     </div>
-                    <div class="filter-group col-md-2">
+                    <div class="filter-group col-md-1">
                         <div class="form-group">
-                            <select cass="form-control" name="orderMarket[]">
+                            <select cass="form-select" name="orderMarket[]">
                                 <option value="${productData.market_ix}">${productData.market_name}</option>
                             </select>
                         </div>

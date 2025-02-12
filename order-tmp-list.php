@@ -167,6 +167,7 @@
                                         $orderPrice = $rowA[30];
                                         $orderShipping = $rowA[40];
                                         $currentOrderNumber = $rowA[1]; // 현재 주문번호
+
                                     }else if($marketName=='쿠팡'){
                                         $orderNumber = $rowA[2];
                                         $orderDate = $rowA[9];
@@ -301,6 +302,9 @@
             // $("#orderListForm").submit();
             modalOpen("progressModal");
             checkProgress();
+
+            console.log($("#orderListForm").serialize());
+
             $.ajax({
                 url: './api/order_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',

@@ -99,7 +99,7 @@
         $endDate = $_GET['end'];
         
         $orderQuery = "
-            SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
@@ -124,11 +124,8 @@
         }
     }else{
 
-        $orderQuery = "SELECT o.order_date,o.global_order_number,m.market_name,od.ix as detailIx, od.name,od.quantity,od.price,o.total_payment,o.total_shipping 
-        FROM orders o JOIN order_details od ON o.order_date='$today' AND o.user_ix='$userIx' AND o.ix = od.orders_ix $orderTypeSearchKeyworSql JOIN market m ON m.ix = o.market_ix";
-        
         $orderQuery = "
-            SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
@@ -191,7 +188,7 @@
                         <div class="row align-items-center">
                             <div class="col-md-3">
                                 <select class="form-select" id="order-filter">
-                                    <option value="global_order_number">주문번호</option>
+                                    <option value="order_number">주문번호</option>
                                     <option value="name">상품명</option>
                                 </select>
                             </div>
@@ -237,7 +234,7 @@
                                     if(isset($orderResult)){
                                         foreach($orderResult as $orderRow) {
 
-                                            $currentOrderNumber = $orderRow['global_order_number'];
+                                            $currentOrderNumber = $orderRow['order_number'];
                                             if ($currentOrderNumber !== $previousOrderNumber) {
                                                 // 주문번호가 변경될 때마다 토글 값을 변경
                                                 $toggle = !$toggle;
@@ -256,7 +253,7 @@
                                         </td>
                                         <td><?=htmlspecialchars($orderRow['market_name'])?></td>
                                         <td><?=htmlspecialchars($orderRow['order_date'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['global_order_number'])?></td>
+                                        <td><?=htmlspecialchars($orderRow['order_number'])?></td>
                                         <td><?=htmlspecialchars($orderRow['name'])?></td>
                                         <td><?=htmlspecialchars($orderRow['quantity'])?></td>
                                         <td><?=htmlspecialchars(number_format($orderRow['price']))."원"?></td>
