@@ -25,10 +25,9 @@
             <form action="" method="post" id="file_to_deliver">
                 <input type="hidden" name="type" value="deliver">
                 <div class="upload-group">
-                    <label for="file-naver">네이버:</label>
+                    <label for="file-naver">네이버: (비밀번호는 '0000' 으로 설정해주세요)</label>
                     <input type="file" name="fileNaver" id="file-naver" accept=".xlsx, .xls">
                 </div>
-                <input type="text" class="form-control" name="naverPwd" placeholder="네이버 파일 비밀번호" required>
                 <div class="upload-group mt-3">
                     <label for="file-coupang">쿠팡:</label>
                     <input type="file" name="fileCoupang" id="file-coupang" accept=".xlsx, .xls">
@@ -59,7 +58,7 @@
                 <input type="hidden" name="type" value="songjang">
                 <div class="border border-2 p-2 rounded mb-3">
                     <div class="upload-group">
-                        <label for="invoice-naver">네이버 주문파일: (비밀번호 없는파일)</label>
+                        <label for="invoice-naver">네이버 주문파일: (비밀번호 0000 파일)</label>
                         <input type="file" name="naverFile">
                     </div>
                     <div class="upload-group">

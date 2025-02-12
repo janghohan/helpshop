@@ -35,21 +35,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_FILES['fileNaver'])  && $_FILES["fileNaver"]["error"] == UPLOAD_ERR_OK) {
             // 파일 경로
             $fileAPath = $_FILES['fileNaver']['tmp_name'];
-            $pwd = $_POST['naverPwd'];
+            $pwd = "0000";
 
             $originalFileName = $_FILES["fileNaver"]["name"];
 
-            $inputFile = 'smartStoreExcel_'.date("Y-m-d_His").'_'.$userIx.'.xlsx';
-            $outputFile = "unlocked_" . basename($inputFile);
+            $inputFile = 'excelFile/tmp/'.date("Ymd")."/".'smartStoreExcel_'.date("Y-m-d_His").'_'.$userIx.'.xlsx';
+            $outputFile = 'excelFile/tmp/'.date("Ymd")."/"."unlocked_" . basename($inputFile);
 
+            //폴더생성
+            $destinationFolder = "./excelFile/tmp/".date("Ymd");
+            if (!is_dir($destinationFolder)) {
+                if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                    die("폴더를 생성할 수 없습니다: $destinationFolder");
+                }
+            }
+
+            $destinationFolder2 = "./excelFile/useFile/".date("Ymd");
+            if (!is_dir($destinationFolder2)) {
+                if (!mkdir($destinationFolder2, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                }
+            }
 
             // 파일 이동 (업로드 처리)
             if (!move_uploaded_file($fileAPath, $inputFile)) {
                 die("파일 업로드 실패");
             }
-
-
-
             // Python 스크립트 실행 : 비밀번호 삭제
             exec("python unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
 
@@ -108,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataB);
             $day = date("m-d");
-            $newFileName = '택배사등록파일(네이버)_'.$day.'.xlsx';
+            $newFileName = 'excelFile/useFile/'.date("Ymd")."/".'택배사등록파일(네이버)_'.$userIx.'_'.$day.'.xlsx';
             $xlsx->saveAs($newFileName);
 
             $processedFiles[] = [
@@ -170,10 +180,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
             }
 
+            $destinationFolder2 = "./excelFile/useFile/".date("Ymd");
+            if (!is_dir($destinationFolder2)) {
+                if (!mkdir($destinationFolder2, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                }
+            }
+
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataB);
             $day = date("m-d");
-            $newFileName = '택배사등록파일(쿠팡)_'.$day.'.xlsx';
+            $newFileName = 'excelFile/useFile/'.date("Ymd").'/택배사등록파일(쿠팡)_'.$userIx.'_'.$day.'.xlsx';
             $xlsx->saveAs($newFileName);
 
             $processedFiles[] = [
@@ -225,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // 새로운 엑셀 파일 생성 및 저장
         $xlsx = SimpleXLSXGen::fromArray($newData);
         $day = date("m-d");
-        $filename = '주문파일(합본)'.$day.'.xlsx';
+        $filename = "excelFile/useFile/".date("Ymd").'/주문파일(합본)'.$userIx.'_'.$day.'.xlsx';
         $xlsx->saveAs($filename);
 
         $processedFiles[] = [
@@ -245,15 +261,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // 파일 경로
             $fileAPath = $_FILES['naverFile']['tmp_name'];
             $fileBPath = $_FILES['naverSongjang']['tmp_name'];
+
+            $inputFile = "./excelFile/tmp/".date("Ymd").'/smartStoreSongjang_'.date("Y-m-d_His").'_'.$userIx.'.xlsx';
+            $outputFile = "./excelFile/tmp/".date("Ymd")."/unlocked_naver" . basename($inputFile);
+            $pwd = '0000';
+
+            //폴더생성
+            $destinationFolder = "./excelFile/tmp/".date("Ymd");
+            if (!is_dir($destinationFolder)) {
+                if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                    die("폴더를 생성할 수 없습니다: $destinationFolder");
+                }
+            }
+            $destinationFolder2 = "./excelFile/useFile/".date("Ymd");
+            if (!is_dir($destinationFolder2)) {
+                if (!mkdir($destinationFolder2, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                }
+            }
+
+            // 파일 이동 (업로드 처리)
+            if (!move_uploaded_file($fileAPath, $inputFile)) {
+                die("파일 업로드 실패");
+            }
+
+            // Python 스크립트 실행 : 비밀번호 삭제
+            exec("python unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
     
             // 엑셀 파일 읽기
-            if ($xlsxA = SimpleXLSX::parse($fileAPath)) {
+            if ($xlsxA = SimpleXLSX::parse($outputFile)) {
                 $dataA = $xlsxA->rows();
             } else {
                 echo "Error reading Excel A: " . SimpleXLSX::parseError();
                 exit;
             }
-    
+
+
             if ($xlsxB = SimpleXLSX::parse($fileBPath)) {
                 $dataB = $xlsxB->rows();
             } else {
@@ -275,7 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataA);
             $day = date("m-d_His");
-            $newFileName = '송장등록(네이버)_'.$day.'_'.$userIx.'.xlsx';
+            $newFileName = "excelFile/useFile/".date("Ymd").'/송장등록(네이버)_'.$day.'_'.$userIx.'.xlsx';
             $xlsx->saveAs($newFileName);
             
             exec("python change_excel.py $newFileName", $output, $return_var);
@@ -321,12 +363,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 }
             }
+
+
+            $destinationFolder2 = "./excelFile/useFile/".date("Ymd");
+            if (!is_dir($destinationFolder2)) {
+                if (!mkdir($destinationFolder2, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                }
+            }
     
     
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataA);
             $day = date("m-d_His");
-            $newFileName = '송장등록(쿠팡)_'.$day.'_'.$userIx.'.xlsx';
+            $newFileName = "excelFile/useFile/".date("Ymd").'/송장등록(쿠팡)_'.$day.'_'.$userIx.'.xlsx';
             $xlsx->saveAs($newFileName);
 
             $processedFiles[] = [
