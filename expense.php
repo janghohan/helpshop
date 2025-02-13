@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product.css">
     
-    <title>주문 관리</title>
+    <title>지출 내역</title>
     <style>
         body {
             background-color: #f9f9f9;
@@ -82,15 +82,12 @@
 
     //검색 영역에 값이 들어오면
     if(isset($_GET['searchKeyword'])){
-        $searchKeyword = $_GET['searchKeyword'];
         $searchType = $_GET['searchType'];
 
-        if ($searchType === 'name') {
-            $orderTypeSearchKeyworSql = "AND od.name LIKE ?";
-            $searchParams[] = '%' . $searchKeyword . '%';
+        if ($searchType === '') {
+            $orderTypeSearchKeyworSql = "";
         } else {
-            $orderTypeSearchKeyworSql = "AND o." . $searchType . " = ?";
-            $searchParams[] = $searchKeyword;
+            $orderTypeSearchKeyworSql = "AND ep.expense_type = '$searchType'";
         }
     }
 
@@ -98,58 +95,36 @@
         $startDate = $_GET['start'];
         $endDate = $_GET['end'];
         
-        $orderQuery = "
-            SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
-            od.cost, m.basic_fee, m.linked_fee, m.ship_fee
-            FROM orders o
-            JOIN order_details od ON o.ix = od.orders_ix
-            JOIN market m ON m.ix = o.market_ix
-            WHERE o.user_ix = ? 
-            AND o.order_date >= ?
-            AND o.order_date <= ? AND od.status='completed'
-            $orderTypeSearchKeyworSql
-        ";
-        $orderStmt = $conn->prepare($orderQuery);
-        $bindParams = array_merge([$userIx, $startDate, $endDate], $searchParams);
-        $orderStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
+        $expenseQuery = "
+            SELECT ep.ix as expense_ix, ep.expense_type, ep.expense_price, ep.expense_memo, ep.expense_date FROM expense ep JOIN user u ON ep.user_ix = u.ix WHERE u.ix = ? AND ep.expense_date >= ? AND ep.expense_date <= ?
+            $orderTypeSearchKeyworSql";
+        $expenseStmt = $conn->prepare($expenseQuery);
+        $expenseStmt->bind_param("sss",$userIx, $startDate,$endDate);
     
         // Execute and Fetch Results
-        $orderStmt->execute();
-        $result = $orderStmt->get_result();
+        $expenseStmt->execute();
+        $result = $expenseStmt->get_result();
 
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $orderResult[] = $row;
+                $expenseResult[] = $row;
             }
         }
     }else{
 
-        $orderQuery = "SELECT o.order_date,o.global_order_number,m.market_name,od.ix as detailIx, od.name,od.quantity,od.price,o.total_payment,o.total_shipping 
-        FROM orders o JOIN order_details od ON o.order_date='$today' AND o.user_ix='$userIx' AND o.ix = od.orders_ix $orderTypeSearchKeyworSql JOIN market m ON m.ix = o.market_ix";
-        
-        $orderQuery = "
-            SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
-            od.cost, m.basic_fee, m.linked_fee, m.ship_fee
-            FROM orders o
-            JOIN order_details od ON o.ix = od.orders_ix
-            JOIN market m ON m.ix = o.market_ix
-            WHERE o.user_ix = ? 
-            AND o.order_date = ? AND od.status='completed'
+        $expenseQuery = "
+            SELECT * FROM expense ep JOIN user u ON ep.user_ix = u.ix WHERE u.ix = ? AND ep.expense_date = ?
             $orderTypeSearchKeyworSql";
-        
-        $orderStmt = $conn->prepare($orderQuery);
-
-        $orderStmt = $conn->prepare($orderQuery);
-        $bindParams = array_merge([$userIx, $today], $searchParams);
-        $orderStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
+        $expenseStmt = $conn->prepare($expenseQuery);
+        $expenseStmt->bind_param("ss",$userIx, $today);
     
         // Execute and Fetch Results
-        $orderStmt->execute();
-        $result = $orderStmt->get_result();
+        $expenseStmt->execute();
+        $result = $expenseStmt->get_result();
 
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $orderResult[] = $row;
+                $expenseResult[] = $row;
             }
         }
     }
@@ -164,7 +139,7 @@
         <div class="container">
             <!-- 사이드바 -->
             <div class="main-content">
-                <h2>주문 조회</h2>
+                <h2>지출 조회</h2>
                 <div class="container mt-4">
                     <!-- Search Options -->
                     <div class="search-options">
@@ -173,7 +148,8 @@
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select" id="order-filter">
+                                <select class="form-select" id="expense-filter">
+                                    <option value="">전체</option>
                                     <option value="광고비">광고비</option>
                                     <option value="자재비">자재비</option>
                                     <option value="택배비">택배비</option>
@@ -199,7 +175,10 @@
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>지출내역</th>
+                                <th>
+                                    <input type="checkbox" class="form-checkbox">
+                                </th>
+                                <th>지출타입</th>
                                 <th>금액</th>
                                 <th>메모</th>
                                 <th>날짜</th>
@@ -208,36 +187,30 @@
                             <tbody id="expense-list">
                             <!-- Order rows will be added dynamically -->
                                 <?php
-                                    $previousOrderNumber = null; // 이전 주문번호를 저장
+                                    $previousDate = null; // 이전 주문번호를 저장
                                     $toggle = true; // 색상을 변경하기 위한 토글 변수
 
-                                    if(isset($orderResult)){
-                                        foreach($orderResult as $orderRow) {
+                                    if(isset($expenseResult)){
+                                        foreach($expenseResult as $expenseRow) {
 
-                                            $currentOrderNumber = $orderRow['global_order_number'];
-                                            if ($currentOrderNumber !== $previousOrderNumber) {
+                                            $currentDate = $expenseRow['expense_date'];
+                                            if ($currentDate !== $previousDate) {
                                                 // 주문번호가 변경될 때마다 토글 값을 변경
                                                 $toggle = !$toggle;
-                                                $shipping = $orderRow['total_shipping'];
-                                            }else{
-                                                $shipping = 0;
                                             }
                                             $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
-                                            $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
+                                            $previousDate = $currentDate; // 현재 주문번호를 이전 주문번호로 갱신
 
 
                                     ?>        
                                     <tr style="background-color: <?= $backgroundColor ?>;">
                                         <td>
-                                            <input type="checkbox" class="form-check-input" name="orderCheck[]" value="<?=htmlspecialchars($orderRow['detailIx'])?>">
+                                            <input type="checkbox" class="form-check-input" name="expenseCheck[]" value="<?=htmlspecialchars($expenseRow['expense_ix'])?>">
                                         </td>
-                                        <td><?=htmlspecialchars($orderRow['market_name'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['order_date'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['global_order_number'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['name'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['quantity'])?></td>
-                                        <td><?=htmlspecialchars(number_format($orderRow['price']))."원"?></td>
-                                        <td><?=htmlspecialchars(number_format($shipping))."원"?></td>                                        
+                                        <td><?=htmlspecialchars($expenseRow['expense_type'])?></td>
+                                        <td><?=htmlspecialchars(number_format($expenseRow['expense_price']))."원"?></td>
+                                        <td><?=htmlspecialchars($expenseRow['expense_memo'])?></td>
+                                        <td><?=htmlspecialchars($expenseRow['expense_date'])?></td>                                     
                                     </tr>
                                     
                                 <?php
@@ -245,45 +218,11 @@
                                 ?>
                             </tbody>
                         </table>
+                        <?php
+                        if(!isset($expenseResult)){ ?>
+                        <p class="text-center pt-3" id="no-data">지출 내역이 없습니다.</p>
+                        <?php }?>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal fade" id="excelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">파일 등록</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
-                        <select name="orderMarketIx" class="form-control" id="">
-                            <?php
-                                $searchResult = [];
-                                
-                                $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
-                                $result = $conn->query($query);
-                        
-                                if ($result->num_rows > 0) {
-                                    while ($row = $result->fetch_assoc()) {
-                                        $searchResult[] = $row;
-                                    }
-                                }
-
-                                foreach($searchResult as $marketRow){
-                            
-                            ?>
-                                <option value="<?=htmlspecialchars($marketRow['ix'])?>"><?=htmlspecialchars($marketRow['market_name'])?></option>
-                            <?php }?>
-                        </select>
-                        <input type="file" name="orderExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
-                </div>
                 </div>
             </div>
         </div>
@@ -356,8 +295,16 @@
 
        
         $("#search-btn").click(function(){
-            searchOrderList();
+            searchExpenseList();
         });
+
+        function searchExpenseList(){
+            console.log("start",startDate);
+            console.log("end",endDate);
+            
+            const searchType = $("#expense-filter option:selected").val();
+            location.href = './expense.php?start='+startDate+"&end="+endDate+"&searchType="+searchType;
+        }
 
         function changeRageText(dateRange){
 			const dates = dateRange.split(' ~ ');
@@ -365,9 +312,6 @@
 			endDate = dates[1];
 
 		}
-
-
-
 
         // 지출내역
         $("#expenseOpenBtn").click(function(){

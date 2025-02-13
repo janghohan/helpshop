@@ -123,6 +123,13 @@
                     </div>
                 </div>
             </div>
+            <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
+                <div class="d-flex">
+                    <div class="toast-body">
+                    수정 되었습니다.
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
@@ -153,6 +160,7 @@
         const inputs = parent.find("input");
 
         const formData = new FormData();
+        formData.append('type', 'edit');
         inputs.each(function() {
             console.log($(this).attr('name'), $(this).val());
             formData.append($(this).attr('name'), $(this).val());
@@ -165,7 +173,10 @@
             processData: false, // FormData 객체를 문자열로 변환하지 않음
             contentType: false, // 기본 Content-Type 설정을 막음
             success: function(response) {
-                alert('전송 성공: ' + response);
+                const result = JSON.parse(response);
+                if(result.status=='suc'){
+                    toast();
+                }
             },
             error: function(xhr, status, error) {
                 alert('전송 실패: ' + error);
@@ -173,6 +184,14 @@
         });
 
     });
+
+    function toast(){
+        const toastElement = document.getElementById('myToast');
+        const toast = new bootstrap.Toast(toastElement);
+
+        // 토스트 표시
+        toast.show();
+    }
 
     $(".market-del").click(function(){
         if(confirm("삭제하시겠습니까?")){

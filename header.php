@@ -103,6 +103,11 @@ if (!isset($_SESSION['user_ix'])) {
             <p>거래처 관리</p>
         </a>
     </div>
+    <div>
+        <a href="./ordering.php">
+            <p>발주 관리</p>
+        </a>
+    </div>
 </div>
 
 <script>
