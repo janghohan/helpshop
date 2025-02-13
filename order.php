@@ -61,6 +61,16 @@
             color: white;
         }
 
+
+        /* 초이스 모달 */
+        .choice-btn{
+            width: 45%;
+            height: 100px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -269,15 +279,29 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="excelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="choiceModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-evenly">
+                            <button class="btn btn-info choice-btn" id="realtimeBtn">실시간 주문</button>
+                            <button class="btn btn-warning choice-btn" id="exBtn">이전 주문</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="realTimeExcelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">파일 등록</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">파일 등록 (오늘 주문파일)</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
+                    <form action="./order-tmp-list.php" id="realOrderExcelForm" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="fileType" value="realtime">
                         <select name="orderMarketIx" class="form-control" id="">
                             <?php
                                 $searchResult = [];
@@ -302,7 +326,47 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
+                    <button type="button" class="btn btn-primary" onclick="realTmpExcel()">등록</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="exExcelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">파일 등록 (이전 주문파일)</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="./order-tmp-list.php" id="exOrderExcelForm" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="fileType" value="ex">
+                        <select name="orderMarketIx" class="form-control" id="">
+                            <?php
+                                $searchResult = [];
+                                
+                                $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                                $result = $conn->query($query);
+                        
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        $searchResult[] = $row;
+                                    }
+                                }
+
+                                foreach($searchResult as $marketRow){
+                            
+                            ?>
+                                <option value="<?=htmlspecialchars($marketRow['ix'])?>"><?=htmlspecialchars($marketRow['market_name'])?></option>
+                            <?php }?>
+                        </select>
+                        <input type="file" name="orderExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" onclick="exTmpExcel()">등록</button>
                 </div>
                 </div>
             </div>
@@ -344,16 +408,28 @@
             });
 
         });
-
-
-        function tmpExcel(){
-            $("#orderExcelForm").submit();
-        }
-
+        // 엑셀 등록 버튼 
         $("#excel-btn").click(function(){
-            modalOpen("excelModal");
+            modalOpen("choiceModal");
         });
 
+
+        $("#realtimeBtn").click(function(){
+            modalClose("choiceModal");
+            modalOpen("realTimeExcelModal");
+        });
+        $("#exBtn").click(function(){
+            modalClose("choiceModal");
+            modalOpen("exExcelModal");
+        });
+
+        function realTmpExcel(){
+            $("#realOrderExcelForm").submit();
+        }
+
+        function exTmpExcel(){
+            $("#exOrderExcelForm").submit();
+        }
        
         $("#search-btn").click(function(){
             searchOrderList();

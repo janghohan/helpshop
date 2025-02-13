@@ -66,7 +66,8 @@
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-        $orderMarketIx = isset($_POST['orderMarketIx']) ? $_POST['orderMarketIx'] : ''; //마켓 ix
+        $orderMarketIx = $_POST['orderMarketIx'] ?? ''; //마켓 ix
+        $fileType = $_POST['fileType'] ?? '';
 
         //네이버 파일인지 쿠팡파일인지 확인
         $marketQuery = "SELECT market_name FROM market WHERE user_ix='$user_ix' AND ix='$orderMarketIx'";
@@ -160,13 +161,24 @@
                                     }         
 
                                     if($marketName=='네이버'){
-                                        $orderNumber = $rowA[1];
-                                        $orderDate = $rowA[17];
-                                        $orderName = $rowA[19]." / ".$rowA[22];
-                                        $orderQuantity = $rowA[24];
-                                        $orderPrice = $rowA[30];
-                                        $orderShipping = $rowA[40];
-                                        $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                                        if($fileType=='realtime'){
+                                            $orderNumber = $rowA[1];
+                                            $orderDate = $rowA[17];
+                                            $orderName = $rowA[19]." / ".$rowA[22];
+                                            $orderQuantity = $rowA[24];
+                                            $orderPrice = $rowA[30];
+                                            $orderShipping = $rowA[40];
+                                            $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                                        }else if($fileType=='ex'){
+                                            $orderNumber = $rowA[1];
+                                            $orderDate = $rowA[10];
+                                            $orderName = $rowA[16]." / ".$rowA[19];
+                                            $orderQuantity = $rowA[21];
+                                            $orderPrice = $rowA[27]; // 수량 * 낱개 금액
+                                            $orderShipping = $rowA[35];
+                                            $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                                        }
+                                        
 
                                     }else if($marketName=='쿠팡'){
                                         $orderNumber = $rowA[2];
