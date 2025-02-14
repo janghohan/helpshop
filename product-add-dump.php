@@ -207,25 +207,6 @@
                 <div class="modal-body">
                     <form action="./api/product_api.php" id="productExcelForm" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="addCount" value="100">
-                        <select name="productMarketIx" class="form-control" id="">
-                            <?php
-                                $searchResult = [];
-                                
-                                $query = "SELECT * FROM market WHERE user_ix='$userIx'";
-                                $result = $conn->query($query);
-                        
-                                if ($result->num_rows > 0) {
-                                    while ($row = $result->fetch_assoc()) {
-                                        $searchResult[] = $row;
-                                    }
-                                }
-
-                                foreach($searchResult as $marketRow){
-                            
-                            ?>
-                                <option value="<?=htmlspecialchars($marketRow['ix'])?>"><?=htmlspecialchars($marketRow['market_name'])?></option>
-                            <?php }?>
-                        </select>
                         <input type="file" name="productExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
                     </form>
                 </div>
@@ -264,11 +245,9 @@
 
     </div>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
-    <script src="./js/common.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
-    <script src="./js/product.js"></script>
     <script src="./js/common.js"></script>
     
     

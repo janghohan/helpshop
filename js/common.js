@@ -69,7 +69,8 @@ function swalConfirm(text, confirmCallback, cancelCallback) {
         confirmButtonColor: "#3085d6", // 확인 버튼 색상
         cancelButtonColor: "#d33",    // 취소 버튼 색상
         confirmButtonText: "확인",     // 확인 버튼 텍스트
-        cancelButtonText: "취소"      // 취소 버튼 텍스트
+        cancelButtonText: "취소",      // 취소 버튼 텍스트
+        reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
             // 확인 버튼 클릭 시 실행
