@@ -12,7 +12,8 @@ use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userIx = isset($_SESSION['user_ix']) ? : '1';
     // JSON 문자열로 받은 데이터를 파싱
-    $orderType = isset($_POST['type']) ? $_POST['type'] : '';
+    $orderType = $_POST['orderType'] ?? '';
+    $fileType = $_POST['fileType'] ?? '';
 
     if($orderType=='single'){
         $orderDate = $_POST['orderDate'] ?? date("Y-m-d");
@@ -94,21 +95,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($dataA as $indexA => $rowA) {   
 
             if($marketName=='네이버'){
-                $orderNumber = $rowA[1];
-                $orderDate = $rowA[17];
-                $orderName = $rowA[19]." / ".$rowA[22];
-                $orderQuantity = $rowA[24];
-                $orderPrice = $rowA[30];
-                $orderShipping = $rowA[40];
-                $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                if($fileType=='realtime'){
+                    $orderNumber = $rowA[1];
+                    $orderDate = $rowA[17];
+                    $orderName = $rowA[19]." / ".$rowA[22];
+                    $orderQuantity = $rowA[24];
+                    $orderPrice = $rowA[30];
+                    $orderShipping = $rowA[40];
+                    $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                    
+                    $orderPerson = $rowA[10]; //구매자
+                    $orderContact = $rowA[51]; // 구매자연락처
+                    $receiver = $rowA[12]; //수취인
+                    $receiverContact = $rowA[46]; //수령인 연락처
+                    $postCode = $rowA[52]; //우편번호
+                    $address = $rowA[49]; //주소
+                    $addressDetail = $rowA[50]; //상세주소
+
+                }else if($fileType=='ex'){
+                    $orderNumber = $rowA[1];
+                    $orderDate = $rowA[10];
+                    $orderName = $rowA[16]." / ".$rowA[19];
+                    $orderQuantity = $rowA[21];
+                    $orderPrice = $rowA[27]; // 수량 * 낱개 금액
+                    $orderShipping = $rowA[35];
+                    $currentOrderNumber = $rowA[1]; // 현재 주문번호
+
+                    $orderPerson = $rowA[7]; //구매자
+                    $orderContact = ''; // 구매자연락처
+                    $receiver = $rowA[9]; //수취인
+                    $receiverContact = ''; //수령인 연락처
+                    $postCode = ''; //우편번호
+                    $address = ''; //주소
+                    $addressDetail = ''; //상세주소
+                }
                 
-                $orderPerson = $rowA[10]; //구매자
-                $orderContact = $rowA[51]; // 구매자연락처
-                $receiver = $rowA[12]; //수취인
-                $receiverContact = $rowA[46]; //수령인 연락처
-                $postCode = $rowA[52]; //우편번호
-                $address = $rowA[49]; //주소
-                $addressDetail = $rowA[50]; //상세주소
                 
             }else if($marketName=='쿠팡'){
                 $orderNumber = $rowA[2];
@@ -230,13 +251,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if($marketName=='네이버'){
-                    $orderNumber = $rowA[1];
-                    $orderDate = $rowA[17];
-                    $orderName = $rowA[19]." / ".$rowA[22];
-                    $orderQuantity = $rowA[24];
-                    $orderPrice = $rowA[30];
-                    $orderShipping = $rowA[40];
-                    $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                    if($fileType=='realtime'){
+                        $orderNumber = $rowA[1];
+                        $orderDate = $rowA[17];
+                        $orderName = $rowA[19]." / ".$rowA[22];
+                        $orderQuantity = $rowA[24];
+                        $orderPrice = $rowA[30]; // 수량 * 가격
+                        $orderShipping = $rowA[40];
+                        $currentOrderNumber = $rowA[1]; // 현재 주문번호
+
+                    }else if($fileType=='ex'){
+                        $orderNumber = $rowA[1];
+                        $orderDate = $rowA[10];
+                        $orderName = $rowA[16]." / ".$rowA[19];
+                        $orderQuantity = $rowA[21];
+                        $orderPrice = $rowA[27]; // 수량 * 낱개 금액
+                        $orderShipping = $rowA[35];
+                        $currentOrderNumber = $rowA[1]; // 현재 주문번호
+    
+                    }
+
                 }else if($marketName=='쿠팡'){
                     $orderNumber = $rowA[2];
                     $orderDate = $rowA[9];

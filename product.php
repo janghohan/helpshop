@@ -23,7 +23,7 @@
     $page = isset($_GET['page']) ? $_GET['page'] : 1;
     $itemsPerPage = isset($_GET['itemsPerPage']) ? $_GET['itemsPerPage'] : 20;
 
-    $totalItems = $conn->query("SELECT COUNT(*) as total FROM product p JOIN product_option_combination poc ON p.ix = poc.product_ix JOIN product_option_market_price pomp ON poc.ix = pomp.product_option_comb_ix AND p.user_ix='$userIx'")->fetch_assoc()['total'];
+    $totalItems = $conn->query("SELECT COUNT(*) as total FROM product WHERE user_ix='$userIx'")->fetch_assoc()['total'];
     
     $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
     $startIndex = ($page - 1) * $itemsPerPage;
@@ -149,6 +149,7 @@
                                 <th>카테고리</th>
                                 <th>재고수량</th>
                                 <th>생성일</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody id="product-list">
@@ -180,12 +181,21 @@
 
 
                             ?>        
-                            <tr data-ix="<?=htmlspecialchars($procut_ix)?>">
-                                <td><?=htmlspecialchars($product_name)?></td>
+                            <tr>
+                                <td>
+                                    <a href="./product-edit.php?ix=<?=htmlspecialchars($procut_ix)?>" style="color:#0069d9;"><?=htmlspecialchars($product_name)?></a>
+                                </td>
                                 <td><?=htmlspecialchars($account_name)?></td>
                                 <td><?=htmlspecialchars($cate_name)?></td>
                                 <td><?=htmlspecialchars($total_stock)?></td>
                                 <td><?=htmlspecialchars($create_at)?></td>
+                                <td>
+                                    <button class="btn btn-light product-del" data-ix="<?=htmlspecialchars($procut_ix)?>">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"></path>
+                                        </svg>
+                                    </button>
+                                </td>
                             </tr>
                             
                             <?php
@@ -222,10 +232,18 @@
                 </nav>
             </div>
         </div>
+        <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
+            <div class="d-flex">
+                <div class="toast-body">
+                삭제 되었습니다.
+                </div>
+            </div>
+        </div>
 
         <!-- 추가 버튼 -->
         <div class="add-button">+</div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
             $("#itemsPerPage").val("<?=$itemsPerPage?>");
@@ -244,12 +262,44 @@
 
             $("#itemsPerPage").change(function(){
                 location.href='./product.php?itemsPerPage='+$(this).val();
-            });
+            });        
 
-            $("#product-list tr").click(function(){
-                location.href='./product-edit.php?ix='+$(this).attr('data-ix');
-            });
         });
+
+        $(".product-del").click(function(){
+            productIx = $(this).attr('data-ix');
+            btn = $(this);
+            swalConfirm("복구가 불가능합니다. 삭제하시겠습니까?", function(){
+                productDelete(productIx,btn)
+            },function(){});
+        });
+
+        function productDelete(productIx,btn){
+            $.ajax({
+                url: './api/product_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: {'addCount':'0', 'productIx':productIx },
+                success: function(response) { 
+                    console.log(response);
+                    if(response.status=='success'){
+                        $(btn).parent().parent().remove();
+                        toast();
+                    }
+
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
+                }
+            });
+        }
+
+        function toast(){
+            const toastElement = document.getElementById('myToast');
+            const toast = new bootstrap.Toast(toastElement);
+            // 토스트 표시
+            toast.show();
+        }
     </script>
 </body>
 </html>

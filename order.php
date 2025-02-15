@@ -211,11 +211,12 @@
                         </div>
                     </div>
                     <!-- Order Table -->
+                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        선택한 상품 일괄적용
+                    </button>
                     <div class="table-container" style="caret-color: transparent;">
                         <div class="dropdown float-end mb-3">
-                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                선택한 상품 일괄적용
-                            </button>
+                            
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" href="#" id="orderCancel">주문취소</a>

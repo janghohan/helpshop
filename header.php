@@ -104,6 +104,7 @@ if (!isset($_SESSION['user_ix'])) {
     </div>
 </div>
 
+
 <script>
     $("#infoBtn").click(function(){
         $(".info_pop").toggle();

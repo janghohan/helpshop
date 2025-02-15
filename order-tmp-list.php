@@ -45,6 +45,8 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            height: 650px;
+            overflow-y: auto;
         }
 
     </style>
@@ -257,7 +259,8 @@
             </div>
         </div>
         <form action="./api/order_api.php" id="orderListForm" method="post" style="display:none;">
-            <input type="hidden" name="type" class="form-control mt-3"  value="dump">
+            <input type="hidden" name="orderType" class="form-control mt-3"  value="dump">
+            <input type="hidden" name="fileType" value="<?=$fileType?>">
             <input type="hidden" name="orderMarketIx" class="form-control" value="<?=$orderMarketIx?>">
             <input type="hidden" name="orderExcelFile" class="form-control mt-3"  value="<?=$fileUploadPath?>">
         </form>

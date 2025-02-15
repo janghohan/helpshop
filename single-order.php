@@ -175,7 +175,7 @@
             <div class="main-content">
                 <h2>주문 리스트</h2>
                 <form action="./api/order_api.php" id="order-form" method="post">
-                    <input type="hidden" name="type" value="single">
+                    <input type="hidden" name="orderType" value="single">
                     <input type="hidden" name="orderDate" >
                     <div class="single-order gap-2" style="display:none;">
                         <div class="filter-group col-md-3">
