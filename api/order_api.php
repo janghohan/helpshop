@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $orderDate = $rowA[17];
                     $orderName = $rowA[19]." / ".$rowA[22];
                     $orderQuantity = $rowA[24];
-                    $orderPrice = $rowA[30];
+                    $orderPrice = $rowA[30]; // 수량 * 낱개 금액
                     $orderShipping = $rowA[40];
                     $currentOrderNumber = $rowA[1]; // 현재 주문번호
                     
@@ -132,21 +132,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 
             }else if($marketName=='쿠팡'){
-                $orderNumber = $rowA[2];
-                $orderDate = $rowA[9];
-                $orderName = $rowA[12];
-                $orderQuantity = $rowA[22];
-                $orderPrice = $rowA[23];
-                $orderShipping = $rowA[20];
-                $currentOrderNumber = $rowA[2]; // 현재 주문번호
+                if($fileType=='realtime'){
+                    $orderNumber = $rowA[2];
+                    $orderDate = $rowA[9];
+                    $orderName = $rowA[12];
+                    $orderQuantity = $rowA[22];
+                    $orderPrice = $rowA[18]; //수량 * 낱개금액
+                    $orderShipping = $rowA[20];
+                    $currentOrderNumber = $rowA[2]; // 현재 주문번호
 
-                $orderPerson = $rowA[24]; //구매자
-                $orderContact = $rowA[25]; // 구매자연락처
-                $receiver = $rowA[26]; //수취인
-                $receiverContact = $rowA[27]; //수령인 연락처
-                $postCode = $rowA[28]; //우편번호
-                $address = $rowA[29]; //주소
-                $addressDetail = ''; //상세주소
+                    $orderPerson = $rowA[24]; //구매자
+                    $orderContact = $rowA[25]; // 구매자연락처
+                    $receiver = $rowA[26]; //수취인
+                    $receiverContact = $rowA[27]; //수령인 연락처
+                    $postCode = $rowA[28]; //우편번호
+                    $address = $rowA[29]; //주소
+                    $addressDetail = ''; //상세주소
+                }else if($fileType=='ex'){
+                    $orderNumber = $rowA[0];
+                    $orderDate = $rowA[19];
+                    $orderName = $rowA[5];
+                    $orderQuantity = $rowA[7];
+                    
+                    // row[9] : 수량 * 낱개가격
+                    if($orderQuantity==0){
+                        $orderShipping = $rowA[7];
+                        $orderPrice = 0;
+                    }else if($orderQuantity>0){
+                        $orderShipping = 0;
+                        $orderPrice = $rowA[9];
+                    }else{
+                        $orderPrice = 0;
+                    }
+                    
+                    $currentOrderNumber = $rowA[0]; // 현재 주문번호
+
+                    $orderPerson = $rowA[18]; //구매자
+                    $orderContact = $rowA[25]; // 구매자연락처
+                    $receiver = '';//수취인
+                    $receiverContact = ''; //수령인 연락처
+                    $postCode = ''; //우편번호
+                    $address = ''; //주소
+                    $addressDetail = ''; //상세주소
+                }
             }
 
             if($orderNumber=='주문번호'){
@@ -177,12 +205,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $_SESSION['orderDumpProgress'] = intval((30 * $indexA) / count($dataA));
 
-            
             $groupedOrders[$orderNumber]['total_payment'] += (Int)$orderPrice;
             if($groupedOrders[$orderNumber]['total_shipping'] == 0){
                 $groupedOrders[$orderNumber]['total_shipping'] += (Int)$orderShipping;
             }
             $groupedOrders[$orderNumber]['order_date'] = $orderDate;
+            
 
         }
 
@@ -233,30 +261,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             //order_details table
+            $testNum = 0;
             $currentDetail = 0;
             $isOrderNumberStart = false; //실제 주문번호부터 데이터를 저장하기 위한 구별 변수
+            
             foreach ($dataA as $indexA => $rowA) {     
-                if($rowA[1]=='주문번호'){
-                    $isOrderNumberStart = true;
-                    continue;
-                }
-                if(!$isOrderNumberStart) {
-                    continue;
-                }
-
-                if (in_array($rowA[1], $duplicateOrders)) {
-                    $currentDetail++;
-                    $_SESSION['orderDumpProgress'] = 70 + intval((30 * $currentDetail) / $totalDetails);
-                    continue;
-                }
-
                 if($marketName=='네이버'){
                     if($fileType=='realtime'){
                         $orderNumber = $rowA[1];
                         $orderDate = $rowA[17];
                         $orderName = $rowA[19]." / ".$rowA[22];
                         $orderQuantity = $rowA[24];
-                        $orderPrice = $rowA[30]; // 수량 * 가격
+                        $price = $rowA[30]; // 수량 * 가격
                         $orderShipping = $rowA[40];
                         $currentOrderNumber = $rowA[1]; // 현재 주문번호
 
@@ -265,20 +281,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $orderDate = $rowA[10];
                         $orderName = $rowA[16]." / ".$rowA[19];
                         $orderQuantity = $rowA[21];
-                        $orderPrice = $rowA[27]; // 수량 * 낱개 금액
+                        $price = $rowA[27]; // 수량 * 낱개 금액
                         $orderShipping = $rowA[35];
                         $currentOrderNumber = $rowA[1]; // 현재 주문번호
-    
+                    }
+
+                    if(is_numeric($orderQuantity)){
+                        $orderPrice = ceil((int)$price / (int)$orderQuantity);
+                    }else{
+                        $orderPrice = $price;
                     }
 
                 }else if($marketName=='쿠팡'){
-                    $orderNumber = $rowA[2];
-                    $orderDate = $rowA[9];
-                    $orderName = $rowA[12];
-                    $orderQuantity = $rowA[22];
-                    $orderPrice = $rowA[23];
-                    $orderShipping = $rowA[20];
-                    $currentOrderNumber = $rowA[2]; // 현재 주문번호
+                    if($fileType=='realtime'){
+                        $orderNumber = $rowA[2];
+                        $orderDate = $rowA[9];
+                        $orderName = $rowA[12];
+                        $orderQuantity = $rowA[22];
+                        $orderPrice = $rowA[23]; //낱개가격
+                        $orderShipping = $rowA[20];
+                        $currentOrderNumber = $rowA[2]; // 현재 주문번호
+    
+                    }else if($fileType=='ex'){
+                        $orderNumber = $rowA[0];
+                        $orderDate = $rowA[19];
+                        $orderName = $rowA[5];
+                        $orderQuantity = $rowA[7];
+                        
+                        if($orderQuantity==0){
+                            $orderShipping = $rowA[7];
+                            $orderPrice = 0;
+                        }else if($orderQuantity>0){
+                            $orderShipping = 0;
+                            $orderPrice = ($rowA[9] / $orderQuantity); //낱개가격
+                        }else{
+                            $orderPrice = 0;
+                        }
+                        $currentOrderNumber = $rowA[0]; // 현재 주문번호
+    
+                    }
+
+                }
+
+                if($orderNumber=='주문번호'){
+                    $isOrderNumberStart = true;
+                    continue;
+                }
+                if(!$isOrderNumberStart) {
+                    continue;
+                }
+                
+                if (in_array($orderNumber, $duplicateOrders)) {
+                    $currentDetail++;
+                    $_SESSION['orderDumpProgress'] = 70 + intval((30 * $currentDetail) / $totalDetails);
+                    continue;
                 }
 
                 
@@ -297,12 +353,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 롤백
             $conn->rollback();
             $_SESSION['orderDumpProgress'] = -1;
-            echo "오류 발생: " . $e->getMessage();
+
+            $response['msg'] = 'fail';
+            $response['line'] = $e->getLine();
+
+            echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         }    
         
         $conn->close();
 
-        $response['msg'] = 200;
+        $response['msg'] = $testNum;
         echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     }
     

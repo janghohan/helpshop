@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product.css">
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     
     <title>주문 관리</title>
     <style>
@@ -211,7 +212,7 @@
                         </div>
                     </div>
                     <!-- Order Table -->
-                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-sm btn-outline-primary dropdown-toggle mt-5 mb-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         선택한 상품 일괄적용
                     </button>
                     <div class="table-container" style="caret-color: transparent;">
@@ -374,7 +375,7 @@
         </div>
 
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>

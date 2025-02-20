@@ -79,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }else if($addCount==100){
         //대량등록 
         $startTime = date("Y-m-d H:i:s");
+        $endTime = date("Y-m-d H:i:s");
         $productMarketIx = isset($_POST['productMarketIx']) ? $_POST['productMarketIx'] : ''; //마켓 ix
 
         //네이버 파일인지 쿠팡파일인지 확인
@@ -118,6 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if(isset($dataA)){
                     $groupedProducts = [];
                     $previousProductName = null; // 이전 이름을 저장
+
+                    $duplicationNameArray = [];
                     foreach ($dataA as $indexA => $rowA) {
                         if($indexA<=3){
                             continue;
@@ -155,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                             // 상품명이 바뀐다.
-                            $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
+                            $productStmt = $conn->prepare("INSERT IGNORE INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
                             if (!$productStmt) {
                                 throw new Exception("Error preparing product statement: " . $conn->error); // *** 수정 ***
                             }
@@ -163,14 +166,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (!$productStmt->execute()) {
                                 throw new Exception("Error executing product statement: " . $productStmt->error); // *** 수정 ***
                             }
-                            $productIx = $productStmt->insert_id;
+                        
+                            if ($productStmt->affected_rows === 0) {
+                                $duplicationNameArray[] = $name;
+                                // throw new Exception("중복된 주문으로 인해 삽입되지 않았습니다.");
+                            }else{
+                                $productIx = $productStmt->insert_id;
+
+                                if (!isset($groupedProducts[$name])) {
+                                    $groupedProducts[$name] = [
+                                        'product_ix' => $productIx,
+                                    ];
+                                }
+                            }
+                            
                         }
             
-                        if (!isset($groupedProducts[$name])) {
-                            $groupedProducts[$name] = [
-                                'product_ix' => $productIx,
-                            ];
-                        }
                         $previousProductName = $currentProductName; // 현재 주문번호를 이전 주문번호로 갱신          
                     }
             
@@ -178,6 +189,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $previousProductName = null; // 이전 이름을 저장
                     foreach($dataA as $indexA => $rowA){
                         if($indexA<=2){
+                            continue;
+                        }
+                        // 중복된 상품은 패스
+                        if (in_array($rowA[2], $duplicationNameArray)) {
                             continue;
                         }
 
@@ -188,9 +203,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $cost = $rowA[6];
                         $quantity = $rowA[7];
                         $trackQuantity = $rowA[8];
-            
                         $productIx = $groupedProducts[$name]['product_ix']; //미리 저장한 product table의 ix
-                    
+                              
                         $currentProductName = $name;
 
                         
@@ -281,13 +295,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     //     }
                     // }
                     
-
+                    ob_clean();
                     echo json_encode(['status' => 'success', 'message' => 'Excel data processed successfully', 'startTime'=>$startTime,'endTime'=>$endTime],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE); // *** 수정 ***
                 } else {
-                    throw new Exception("Data parsing failed. Please check the Excel format.");
+                    echo json_encode(['status' => 'error', 'message' => 'Data parsing failed. Please check the Excel format.', 'startTime'=>$startTime,'endTime'=>$endTime],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+                    // throw new Exception("Data parsing failed. Please check the Excel format.");
                 }
             } catch (Exception $e){
-                echo json_encode(['status' => 'error', 'message' => $e->getMessage()],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+                echo json_encode(['status' => 'error', 'message1' => $e->getMessage(), 'file'=>$e->getFile(), 'line'=>$e->getLine()],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
             }
         } else {
             echo json_encode(['status' => 'error', 'message' => 'No file uploaded'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
@@ -308,7 +323,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
 } else {
-    echo "Invalid request!";
+    echo json_encode(['status' => 'error', 'message' => 'no post file'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
 }
 
 

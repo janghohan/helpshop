@@ -35,42 +35,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_FILES['fileNaver'])  && $_FILES["fileNaver"]["error"] == UPLOAD_ERR_OK) {
             // 파일 경로
             $fileAPath = $_FILES['fileNaver']['tmp_name'];
-            $pwd = "0000";
-
-            $originalFileName = $_FILES["fileNaver"]["name"];
-
-            $inputFile = 'excelFile/tmp/'.date("Ymd")."/".'smartStoreExcel_'.date("Y-m-d_His").'_'.$userIx.'.xlsx';
-            $outputFile = 'excelFile/tmp/'.date("Ymd")."/"."unlocked_" . basename($inputFile);
-
-            //폴더생성
-            $destinationFolder = "./excelFile/tmp/".date("Ymd");
-            if (!is_dir($destinationFolder)) {
-                if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
-                    die("폴더를 생성할 수 없습니다: $destinationFolder");
-                }
-            }
-
-            $destinationFolder2 = "./excelFile/useFile/".date("Ymd");
-            if (!is_dir($destinationFolder2)) {
-                if (!mkdir($destinationFolder2, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
-                }
-            }
-
-            // 파일 이동 (업로드 처리)
-            if (!move_uploaded_file($fileAPath, $inputFile)) {
-                die("파일 업로드 실패");
-            }
-            // Python 스크립트 실행 : 비밀번호 삭제
-            exec("python unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
-
-
 
             // 엑셀 파일 읽기
-            if ($xlsxA = SimpleXLSX::parse($outputFile)) {
+            if ($xlsxA = SimpleXLSX::parse($fileAPath)) {
                 $dataA = $xlsxA->rows();
             } else {
-                echo "Error reading Excel A: " . SimpleXLSX::parseError();
-                exit;
+                //비밀번호 설정으로 못 열면 다시 설정
+                $pwd = "0000";
+                $originalFileName = $_FILES["fileNaver"]["name"];
+
+                $inputFile = 'excelFile/tmp/'.date("Ymd")."/".'smartStoreExcel_'.date("Y-m-d_His").'_'.$userIx.'.xlsx';
+                $outputFile = 'excelFile/tmp/'.date("Ymd")."/"."unlocked_" . basename($inputFile);
+
+                //폴더생성
+                $destinationFolder = "./excelFile/tmp/".date("Ymd");
+                if (!is_dir($destinationFolder)) {
+                    if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                        die("폴더를 생성할 수 없습니다: $destinationFolder");
+                    }
+                }
+
+                $destinationFolder2 = "./excelFile/useFile/".date("Ymd");
+                if (!is_dir($destinationFolder2)) {
+                    if (!mkdir($destinationFolder2, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                    }
+                }
+
+                // 파일 이동 (업로드 처리)
+                if (!move_uploaded_file($fileAPath, $inputFile)) {
+                    die("파일 업로드 실패");
+                }
+                // Python 스크립트 실행 : 비밀번호 삭제
+                exec("python unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
+
+                $xlsxA = SimpleXLSX::parse($outputFile);
+                $dataA = $xlsxA->rows();
             }
 
             if ($xlsxB = SimpleXLSX::parse($basicFile)) {

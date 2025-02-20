@@ -63,7 +63,7 @@
         }
 
         .table-container{
-            height: 620px;
+            max-height: 620px;
             overflow-y: auto;
         }
 
@@ -85,6 +85,7 @@
     $userIx = isset($_SESSION['user_ix']) ? : '1';
     $today = date("Y-m-d");
 
+    $infoText = '';
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $startTime = isset($_POST['startTime']) ? $_POST['startTime'] : date("Y-m-d");
@@ -109,9 +110,11 @@
             while ($row = $result->fetch_assoc()) {
                 $listResult[] = $row;
             }
+        }else{
+            $infoText = "중복된 데이터는 제외하고 새로 등록상품만 보여집니다.";
         }
     }else{
-        
+        $infoText = "";
     }
 
     
@@ -217,6 +220,7 @@
                             ?>
                         </tbody>
                     </table>
+                    <p class="text-center pt-3"><?=htmlspecialchars($infoText)?></p>
                 </div>
             </div>
         </div>
@@ -297,7 +301,9 @@
                         $("#loadingText").text("파일등록이 완료되었습니다.");
                         // $("#loadingModal .modal-body").css("display","none");
                         $("#loadingModal .btn").css("display","block");
-                    }
+                    }else(
+                        console.log(response.message)
+                    )
 
                 },
                 error: function(xhr, status, error) {                  

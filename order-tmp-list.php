@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="./css/product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     
     <title>주문 관리</title>
     <style>
@@ -82,31 +83,46 @@
             // 파일 경로
             $filePath = $_FILES['orderExcelFile']['tmp_name'];
 
-            $fileUploadPath = 'tmpUploads/'.date("Ymd")."/".$marketName.$userIx."orderExcel.xls" ;
-
-            //저장위치 -> tmpUploads에 그날 date -> 폴더 없으면 생성성
-            $destinationFolder = "./tmpUploads/".date("Ymd");
-            if (!is_dir($destinationFolder)) {
-                if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
-                    die("폴더를 생성할 수 없습니다: $destinationFolder");
-                }
-            }
-
-            move_uploaded_file($_FILES['orderExcelFile']['tmp_name'], "./".$fileUploadPath);
-            // $fileBPath = $_FILES['fileB']['tmp_name'];
-            // $fileBPath = './cjBasic.xlsx';
-            
-    
             // 엑셀 파일 읽기
-            if ($xlsxA = SimpleXLSX::parse($fileUploadPath)) {
+            if ($xlsxA = SimpleXLSX::parse($filePath)) { //비번x -> 파일 열리면 
+
+                $fileUploadPath = 'tmpUploads/'.date("Ymd")."/".$marketName.$userIx."orderExcel.xlsx" ;
+                //저장위치 -> tmpUploads에 그날 date -> 폴더 없으면 생성성
+                $destinationFolder = "./tmpUploads/".date("Ymd");
+                if (!is_dir($destinationFolder)) {
+                    if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                        die("폴더를 생성할 수 없습니다: $destinationFolder");
+                    }
+                }
+                move_uploaded_file($_FILES['orderExcelFile']['tmp_name'], "./".$fileUploadPath);
+                $xlsxA = SimpleXLSX::parse($fileUploadPath);
                 $dataA = $xlsxA->rows();
             } else {
-                echo "Error reading Excel A: " . SimpleXLSX::parseError();
-                exit;
+                $pwd = "0000";
+
+                $inputFile = 'tmpUploads/'.date("Ymd")."/ex".$marketName.$userIx.'orderExcel.xlsx';
+                $outputFile = 'tmpUploads/'.date("Ymd")."/".$marketName.$userIx.'orderExcel.xlsx';
+
+                $destinationFolder = "./tmpUploads/".date("Ymd");
+                if (!is_dir($destinationFolder)) {
+                    if (!mkdir($destinationFolder, 0777, true)) { // true는 하위 디렉토리도 생성하도록 설정
+                        die("폴더를 생성할 수 없습니다: $destinationFolder");
+                    }
+                }
+
+                // 파일 이동 (업로드 처리)
+                if (!move_uploaded_file($filePath, $inputFile)) {
+                    die("파일 업로드 실패");
+                }
+                // Python 스크립트 실행 : 비밀번호 삭제
+                exec("python ./api/unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
+
+                $xlsxA = SimpleXLSX::parse($outputFile);
+                $dataA = $xlsxA->rows();
+
+                $fileUploadPath = 'tmpUploads/'.date("Ymd")."/".$marketName.$userIx."orderExcel.xlsx" ;
             }
         }
-
-               
     }else{
         
     }
@@ -168,7 +184,7 @@
                                             $orderDate = $rowA[17];
                                             $orderName = $rowA[19]." / ".$rowA[22];
                                             $orderQuantity = $rowA[24];
-                                            $orderPrice = $rowA[30];
+                                            $price = $rowA[30];
                                             $orderShipping = $rowA[40];
                                             $currentOrderNumber = $rowA[1]; // 현재 주문번호
                                         }else if($fileType=='ex'){
@@ -176,20 +192,49 @@
                                             $orderDate = $rowA[10];
                                             $orderName = $rowA[16]." / ".$rowA[19];
                                             $orderQuantity = $rowA[21];
-                                            $orderPrice = $rowA[27]; // 수량 * 낱개 금액
+                                            $price = $rowA[27]; // 수량 * 낱개 금액
                                             $orderShipping = $rowA[35];
                                             $currentOrderNumber = $rowA[1]; // 현재 주문번호
+
+                                        }
+
+                                        if(is_numeric($orderQuantity)){
+                                            $orderPrice = ceil((int)$price / (int)$orderQuantity);
+                                        }else{
+                                            $orderPrice = $price;
                                         }
                                         
 
+                                        // $orderPrice = (int)$price / (int)$orderQuantity;
+
                                     }else if($marketName=='쿠팡'){
-                                        $orderNumber = $rowA[2];
-                                        $orderDate = $rowA[9];
-                                        $orderName = $rowA[12];
-                                        $orderQuantity = $rowA[22];
-                                        $orderPrice = $rowA[23];
-                                        $orderShipping = $rowA[20];
-                                        $currentOrderNumber = $rowA[2]; // 현재 주문번호
+                                        if($fileType=='realtime'){
+                                            $orderNumber = $rowA[2];
+                                            $orderDate = $rowA[9];
+                                            $orderName = $rowA[12];
+                                            $orderQuantity = $rowA[22];
+                                            $orderPrice = $rowA[23];
+                                            $orderShipping = $rowA[20];
+                                            $currentOrderNumber = $rowA[2]; // 현재 주문번호
+                                        }else if($fileType=='ex'){
+                                            $orderNumber = $rowA[0];
+                                            $orderDate = $rowA[19];
+                                            $orderName = str_replace('"','',$rowA[5]);
+                                            $orderQuantity = $rowA[7];
+                                            
+                                            if($orderQuantity==0){
+                                                $orderShipping = $rowA[7];
+                                                $orderPrice = 0;
+                                            }else if($orderQuantity>0){
+                                                $orderShipping = 0;
+                                                $orderPrice = ($rowA[9] / $orderQuantity); //낱개가격
+                                            }else{
+                                                $orderPrice = 0;
+                                            }
+                                            $currentOrderNumber = $rowA[0]; // 현재 주문번호
+                        
+                                        }
+
                                     }
                                     
                                 
@@ -220,44 +265,8 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="excelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">파일 등록</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="./order-tmp-list.php" id="orderExcelForm" method="post" enctype="multipart/form-data">
-                        <select name="orderMarketIx" class="form-control" id="">
-                            <?php
-                                $searchResult = [];
-                                
-                                $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
-                                $result = $conn->query($query);
-                        
-                                if ($result->num_rows > 0) {
-                                    while ($row = $result->fetch_assoc()) {
-                                        $searchResult[] = $row;
-                                    }
-                                }
 
-                                foreach($searchResult as $marketRow){
-                            
-                            ?>
-                                <option value="<?=htmlspecialchars($marketRow['ix'])?>"><?=htmlspecialchars($marketRow['market_name'])?></option>
-                            <?php }?>
-                        </select>
-                        <input type="file" name="orderExcelFile" class="form-control mt-3"  accept=".xlsx, .xls">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary" onclick="tmpExcel()">등록</button>
-                </div>
-                </div>
-            </div>
-        </div>
+
         <form action="./api/order_api.php" id="orderListForm" method="post" style="display:none;">
             <input type="hidden" name="orderType" class="form-control mt-3"  value="dump">
             <input type="hidden" name="fileType" value="<?=$fileType?>">
@@ -293,7 +302,6 @@
         
 
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="./js/common.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
@@ -326,7 +334,7 @@
                 dataType : 'json',
                 data: $("#orderListForm").serialize(),
                 success: function(response) { 
-                    // console.log(response);
+                    console.log(response);
 
                 },
                 error: function(xhr, status, error) {                  
