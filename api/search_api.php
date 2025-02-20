@@ -26,8 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }else if($searchType=='matching'){
         $searchTerm = $conn->real_escape_string($searchKeyword); // 사용자 입력값
         $likeKeyword = "%$searchTerm%";
-        $query = "SELECT p.ix as productIx, pom.ix as combIx, p.name, pom.combination_key FROM `product` p JOIN product_option_combination pom ON 
-        p.ix = pom.product_ix WHERE p.user_ix = '$userIx' AND p.name LIKE '$likeKeyword' GROUP BY pom.combination_key ORDER BY pom.ix";
+        $query = "SELECT * FROM matching_name WHERE user_ix = '$userIx' AND matching_name LIKE '$likeKeyword'";
 
         $result = $conn->query($query);
 

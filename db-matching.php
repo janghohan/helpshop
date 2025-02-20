@@ -21,7 +21,7 @@
             color: white;
             padding: 10px 20px;
         }
-        .syncBtn .sync-button {
+        .sync-button {
             padding: 10px 20px;
             background: #7cc576;
             color: white;
@@ -130,9 +130,17 @@
     <div class="full-content">
         <div class="container">
             <div class="main-content">
-                <div class="syncBtn">
-                <button class="sync-button" onclick="synchronizeChk();">동기화</button>
-            </div>
+                <div class="syncBtn d-flex justify-content-between">
+                    <span>
+                        도움말
+                        <button class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286m1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
             <div class="data-list">
                 <!-- Example Row -->
                 <div class="data-row" style="font-weight:bold;">
@@ -141,31 +149,35 @@
                     <div class="input-container">
                         매칭 상품
                     </div>
+                    <div class="input-container" style="width:120px;">
+                        원가(원)
+                    </div>
                     <div class="checkbox-container">
                         <input type="checkbox" class="allCheckbox">
                     </div>
                 </div>
-                <form action="" method="post" id="matchingList">
                 <?php
                 foreach($listResult as $listRow) {
 
                 ?>  
-                    <div class="data-row">
+                    <div class="data-row" data-ix="<?=htmlspecialchars($listRow['detailIx'])?>">
                         <div class="source"><?=htmlspecialchars($listRow['market_name'])?></div>
                         <div class="input-container"><?=htmlspecialchars($listRow['name'])?></div>
-                        <input type="hidden" name="matchingData[]" value="<?=htmlspecialchars($listRow['name'])?>">
+                        <input type="hidden" class="orderName" value="<?=htmlspecialchars($listRow['name'])?>">
                         <div class="input-container">
                             <input type="text" placeholder="값 입력" class="matchingText">
-                            <input type="hidden" name="matchingValue[]" class="matchingValue" >
                             <div class="autocomplete-results"></div>
                         </div>
+                        <div class="input-container" style="width:120px;">
+                            <input type="text" class="form-control localeNumber cost">
+                        </div>
                         <div class="checkbox-container">
-                            <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]">
+                            <!-- <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]"> -->
+                            <button class="btn sync-button">동기화</button>
                         </div>
                     </div>
                 
                 <?php } ?>
-                </form>
                 <!-- Example Row -->
                 
                 <!-- More rows dynamically loaded here -->
@@ -200,7 +212,7 @@
                         if (response.length > 0) {
                             resultsContainer.show();
                             response.forEach(item => {
-                                resultsContainer.append('<div class="result-item" data-v='+item.combIx+'>' + item.name+' / '+ item.combination_key +'</div>');
+                                resultsContainer.append('<div class="result-item" data-v='+item.ix+'>' + item.matching_name+'</div>');
                             });
                         } else {
                             resultsContainer.hide();
@@ -226,48 +238,32 @@
         });
 
 
-        function synchronizeChk(){
+        $(".sync-button").click(function(){
+            const db = $(this).parent().parent(); // 요소를 한번만 저장
 
-            let isCheck = false;
-            $(".matchingCheckbox").each(function () {
-                console.log($(this).prop('checked'));
-                if($(this).prop('checked')==true){
-                    isCheck = true;
-                    return false;
-                }
-            });
-            if(!isCheck) {
-                basicSwal("하나 이상의 상품을 체크해주세요.", true);
-                return false;
-            }
+            const orderName = $(db).find('.orderName').val();
+            const odIx = $(db).attr('data-ix');
+            const matchingName = $(db).find(".matchingText").val();
+            const cost = $(db).find('.cost').val();
 
-            swalConfirm("동기화를 진행하시겠습니까? <p>매칭 상품이 없는 상품은 동기화가 진행되지 않습니다.</p>",synchronize);
-        }
-
-        function synchronize(){
-            // console.log($("#matchingList").serialize());
-
-            var formData = [];
-
-            // 체크된 체크박스가 포함된 div만 선택
-            $("#matchingList .data-row").each(function() {
-                if ($(this).find(".matchingCheckbox").is(":checked")) {
-                    var data = {
-                        matchingData: $(this).find('input[name="matchingData[]"]').val(),
-                        matchingValue: $(this).find('input[name="matchingValue[]"]').val()
-                    };
-                    formData.push(data);
-                }
-            });
-
-            basicSwal("<i class='bi bi-arrow-clockwise rotating-icon' style='font-size:30px;'></i> <p>동기화가 진행중입니다.</p>",false);
+            console.log(orderName,odIx,matchingName,cost);
             $.ajax({
                 url: './api/matching_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
-                data: {'formData':formData},
+                dataType: 'json',
+                data: {'detailIx':odIx, 'matchingName' : matchingName, 'cost':cost, 'orderName' : orderName},
                 success: function(response) { 
+                    console.log(response);
                     if(response.status=='success'){
-                        basicSwal("동기화가 완료되었습니다.",true);
+                        $(db).css('position', 'relative');
+
+                        // 애니메이션 실행
+                        $(db).animate({
+                            right: '-100%', // 오른쪽으로 100%만큼 이동
+                            opacity: 0 // 투명도 0으로 만들어서 사라지게
+                        }, 500, function() {
+                            $(db).remove(); // 애니메이션 끝나면 요소 제거
+                        });
                     }
 
                 },
@@ -276,7 +272,11 @@
                     console.log(error);
                 }
             });
-        }
+
+            // 부모 요소에 위치 속성 추가 (position: relative)
+            
+
+        });
     </script>
 
 </body>
