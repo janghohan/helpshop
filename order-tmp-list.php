@@ -173,92 +173,183 @@
                             $toggle = true; // 색상을 변경하기 위한 토글 변수
 
                             if(isset($dataA)){
-                                foreach ($dataA as $indexA => $rowA) {
-                                    if($indexA===0){
-                                        continue;
-                                    }         
+                                if(!($marketName=='쿠팡' && $fileType=='ex')){ 
+                                    foreach ($dataA as $indexA => $rowA) {
+                                        if($indexA===0){
+                                            continue;
+                                        }         
 
-                                    if($marketName=='네이버'){
-                                        if($fileType=='realtime'){
-                                            $orderNumber = $rowA[1];
-                                            $orderDate = $rowA[17];
-                                            $orderName = $rowA[19]." / ".$rowA[22];
-                                            $orderQuantity = $rowA[24];
-                                            $price = $rowA[30];
-                                            $orderShipping = $rowA[40];
-                                            $currentOrderNumber = $rowA[1]; // 현재 주문번호
-                                        }else if($fileType=='ex'){
-                                            $orderNumber = $rowA[1];
-                                            $orderDate = $rowA[10];
-                                            $orderName = $rowA[16]." / ".$rowA[19];
-                                            $orderQuantity = $rowA[21];
-                                            $price = $rowA[27]; // 수량 * 낱개 금액
-                                            $orderShipping = $rowA[35];
-                                            $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                                        if($marketName=='네이버'){
+                                            if($fileType=='realtime'){
+                                                $orderNumber = $rowA[1];
+                                                $orderDate = $rowA[17];
+                                                $orderName = $rowA[19]." / ".$rowA[22];
+                                                $orderQuantity = $rowA[24];
+                                                $price = $rowA[30];
+                                                $orderShipping = $rowA[40];
+                                                $currentOrderNumber = $rowA[1]; // 현재 주문번호
+                                            }else if($fileType=='ex'){
+                                                $orderNumber = $rowA[1];
+                                                $orderDate = $rowA[10];
+                                                $orderName = $rowA[16]." / ".$rowA[19];
+                                                $orderQuantity = $rowA[21];
+                                                $price = $rowA[27]; // 수량 * 낱개 금액
+                                                $orderShipping = $rowA[35];
+                                                $currentOrderNumber = $rowA[1]; // 현재 주문번호
+
+                                            }
+
+                                            if(is_numeric($orderQuantity)){
+                                                $orderPrice = ceil((int)$price / (int)$orderQuantity);
+                                            }else{
+                                                $orderPrice = $price;
+                                            }
+                                            
+
+                                            // $orderPrice = (int)$price / (int)$orderQuantity;
+
+                                        }else if($marketName=='쿠팡'){
+                                            if($fileType=='realtime'){
+                                                $orderNumber = $rowA[2];
+                                                $orderDate = $rowA[9];
+                                                $orderName = $rowA[12];
+                                                $orderQuantity = $rowA[22];
+                                                $orderPrice = $rowA[23];
+                                                $orderShipping = $rowA[20];
+                                                $currentOrderNumber = $rowA[2]; // 현재 주문번호
+                                            }
 
                                         }
+                                        
+                                    
+                                        if ($currentOrderNumber !== $previousOrderNumber) {
+                                            // 주문번호가 변경될 때마다 토글 값을 변경
+                                            $toggle = !$toggle;
+                                        }
+                                        $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
+                                        $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
 
-                                        if(is_numeric($orderQuantity)){
-                                            $orderPrice = ceil((int)$price / (int)$orderQuantity);
-                                        }else{
-                                            $orderPrice = $price;
+
+                                    
+                                    ?>
+                                        <tr style="background-color: <?= $backgroundColor ?>;">
+                                            <td><?=htmlspecialchars($marketName)?></td>
+                                            <td><?=htmlspecialchars($orderDate)?></td>
+                                            <td><?=htmlspecialchars($orderNumber)?></td>
+                                            <td><?=htmlspecialchars($orderName)?></td>
+                                            <td><?=htmlspecialchars($orderQuantity)?></td>
+                                            <td><?=htmlspecialchars($orderPrice)?></td>
+                                            <td><?=htmlspecialchars($orderShipping)?></td>
+                                        </tr>
+
+                                <?php }
+                                }else if($marketName=='쿠팡' && $fileType=='ex'){ 
+                                    $groupedOrders = []; // 주문을 저장할 배열
+
+                                    $previousOrderNumber = null; // 이전 주문번호를 저장
+                                    foreach ($dataA as $indexA => $rowA) {
+                                        if($indexA===0){
+                                            continue;
+                                        }     
+
+                                        $orderNumber = $rowA[0];
+                                        $refundQuantity = $rowA[8];
+                                        $currentOrderNumber = $orderNumber;
+
+                                        $optionID = $rowA[4];
+                                        $optionID = str_replace("<","",$optionID);
+                                        $optionID = str_replace(">","",$optionID);
+                                        $orderDate = $rowA[19];
+                                        $orderQuantity = $rowA[7];
+                                        $orderPrice = $rowA[9];
+                                        $orderName = str_replace('"','',$rowA[5]);
+
+                                        if ($currentOrderNumber !== $previousOrderNumber) {
+                                            // 주문번호가 변경될 때
+                                            $toggle = !$toggle;
+
+                                            //is_numberic : 처음이 기본배송료인 경우, ($orderName!="" && $refundQuantity<0) : 처음이 상품명이지만 반품인경우우
+                                            if(!is_numeric($optionID) || ($orderName!="" && $refundQuantity<0)){
+                                                //이름 없는 반품
+                                                $orderName = "반품";
+                                                $groupedOrders[$orderNumber] = [
+                                                    'order_number' => $orderNumber,
+                                                    'shipping_fee' => 0,
+                                                    'order_date' => $orderDate,
+                                                    'order_name' => [$orderName],    // 상품명 배열
+                                                    'order_quantity' => [0], // 수량 배열
+                                                    'order_price' => [0],    // 가격 배열
+                                                ];
+
+                                                if(!is_numeric($optionID)){
+                                                    $groupedOrders[$orderNumber]['shipping_fee'] = (int)$orderPrice + (int)$groupedOrders[$orderNumber]['shipping_fee'];
+                                                }
+                                                
+                                            }else{
+                                                $groupedOrders[$orderNumber] = [
+                                                    'order_number' => $orderNumber,
+                                                    'shipping_fee' => 0,
+                                                    'order_date' => $orderDate,
+                                                    'order_name' => [],    // 상품명 배열
+                                                    'order_quantity' => [], // 수량 배열
+                                                    'order_price' => [],    // 가격 배열
+                                                ];
+                                            }
+
+                                            
                                         }
                                         
 
-                                        // $orderPrice = (int)$price / (int)$orderQuantity;
-
-                                    }else if($marketName=='쿠팡'){
-                                        if($fileType=='realtime'){
-                                            $orderNumber = $rowA[2];
-                                            $orderDate = $rowA[9];
-                                            $orderName = $rowA[12];
-                                            $orderQuantity = $rowA[22];
-                                            $orderPrice = $rowA[23];
-                                            $orderShipping = $rowA[20];
-                                            $currentOrderNumber = $rowA[2]; // 현재 주문번호
-                                        }else if($fileType=='ex'){
-                                            $orderNumber = $rowA[0];
-                                            $orderDate = $rowA[19];
-                                            $orderName = str_replace('"','',$rowA[5]);
-                                            $orderQuantity = $rowA[7];
-                                            
-                                            if($orderQuantity==0){
-                                                $orderShipping = $rowA[7];
-                                                $orderPrice = 0;
-                                            }else if($orderQuantity>0){
-                                                $orderShipping = 0;
-                                                $orderPrice = ($rowA[9] / $orderQuantity); //낱개가격
-                                            }else{
-                                                $orderPrice = 0;
+                                        if($orderName!="" && $orderQuantity>0){ //상품
+                                            $groupedOrders[$orderNumber]['order_name'][] = $orderName;
+                                            $groupedOrders[$orderNumber]['order_quantity'][] = $orderQuantity;
+                                            $groupedOrders[$orderNumber]['order_price'][] = ceil((int)$rowA[9] / (int)$orderQuantity);
+                                        }else{ //배송비
+                                            if($orderName!="반품"){
+                                                $groupedOrders[$orderNumber]['shipping_fee'] = (int)$orderPrice + (int)$groupedOrders[$orderNumber]['shipping_fee'];
                                             }
-                                            $currentOrderNumber = $rowA[0]; // 현재 주문번호
-                        
                                         }
+                                        
+                                        
+                                        
 
-                                    }
+                                        $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
                                     
-                                
-                                    if ($currentOrderNumber !== $previousOrderNumber) {
-                                        // 주문번호가 변경될 때마다 토글 값을 변경
-                                        $toggle = !$toggle;
                                     }
-                                    $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
-                                    $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
 
+                                    $previousOrderNumber = null; // 이전 주문번호를 저장
+                                    foreach($groupedOrders as $orderNumber => $data){
+                                        if($data['order_name'][0]=="반품"){
+                                            continue;
+                                        }
+                                        $currentOrderNumber = $data['order_number'];
+                                        if ($currentOrderNumber !== $previousOrderNumber) {
+                                            // 주문번호가 변경될 때마다 토글 값을 변경
+                                            $toggle = !$toggle;
+                                        }
+                                        
+                                        $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
+                                        $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
 
-                                
+                                        foreach($data['order_name'] as $index => $eachOrderName){
+                                            
+                                            if($index>0){
+                                                $data['shipping_fee'] = 0;
+                                            }
                                 ?>
                                     <tr style="background-color: <?= $backgroundColor ?>;">
                                         <td><?=htmlspecialchars($marketName)?></td>
-                                        <td><?=htmlspecialchars($orderDate)?></td>
-                                        <td><?=htmlspecialchars($orderNumber)?></td>
-                                        <td><?=htmlspecialchars($orderName)?></td>
-                                        <td><?=htmlspecialchars($orderQuantity)?></td>
-                                        <td><?=htmlspecialchars($orderPrice)?></td>
-                                        <td><?=htmlspecialchars($orderShipping)?></td>
+                                        <td><?=htmlspecialchars($data['order_date'])?></td>
+                                        <td><?=htmlspecialchars($data['order_number'])?></td>
+                                        <td><?=htmlspecialchars($eachOrderName)?></td>
+                                        <td><?=htmlspecialchars($data['order_quantity'][$index])?></td>
+                                        <td><?=htmlspecialchars($data['order_price'][$index])?></td>
+                                        <td><?=htmlspecialchars($data['shipping_fee'])?></td>
                                     </tr>
-
-                            <?php }}?>
+                                    <?php } } ?>
+                                <?php 
+                                }
+                            }?>
                             </tbody>
                         </table>
                     </div>
