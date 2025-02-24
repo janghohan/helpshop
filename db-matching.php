@@ -246,7 +246,11 @@
             const matchingName = $(db).find(".matchingText").val();
             const cost = $(db).find('.cost').val();
 
-            console.log(orderName,odIx,matchingName,cost);
+            if(matchingName=="" || cost==""){
+                basicSwal("빈칸을 채워주세요.",true);
+                return false;
+            }
+            
             $.ajax({
                 url: './api/matching_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
@@ -266,6 +270,7 @@
                         });
                     }
 
+                
                 },
                 error: function(xhr, status, error) {                  
                     // alert("관리자에게 문의해주세요.");

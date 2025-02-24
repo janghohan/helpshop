@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cost = $_POST['cost'] ?? '';
     $orderName = $_POST['orderName'] ?? '';
     
+    //matching_name table 체크 후 저장 
     $chkStmt = $conn->prepare("SELECT * FROM matching_name WHERE user_ix=? AND matching_name=?");
     $chkStmt->bind_param("ss",$userIx,$matchingName);
     $chkStmt->execute();
@@ -26,16 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nameStmt->execute();
         
         $nameIx = $nameStmt->insert_id;
+        
+        //db_match table 저장
+        $matchStmt = $conn->prepare("INSERT INTO db_match(user_ix,name_of_excel,matching_ix) VALUES(?,?,?)");
+        $matchStmt->bind_param("sss",$userIx,$orderName,$nameIx);
+        if(!$matchStmt->execute()){
+            echo json_encode(['status' => 'fail', 'msg' => '동기화 오류, 오류 내용과 함께 문의해주세요.'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        }else{
+            echo json_encode(['status' => 'success'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        }
     }
 
-
-    $matchStmt = $conn->prepare("INSERT INTO db_match(name_of_excel,matching_ix) VALUES(?,?)");
-    $matchStmt->bind_param("ss",$orderName,$nameIx);
-    if(!$matchStmt->execute()){
-        echo json_encode(['status' => 'fail', 'msg' => 'match insert fail'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
-    }else{
-        echo json_encode(['status' => 'success'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
-    }
+    
 
     // if (isset($_POST['formData'])) {
 
@@ -57,8 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //         }
     //     }
 
-    ob_clean();
-        echo json_encode(['status' => 'success' ,'order'=>$orderName, 'cost'=>$cost, 'matching'=>$matchingName],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     // }
 }
 

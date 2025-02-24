@@ -86,7 +86,8 @@
 
     $startDate = isset($_POST['start']) ? $_POST['start'] : date("Y-m-d");
     $endDate = isset($_POST['end']) ? $_POST['end'] : date("Y-m-d");
-
+    $page = $_GET['page'] ?? 1;
+    
     $orderResult = [];
     $orderTypeSearchKeyworSql = "";
     $searchParams = [];
@@ -161,6 +162,17 @@
             }
         }
     }
+
+    // 페이지 링크 범위 설정 (예: 현재 페이지를 기준으로 ±2개의 링크 표시)
+    $visibleRange = 2;
+    $startPage = max(1, $page - $visibleRange);
+    $endPage = min($totalPages, $page + $visibleRange);
+
+    // 이전/다음 페이지 계산
+    $hasPrev = $page > 1;
+    $hasNext = $page < $totalPages;
+    $prevPage = $hasPrev ? $page - 1 : null;
+    $nextPage = $hasNext ? $page + 1 : null;
     ?>
     <!-- 헤더 -->
 
@@ -278,6 +290,30 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- 페이지네이션 -->
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <?php if($hasPrev): ?>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Previous</a></li>
+                            <?php else: ?>
+                                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                            <?php endif; ?>
+
+                            <?php for($i = $startPage; $i <= $endPage; $i++): ?>
+                                <?php if ($i == $page): ?>
+                                    <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
+                                <?php else: ?>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&itemsPerPage=<?= $itemsPerPage ?>"><?= $i ?></a></li>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+
+                            <?php if ($hasNext): ?>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Next</a></li>
+                            <?php else: ?>
+                                <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
