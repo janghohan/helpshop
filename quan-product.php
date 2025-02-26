@@ -9,8 +9,9 @@
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product.css">
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     
-    <title>상품별 주문량</title>
+    <title>주문 관리</title>
     <style>
         body {
             background-color: #f9f9f9;
@@ -82,84 +83,79 @@
     
     $userIx = isset($_SESSION['user_ix']) ? : '1';
     $today = date("Y-m-d");
-
-    $startDate = isset($_POST['start']) ? $_POST['start'] : date("Y-m-d");
-    $endDate = isset($_POST['end']) ? $_POST['end'] : date("Y-m-d");
-
+    $page = $_GET['page'] ?? 1;
+    
     $orderResult = [];
     $orderTypeSearchKeyworSql = "";
     $searchParams = [];
 
+    $itemsPerPage =  20;
+    $startIndex = ($page - 1) * $itemsPerPage;
+
+    $startDate = $_GET['start'] ?? date("y-m-d");
+    $endDate = $_GET['end'] ?? date("y-m-d");
+
     //검색 영역에 값이 들어오면
     if(isset($_GET['searchKeyword'])){
-        $searchKeyword = $_GET['searchKeyword'];
-        $searchType = $_GET['searchType'];
+        $searchKeyword = $_GET['searchKeyword'] ?? "";
 
-        if ($searchType === 'name') {
-            $orderTypeSearchKeyworSql = "AND od.name LIKE ?";
+        if(isset($_GET['searchKeyword'])){
+            $orderTypeSearchKeyworSql = "AND mn.matching_name LIKE ?";
             $searchParams[] = '%' . $searchKeyword . '%';
-        } else {
-            $orderTypeSearchKeyworSql = "AND o." . $searchType . " = ?";
-            $searchParams[] = $searchKeyword;
+        }else{
+            $orderTypeSearchKeyworSql = "";
+        }
+
+        $sellQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN db_match dm ON od.name = dm.name_of_excel 
+        JOIN matching_name mn ON dm.matching_ix = mn.ix AND dm.user_ix = ? $orderTypeSearchKeyworSql GROUP BY mn.matching_name ORDER BY sellQuantity DESC";
+
+        $sellStmt = $conn->prepare($sellQuery);
+        $bindParams = array_merge([$userIx], $searchParams);
+        $sellStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
+
+    }else{     
+        $sellQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN orders o ON o.ix = od.orders_ix 
+        AND o.order_date>= ? AND o.order_date<= ? JOIN db_match dm ON od.name = dm.name_of_excel JOIN matching_name mn ON dm.matching_ix = mn.ix 
+        AND dm.user_ix = ? GROUP BY mn.matching_name ORDER BY sellQuantity DESC LIMIT ? OFFSET ?";
+
+        $sellStmt = $conn->prepare($sellQuery);
+        $sellStmt->bind_param("sssss",$startDate,$endDate,$userIx,$itemsPerPage,$startIndex);
+
+
+        $totalQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity FROM order_details od JOIN orders o ON o.ix = od.orders_ix 
+        AND o.order_date>= ? AND o.order_date<= ? JOIN db_match dm ON od.name = dm.name_of_excel JOIN matching_name mn ON dm.matching_ix = mn.ix 
+        AND dm.user_ix = ? GROUP BY mn.matching_name ORDER BY sellQuantity";
+        $totalStmt = $conn->prepare($totalQuery);
+        $totalStmt->bind_param("sss",$startDate,$endDate,$userIx);
+    }   
+
+    // Execute and Fetch Results
+    $sellStmt->execute();
+    $result = $sellStmt->get_result();
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $sellResult[] = $row;
         }
     }
 
-    if (isset($_GET['start']) && isset($_GET['end'])) {
-        $startDate = $_GET['start'];
-        $endDate = $_GET['end'];
-        
-        $orderQuery = "
-            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
-            od.cost, m.basic_fee, m.linked_fee, m.ship_fee
-            FROM orders o
-            JOIN order_details od ON o.ix = od.orders_ix
-            JOIN market m ON m.ix = o.market_ix
-            WHERE o.user_ix = ? 
-            AND o.order_date >= ?
-            AND o.order_date <= ? AND od.status='completed'
-            $orderTypeSearchKeyworSql
-        ";
-        $orderStmt = $conn->prepare($orderQuery);
-        $bindParams = array_merge([$userIx, $startDate, $endDate], $searchParams);
-        $orderStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
-    
-        // Execute and Fetch Results
-        $orderStmt->execute();
-        $result = $orderStmt->get_result();
+    if(!isset($_GET['searchKeyword'])){
+        $totalStmt->execute();
+        $totalItems = $totalStmt->get_result()->num_rows;
+        $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
 
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $orderResult[] = $row;
-            }
-        }
-    }else{
+        // 페이지 링크 범위 설정 (예: 현재 페이지를 기준으로 ±2개의 링크 표시)
+        $visibleRange = 2;
+        $startPage = max(1, $page - $visibleRange);
+        $endPage = min($totalPages, $page + $visibleRange);
 
-        $orderQuery = "
-            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
-            od.cost, m.basic_fee, m.linked_fee, m.ship_fee
-            FROM orders o
-            JOIN order_details od ON o.ix = od.orders_ix
-            JOIN market m ON m.ix = o.market_ix
-            WHERE o.user_ix = ? 
-            AND o.order_date = ? AND od.status='completed'
-            $orderTypeSearchKeyworSql";
-        
-        $orderStmt = $conn->prepare($orderQuery);
-
-        $orderStmt = $conn->prepare($orderQuery);
-        $bindParams = array_merge([$userIx, $today], $searchParams);
-        $orderStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
-    
-        // Execute and Fetch Results
-        $orderStmt->execute();
-        $result = $orderStmt->get_result();
-
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $orderResult[] = $row;
-            }
-        }
+        // 이전/다음 페이지 계산
+        $hasPrev = $page > 1;
+        $hasNext = $page < $totalPages;
+        $prevPage = $hasPrev ? $page - 1 : null;
+        $nextPage = $hasNext ? $page + 1 : null;
     }
+    
     ?>
     <!-- 헤더 -->
 
@@ -171,16 +167,13 @@
         <div class="container">
             <!-- 사이드바 -->
             <div class="main-content">
-                <h2>상품별 주문량</h2>
+                <h2>상품 판매량</h2>
                 <div class="container mt-4">
                     <!-- Search Options -->
                     <div class="search-options">
                         <div class="row justify-content-between ">
                             <div class="col-md-4 mb-3">
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
                             </div>
                             <!-- <div class="col-md-2 mb-3">
                                 <button class="btn btn-outline-secondary w-100">이번 주</button>
@@ -202,7 +195,7 @@
                                 </select>
                             </div>
                             <div class="col-md-5">
-                                <input type="text" class="form-control" placeholder="상품명 검색" id="order-search">
+                                <input type="text" class="form-control" placeholder="주문번호 검색" id="search-input">
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-primary" id="search-btn">조회하기</button>
@@ -210,11 +203,9 @@
                         </div>
                     </div>
                     <!-- Order Table -->
-                    <div class="table-container" style="caret-color: transparent;">
+                    <div class="table-container mt-5" style="caret-color: transparent;">
                         <div class="dropdown float-end mb-3">
-                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                선택한 상품 일괄적용
-                            </button>
+                            
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" href="#" id="orderCancel">주문취소</a>
@@ -222,12 +213,17 @@
                             </ul>
                         </div>
                         <table class="table">
+                            <colgroup>
+                                <col width="70%" />
+                                <col width="15%" />
+                                <col width="15%" />
+                            </colgroup>
                             <thead>
-                            <tr>
-                                <th>상품명</th>
-                                <th>옵션</th>
-                                <th>판매 수량</th>
-                            </tr>
+                                <tr>
+                                    <th col="60">주문제품</th>
+                                    <th col="20">판매수량</th>
+                                    <th col="20">주문금액</th>
+                                </tr>
                             </thead>
                             <tbody id="order-list">
                             <!-- Order rows will be added dynamically -->
@@ -235,33 +231,19 @@
                                     $previousOrderNumber = null; // 이전 주문번호를 저장
                                     $toggle = true; // 색상을 변경하기 위한 토글 변수
 
-                                    if(isset($orderResult)){
-                                        foreach($orderResult as $orderRow) {
+                                    if(isset($sellResult)){
+                                        foreach($sellResult as $sellRow) {
 
-                                            $currentOrderNumber = $orderRow['order_number'];
-                                            if ($currentOrderNumber !== $previousOrderNumber) {
-                                                // 주문번호가 변경될 때마다 토글 값을 변경
-                                                $toggle = !$toggle;
-                                                $shipping = $orderRow['total_shipping'];
-                                            }else{
-                                                $shipping = 0;
-                                            }
+                                            $toggle = !$toggle;
                                             $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
-                                            $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
+                                            
 
 
                                     ?>        
                                     <tr style="background-color: <?= $backgroundColor ?>;">
-                                        <td>
-                                            <input type="checkbox" class="form-check-input" name="orderCheck[]" value="<?=htmlspecialchars($orderRow['detailIx'])?>">
-                                        </td>
-                                        <td><?=htmlspecialchars($orderRow['market_name'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['order_date'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['order_number'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['name'])?></td>
-                                        <td><?=htmlspecialchars($orderRow['quantity'])?></td>
-                                        <td><?=htmlspecialchars(number_format($orderRow['price']))."원"?></td>
-                                        <td><?=htmlspecialchars(number_format($shipping))."원"?></td>                                        
+                                        <td><?=htmlspecialchars($sellRow['product_name'])?></td>
+                                        <td><?=htmlspecialchars($sellRow['sellQuantity'])?></td>
+                                        <td><?=htmlspecialchars(number_format($sellRow['sellPrice']))."원"?></td>                            
                                     </tr>
                                     
                                 <?php
@@ -270,6 +252,34 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- 페이지네이션 -->
+                    <?php 
+                    if(!isset($_GET['searchKeyword'])){
+                    ?>
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <?php if($hasPrev): ?>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&start=<?= $startDate ?>&end=<?= $endDate ?>">Previous</a></li>
+                            <?php else: ?>
+                                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                            <?php endif; ?>
+
+                            <?php for($i = $startPage; $i <= $endPage; $i++): ?>
+                                <?php if ($i == $page): ?>
+                                    <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
+                                <?php else: ?>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&start=<?= $startDate ?>&end=<?= $endDate ?>"><?= $i ?></a></li>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+
+                            <?php if ($hasNext): ?>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&start=<?= $startDate ?>&end=<?= $endDate ?>">Next</a></li>
+                            <?php else: ?>
+                                <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
+                    <?php }?>
                 </div>
             </div>
         </div>
@@ -367,7 +377,7 @@
         </div>
 
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
@@ -426,7 +436,7 @@
         }
        
         $("#search-btn").click(function(){
-            searchOrderList();
+            searchQuanList();
         });
 
         function changeRageText(dateRange){
@@ -436,15 +446,15 @@
 
 		}
 
-        function searchOrderList(){
+        function searchQuanList(){
             console.log("start",startDate);
             console.log("end",endDate);
             
-            if($("#order-search").val()==''){
-                location.href = './order.php?start='+startDate+"&end="+endDate;
+            if($("#search-input").val()==''){
+                location.href = './quan-product.php?start='+startDate+"&end="+endDate;
             }else{
                 const searchType = $("#order-filter option:selected").val();
-                location.href = './order.php?start='+startDate+"&end="+endDate+"&searchType="+searchType+"&searchKeyword="+$("#order-search").val();
+                location.href = './quan-product.php?searchKeyword='+$("#search-input").val();
             }
         }
 

@@ -12,6 +12,10 @@
     <title>상품 관리</title>
 </head>
 <style>
+    #search-list{
+        max-height: 300px;
+        overflow-y: auto;
+    }
     .result-basic{
         display: none;
         padding: 50px 0 10px;
@@ -63,7 +67,7 @@
                 </div>
                 <div class="row">
                     <label for="datepicker">상품 직접 입력</label>
-                    <div class="filter-group col-md-4">
+                    <div class="filter-group col-md-4 pt-2">
                         <div class="form-group">
                             <input type="text" class="form-control" name="direct-name" placeholder="상품명">
                         </div>
@@ -76,7 +80,7 @@
                 </div>
                 <div class="row mt-3">
                     <label for="datepicker">상품 검색 입력</label>
-                    <div class="filter-group col-md-4">
+                    <div class="filter-group col-md-4 pt-2">
                         <div class="form-group">
                             <input type="text" class="form-control" placeholder="상품명" id="search-input">
                         </div>
@@ -92,17 +96,8 @@
                         <div class="col-sm-4">
                             <span>상품명</span>
                         </div>
-                        <div class="col-sm-2">
-                            <span>규격</span>
-                        </div>
                         <div class="col-sm-1">
                             <span>단가</span>
-                        </div>
-                        <div class="col-sm-1">
-                            <span>상품가</span>
-                        </div>
-                        <div class="col-sm-2">
-                            <span>마켓</span>
                         </div>
                         <div class="col-sm-1">
                             <span>선택</span>
@@ -208,7 +203,7 @@
                                 <input type="text" class="form-control localeNumber" name="orderShipping[]" placeholder="택배비" >
                             </div>
                         </div>
-                        <div class="filter-group col-md-1">
+                        <div class="filter-group col-md-1" id="martketData">
                             <div class="form-group">
                                 <select name="orderMarket[]" class="form-select" id="">
                                 <?php
@@ -307,19 +302,10 @@
                         resultDiv.className = "d-flex mb-2"; // 레이아웃 클래스 추가
                         resultDiv.innerHTML = `
                             <div class="col-sm-4">
-                                <span>${item.product_name}</span>
-                            </div>
-                            <div class="col-sm-2">
-                                <span>${item.combination_key}</span>
+                                <span>${item.matching_name}</span>
                             </div>
                             <div class="col-sm-1">
-                                <span>${parseInt(item.cost_price).toLocaleString()} 원</span>
-                            </div>
-                            <div class="col-sm-1">
-                                <span>${parseInt(item.price).toLocaleString()} 원</span>
-                            </div>
-                            <div class="col-sm-2">
-                                <span>${item.market_name}</span>
+                                <span>${parseInt(item.cost).toLocaleString()} 원</span>
                             </div>
                             <div class="col-sm-1">
                                 <button class="btn btn-outline-secondary btn-sm add-to-order-btn" data-product='${JSON.stringify(item)}'>
@@ -345,6 +331,7 @@
         document.addEventListener("click", function (e) {
             if (e.target.closest(".add-to-order-btn")) {
                 const button = e.target.closest(".add-to-order-btn");
+                var market = $("#martketData").clone().prop("outerHTML");
 
                 // 버튼에 저장된 JSON 데이터 가져오기
                 const productData = JSON.parse(button.getAttribute("data-product"));
@@ -355,7 +342,7 @@
                 orderRow.innerHTML = `
                     <div class="filter-group col-md-3">
                         <div class="form-group">
-                            <input type="text" class="form-control" name="orderName[]" placeholder="상품명" readonly="" value="${productData.product_name} - ${productData.combination_key}">
+                            <input type="text" class="form-control" name="orderName[]" placeholder="상품명" readonly="" value="${productData.matching_name}">
                         </div>
                     </div>
                     <div class="filter-group col-md-2">
@@ -365,12 +352,12 @@
                     </div>
                     <div class="filter-group col-md-1">
                         <div class="form-group">
-                            <input type="text" class="form-control localeNumber" name="orderCost[]" readonly="" placeholder="원가" value="${parseInt(productData.cost_price).toLocaleString()}">
+                            <input type="text" class="form-control localeNumber" name="orderCost[]" readonly="" placeholder="원가" value="${parseInt(productData.cost).toLocaleString()}">
                         </div>
                     </div>
                     <div class="filter-group col-md-1">
                         <div class="form-group">
-                            <input type="text" class="form-control localeNumber" name="orderPrice[]" readonly="" placeholder="판매가" value="${parseInt(productData.price).toLocaleString()}">
+                            <input type="text" class="form-control localeNumber" name="orderPrice[]" placeholder="판매가" value="">
                         </div>
                     </div>
                     <div class="filter-group col-md-1">
@@ -382,14 +369,7 @@
                         <div class="form-group">
                             <input type="text" class="form-control localeNumber" name="orderShipping[]" placeholder="택배비">
                         </div>
-                    </div>
-                    <div class="filter-group col-md-1">
-                        <div class="form-group">
-                            <select cass="form-select" name="orderMarket[]">
-                                <option value="${productData.market_ix}">${productData.market_name}</option>
-                            </select>
-                        </div>
-                    </div>
+                    </div>`+market+`
                     <div class="filter-group col-md-1">
                         <div class="form-group">
                             <button class="btn btn-secondary remove-btn">X</button>
@@ -419,14 +399,14 @@
                 if(index==0) return;
 
                 $(element).find("input").each(function () {
-                    if ($(this).val().trim() === "") {
+                    if ($(this).val().trim() === "" && $(this).attr("name")!="orderNumber[]") {
                         isValid = false; // 하나라도 비어 있으면 false 설정
                         return false; // 반복문 종료
                     }
                 });
 
                 if (!isValid) {
-                    basicSwal("빈칸을 채워주세요.");
+                    basicSwal("빈칸을 채워주세요.",true);
                     return false; // `each` 루프 종료
                 }
 
@@ -443,11 +423,13 @@
                         basicFunctionSwal('주문이 등록되었습니다.',function() {
                             location.reload();
                         });
+                    }else{
+                        alert(response.msg);
                     }
 
                 },
                 error: function(xhr, status, error) {
-                    alert('전송 실패: ' + error);
+                    // alert('전송 실패: ' + error);
                 }
             });
             

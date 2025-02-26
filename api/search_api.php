@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if($searchType=='product'){
         $searchTerm = $conn->real_escape_string($searchKeyword); // 사용자 입력값
         $likeKeyword = "%$searchTerm%";
-        $query = "SELECT * FROM product_search_view WHERE market_user_ix = '$userIx' AND product_user_ix = '$userIx' AND product_name LIKE '$likeKeyword'";
+        $query = "SELECT * FROM matching_name WHERE user_ix = '$userIx' AND matching_name LIKE '$likeKeyword'";
         $result = $conn->query($query);
 
         $searchResult = [];
@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         ob_clean();
         echo json_encode($searchResult, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+
+    //db-matching에서 매칭상품 검색
     }else if($searchType=='matching'){
         $searchTerm = $conn->real_escape_string($searchKeyword); // 사용자 입력값
         $likeKeyword = "%$searchTerm%";

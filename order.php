@@ -83,14 +83,17 @@
     
     $userIx = isset($_SESSION['user_ix']) ? : '1';
     $today = date("Y-m-d");
-
-    $startDate = isset($_POST['start']) ? $_POST['start'] : date("Y-m-d");
-    $endDate = isset($_POST['end']) ? $_POST['end'] : date("Y-m-d");
     $page = $_GET['page'] ?? 1;
     
     $orderResult = [];
     $orderTypeSearchKeyworSql = "";
     $searchParams = [];
+
+    $itemsPerPage =  20;
+    $startIndex = ($page - 1) * $itemsPerPage;
+
+    $startDate = $_GET['start'] ?? date("y-m-d");
+    $endDate = $_GET['end'] ?? date("y-m-d");
 
     //검색 영역에 값이 들어오면
     if(isset($_GET['searchKeyword'])){
@@ -104,12 +107,22 @@
             $orderTypeSearchKeyworSql = "AND o." . $searchType . " = ?";
             $searchParams[] = $searchKeyword;
         }
-    }
 
-    if (isset($_GET['start']) && isset($_GET['end'])) {
-        $startDate = $_GET['start'];
-        $endDate = $_GET['end'];
-        
+        $orderQuery = "
+            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            od.cost, m.basic_fee, m.linked_fee, m.ship_fee
+            FROM orders o
+            JOIN order_details od ON o.ix = od.orders_ix
+            JOIN market m ON m.ix = o.market_ix
+            WHERE o.user_ix = ? AND od.status='completed'
+            $orderTypeSearchKeyworSql
+        ";
+
+        $orderStmt = $conn->prepare($orderQuery);
+        $bindParams = array_merge([$userIx], $searchParams);
+        $orderStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
+
+    }else{     
         $orderQuery = "
             SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
@@ -118,61 +131,53 @@
             JOIN market m ON m.ix = o.market_ix
             WHERE o.user_ix = ? 
             AND o.order_date >= ?
-            AND o.order_date <= ? AND od.status='completed'
-            $orderTypeSearchKeyworSql
+            AND o.order_date <= ? AND od.status='completed' LIMIT ? OFFSET ?
         ";
         $orderStmt = $conn->prepare($orderQuery);
-        $bindParams = array_merge([$userIx, $startDate, $endDate], $searchParams);
-        $orderStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
-    
-        // Execute and Fetch Results
-        $orderStmt->execute();
-        $result = $orderStmt->get_result();
+        $orderStmt->bind_param("sssss",$userIx,$startDate,$endDate,$itemsPerPage,$startIndex);
 
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $orderResult[] = $row;
-            }
-        }
-    }else{
 
-        $orderQuery = "
+        $totalQuery = "
             SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
             JOIN market m ON m.ix = o.market_ix
             WHERE o.user_ix = ? 
-            AND o.order_date = ? AND od.status='completed'
-            $orderTypeSearchKeyworSql";
-        
-        $orderStmt = $conn->prepare($orderQuery);
+            AND o.order_date >= ?
+            AND o.order_date <= ? AND od.status='completed'
+        ";
+        $totalStmt = $conn->prepare($totalQuery);
+        $totalStmt->bind_param("sss",$userIx,$startDate,$endDate);
+    }   
 
-        $orderStmt = $conn->prepare($orderQuery);
-        $bindParams = array_merge([$userIx, $today], $searchParams);
-        $orderStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
-    
-        // Execute and Fetch Results
-        $orderStmt->execute();
-        $result = $orderStmt->get_result();
+    // Execute and Fetch Results
+    $orderStmt->execute();
+    $result = $orderStmt->get_result();
 
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $orderResult[] = $row;
-            }
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $orderResult[] = $row;
         }
     }
 
-    // 페이지 링크 범위 설정 (예: 현재 페이지를 기준으로 ±2개의 링크 표시)
-    $visibleRange = 2;
-    $startPage = max(1, $page - $visibleRange);
-    $endPage = min($totalPages, $page + $visibleRange);
+    if(!isset($_GET['searchKeyword'])){
+        $totalStmt->execute();
+        $totalItems = $totalStmt->get_result()->num_rows;
+        $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
 
-    // 이전/다음 페이지 계산
-    $hasPrev = $page > 1;
-    $hasNext = $page < $totalPages;
-    $prevPage = $hasPrev ? $page - 1 : null;
-    $nextPage = $hasNext ? $page + 1 : null;
+        // 페이지 링크 범위 설정 (예: 현재 페이지를 기준으로 ±2개의 링크 표시)
+        $visibleRange = 2;
+        $startPage = max(1, $page - $visibleRange);
+        $endPage = min($totalPages, $page + $visibleRange);
+
+        // 이전/다음 페이지 계산
+        $hasPrev = $page > 1;
+        $hasNext = $page < $totalPages;
+        $prevPage = $hasPrev ? $page - 1 : null;
+        $nextPage = $hasNext ? $page + 1 : null;
+    }
+    
     ?>
     <!-- 헤더 -->
 
@@ -216,7 +221,7 @@
                                 </select>
                             </div>
                             <div class="col-md-5">
-                                <input type="text" class="form-control" placeholder="주문번호 검색" id="order-search">
+                                <input type="text" class="form-control" placeholder="주문번호 검색" id="search-input">
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-primary" id="search-btn">조회하기</button>
@@ -291,10 +296,13 @@
                         </table>
                     </div>
                     <!-- 페이지네이션 -->
+                    <?php 
+                    if(!isset($_GET['searchKeyword'])){
+                    ?>
                     <nav aria-label="Page navigation example">
                         <ul class="pagination">
                             <?php if($hasPrev): ?>
-                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Previous</a></li>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&start=<?= $startDate ?>&end=<?= $endDate ?>">Previous</a></li>
                             <?php else: ?>
                                 <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
                             <?php endif; ?>
@@ -303,17 +311,18 @@
                                 <?php if ($i == $page): ?>
                                     <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
                                 <?php else: ?>
-                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&itemsPerPage=<?= $itemsPerPage ?>"><?= $i ?></a></li>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&start=<?= $startDate ?>&end=<?= $endDate ?>"><?= $i ?></a></li>
                                 <?php endif; ?>
                             <?php endfor; ?>
 
                             <?php if ($hasNext): ?>
-                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Next</a></li>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&start=<?= $startDate ?>&end=<?= $endDate ?>">Next</a></li>
                             <?php else: ?>
                                 <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
                             <?php endif; ?>
                         </ul>
                     </nav>
+                    <?php }?>
                 </div>
             </div>
         </div>
@@ -481,14 +490,11 @@
 		}
 
         function searchOrderList(){
-            console.log("start",startDate);
-            console.log("end",endDate);
-            
-            if($("#order-search").val()==''){
+            if($("#search-input").val()==''){
                 location.href = './order.php?start='+startDate+"&end="+endDate;
             }else{
                 const searchType = $("#order-filter option:selected").val();
-                location.href = './order.php?start='+startDate+"&end="+endDate+"&searchType="+searchType+"&searchKeyword="+$("#order-search").val();
+                location.href = './order.php?searchType='+searchType+'&searchKeyword='+$("#search-input").val();
             }
         }
 

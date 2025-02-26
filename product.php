@@ -19,31 +19,55 @@
     include './sidebar.html';
     include './dbConnect.php';
 
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
-    $page = isset($_GET['page']) ? $_GET['page'] : 1;
-    $itemsPerPage = isset($_GET['itemsPerPage']) ? $_GET['itemsPerPage'] : 20;
+    $userIx = $_SESSION['user_ix'] ?? '1';
+    $page = $_GET['page'] ?? 1;
+    $itemsPerPage =  $_GET['itemsPerPage'] ?? 20;
 
-    $totalItems = $conn->query("SELECT COUNT(*) as total FROM product WHERE user_ix='$userIx'")->fetch_assoc()['total'];
+    $totalItems = $conn->query("SELECT COUNT(*) as total FROM matching_name WHERE user_ix='$userIx'")->fetch_assoc()['total'];
     
     $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
     $startIndex = ($page - 1) * $itemsPerPage;
     
-    // $listStmt = $conn->prepare("SELECT IFNULL(a.name,'') as acName,IFNULL(c.name,'') as cateName, poc.ix as combIx, pomp.ix as mpIx, 
-    // m.market_name, p.name, poc.combination_key, poc.cost_price, poc.stock, pomp.price FROM product p 
-    // JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=? 
-    // JOIN product_option_market_price pomp ON poc.ix = pomp.product_option_comb_ix 
-    // JOIN market m ON m.ix = pomp.market_ix LEFT JOIN account a ON p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix LIMIT ? OFFSET ?");
+    $where = ["mn.user_ix = ?"];
+    $params = [$userIx];
+    $paramTypes = "i"; // user_ix는 정수형이므로 "i"
 
-    $listStmt = $conn->prepare("SELECT  IFNULL(a.name, '') AS acName, IFNULL(c.name, '') AS cateName, p.ix AS pIx, p.name AS productName,  p.create_at, poc.combination_key,
-    SUM(poc.stock) AS total_stock, poc.cost_price FROM  product p JOIN  product_option_combination poc ON  p.ix = poc.product_ix AND p.user_ix = ? LEFT JOIN account a ON 
-    p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix GROUP BY p.ix, p.name, p.create_at, a.name, c.name LIMIT ? OFFSET ?");
+    if (!empty($_GET['category']) && $_GET['category']!=="전체") {
+        $where[] = "c.ix = ?";
+        $params[] = $_GET['category'];
+        $paramTypes .= "s"; // 문자열이므로 "s"
+    }
+    
+    if (!empty($_GET['account']) && $_GET['account']!=="전체") {
+        $where[] = "a.ix = ?";
+        $params[] = $_GET['account'];
+        $paramTypes .= "s"; // 문자열이므로 "s"
+    }
+    
+    if (!empty($_GET['name'])) {
+        $where[] = "mn.matching_name LIKE ?";
+        $params[] = "%".$_GET['name']."%";
+        $paramTypes .= "s"; // 문자열이므로 "s"
+    }
+
+    $limit = $_GET['itemsPerPage'] ?? 20;
+    $offset = $startIndex;
+
+    $whereClause = implode(" AND ", $where);
+
+    $listStmt = $conn->prepare("SELECT mn.ix AS mnIx, mn.matching_name AS productName, a.name AS acName, c.name AS cateName, mn.stock, mn.cost FROM matching_name mn 
+    JOIN account a ON a.ix = mn.account_ix JOIN category c ON c.ix = mn.category_ix WHERE $whereClause LIMIT ? OFFSET ?");
+
+    $params[] = $limit;
+    $params[] = $offset;
+    $paramTypes .= "ii";
 
 // SELECT IFNULL(a.name,'') as acName,IFNULL(c.name,'') as cateName, poc.ix as combIx,p.ix as pIx, p.name, p.create_at, poc.combination_key, poc.cost_price, poc.stock FROM product p JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=1 LEFT JOIN account a ON p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix LIMIT 20 OFFSET 0;
 
     if (!$listStmt) {
         throw new Exception("Error preparing list statement: " . $conn->error); // *** 수정 ***
     }
-    $listStmt->bind_param("sss",$userIx,$itemsPerPage,$startIndex);
+    $listStmt->bind_param($paramTypes,...$params);
     if (!$listStmt->execute()) {
         throw new Exception("Error executing list statement: " . $listStmt->error); // *** 수정 ***
     }
@@ -82,11 +106,11 @@
                 <div class="row">
                     <div class="filter-group col-md-6">
                         <label for="account-cate">거래처</label>
-                        <select id="account-cate">
+                        <select id="product-account">
                             <option>전체</option>
                             <?php
                                 $accountResult = [];
-                                $query = "SELECT * FROM account WHERE user_ix='$user_ix'";
+                                $query = "SELECT * FROM account WHERE user_ix='$userIx'";
                                 $result = $conn->query($query);
                         
                                 if ($result->num_rows > 0) {
@@ -96,7 +120,7 @@
                                 }
                                 foreach($accountResult as $accountRow) {
                             ?>
-                                <option value="<?=htmlspecialchars($accountRow['name'])?>"><?=htmlspecialchars($accountRow['name'])?></option>
+                                <option value="<?=htmlspecialchars($accountRow['ix'])?>"><?=htmlspecialchars($accountRow['name'])?></option>
                             <?php }?>
                         </select>
                     </div>
@@ -104,7 +128,20 @@
                         <label for="product-cate">카테고리</label>
                         <select id="product-cate">
                             <option>전체</option>
-                            <option value="1">1</option>
+                            <?php
+                                $categoryResult = [];
+                                $query = "SELECT * FROM category WHERE user_ix='$userIx'";
+                                $result = $conn->query($query);
+                        
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        $categoryResult[] = $row;
+                                    }
+                                }
+                                foreach($categoryResult as $categoryRow) {
+                            ?>
+                                <option value="<?=htmlspecialchars($categoryRow['ix'])?>"><?=htmlspecialchars($categoryRow['name'])?></option>
+                            <?php }?>
                         </select>
                     </div>
                 </div>
@@ -113,7 +150,7 @@
                 </div>
                 <div class="buttons">
                     <button class="btn-primary" id="search-btn">조회</button>
-                    <button class="btn-secondary" id="reset-btn">초기화</button>
+                    <button class="btn-secondary" id="reset-btn" onclick="location.href='./product.php';">초기화</button>
                 </div>
             </div>
         </div>
@@ -136,19 +173,21 @@
                 <div class="table-container table-responsive">
                     <table class="table table-hover">
                         <colgroup>
-                            <col style="width: 40%;"> <!-- 첫 번째 열은 30% -->
-                            <col style="width: 15%;"> <!-- 두 번째 열은 50% -->
+                            <col style="width: 50%;"> <!-- 첫 번째 열은 30% -->
+                            <col style="width: 10%;"> <!-- 두 번째 열은 50% -->
                             <col style="width: 15%;"> <!-- 세 번째 열은 20% -->
-                            <col style="width: 10%;"> <!-- 세 번째 열은 20% -->
-                            <col style="width: 20%;"> <!-- 세 번째 열은 20% -->
+                            <col style="width: 15%;"> <!-- 세 번째 열은 20% -->
+                            <col style="width: 5%;"> <!-- 세 번째 열은 20% -->
+                            <col style="width: 5%;"> <!-- 세 번째 열은 20% -->
                         </colgroup>
                         <thead class=" table-light">
                             <tr>
                                 <th>제품이름</th>
                                 <th>도매처</th>
                                 <th>카테고리</th>
-                                <th>재고수량</th>
-                                <th>생성일</th>
+                                <th>원가</th>
+                                <th>재고</th>
+                                <!-- <th>생성일</th> -->
                                 <th></th>
                             </tr>
                         </thead>
@@ -160,12 +199,13 @@
                             if(isset($listResult)){
                                 foreach ($listResult as $index => $row) {
 
-                                    $procut_ix = $row['pIx'];
+                                    $product_ix = $row['mnIx'];
                                     $cate_name = $row['cateName'];
                                     $account_name = $row['acName'];
                                     $product_name = $row['productName'];
-                                    $total_stock = $row['total_stock'];
-                                    $create_at = $row['create_at'];
+                                    $total_stock = $row['stock'];
+                                    $cost = $row['cost'];
+                                    // $create_at = $row['create_at'];
                                                                    
 
                                     // $currentProductName = $name;
@@ -183,14 +223,15 @@
                             ?>        
                             <tr>
                                 <td>
-                                    <a href="./product-edit.php?ix=<?=htmlspecialchars($procut_ix)?>" style="color:#0069d9;"><?=htmlspecialchars($product_name)?></a>
+                                    <a href="./product-edit.php?ix=<?=htmlspecialchars($product_ix)?>" style="color:#0069d9;"><?=htmlspecialchars($product_name)?></a>
                                 </td>
-                                <td><?=htmlspecialchars($account_name)?></td>
-                                <td><?=htmlspecialchars($cate_name)?></td>
-                                <td><?=htmlspecialchars($total_stock)?></td>
-                                <td><?=htmlspecialchars($create_at)?></td>
+                                <td class="acTd" data-t="account_ix" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars($account_name)?></td>
+                                <td class="caTd" data-t="category_ix" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars($cate_name)?></td>
+                                <td class="editTd" data-t="cost" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars(number_format($cost))?></td>
+                                <td class="editTd" data-t="stock" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars($total_stock)?></td>
+                                <!-- <td><?=htmlspecialchars($create_at)?></td> -->
                                 <td>
-                                    <button class="btn btn-light product-del" data-ix="<?=htmlspecialchars($procut_ix)?>">
+                                    <button class="btn btn-light product-del" data-ix="<?=htmlspecialchars($product_ix)?>">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
                                             <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"></path>
                                         </svg>
@@ -292,6 +333,114 @@
                     console.log(error);
                 }
             });
+        }
+
+        // 검색
+        $("#search-btn").click(function(){
+            searchOrderList();
+        });
+
+        function searchOrderList(){
+            location.href = './product.php?account='+$("#product-account option:selected").val()+'&category='+$("#product-cate option:selected").val()+'&name='+$("#search-input").val()+'&itemsPerPage='+$("#itemsPerPage option:selected").val()+'&page='+<?=$page?>;
+        }
+
+        // 항목 더블클릭시 수정 가능하도록
+        $(".editTd").dblclick(function(){
+            let td = $(this);
+            let originalText = td.text().trim();
+            let input = $("<input type='text' class='form-control'>").val(originalText);
+
+            td.html(input);
+            input.focus();
+            
+            // Enter 키 입력 시 저장
+            input.keypress(function(event) {
+                if (event.which == 13) {
+                    saveData(input,td,originalText,'input');
+                }
+            });
+
+            // 포커스를 잃으면 저장 후 td로 변경
+            input.blur(function() {
+                saveData(input,td,originalText,'input');
+            });
+        });
+
+        $(".acTd").dblclick(function(){
+            let td = $(this);
+            let accountDiv = $("#product-account").clone();
+            let originalText = td.text().trim();
+
+            td.html(accountDiv);
+            let select = td.find('#product-account');
+            select.focus();
+
+            // Enter 키 입력 시 저장
+            select.keypress(function(event) {
+                if (event.which == 13) {
+                    saveData(select,td,originalText,'select');
+                }
+            });
+
+            // 포커스를 잃으면 저장 후 td로 변경
+            select.blur(function() {
+                saveData(select,td,originalText,'select');
+            });
+
+        });
+
+        $(".caTd").dblclick(function(){
+            let td = $(this);
+            let accountDiv = $("#product-cate").clone();
+
+            td.html(accountDiv);
+            input.focus();
+
+            // Enter 키 입력 시 저장
+            input.keypress(function(event) {
+                if (event.which == 13) {
+                    saveData(input,td,originalText);
+                }
+            });
+
+            // 포커스를 잃으면 저장 후 td로 변경
+            input.blur(function() {
+                saveData(input,td,originalText);
+            });
+
+        });
+
+        // 수정 데이터 전송
+        function saveData(input,td,originalText,col) {
+            let newValue = "";
+            if(col=="input"){
+                newValue = input.val().trim();
+            }else{
+                newValue = $(input).find("option:selected").text();
+            }
+            let ix = td.attr('data-ix');
+            let type = td.attr('data-t');
+
+            td.text(newValue); // 성공하면 td에 새로운 값 적용
+
+            console.log(type,'type', ix, 'ix',newValue, 'newValue');
+            // if (newValue !== originalText) { // 값이 변경된 경우에만 AJAX 실행
+            //     $.ajax({
+            //         url: "./api/product_edit_api.php",  // 데이터를 처리할 PHP 파일
+            //         type: "POST",
+            //         data: { 'matchingIx': ix, 'value': newValue, 'type':'matchingEdit', 'editCol':type },
+            //         success: function(response) {
+            //             console.log("서버 응답:", response);  // 응답 확인
+            //             td.text(newValue); // 성공하면 td에 새로운 값 적용
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.error("에러 발생:", error);
+            //             td.text(originalText); // 에러 발생 시 원래 값 유지
+            //         }
+            //     });
+            // } else {
+            //     td.text(originalText); // 변경이 없으면 원래 값으로 돌아감
+            // }
         }
 
         function toast(){

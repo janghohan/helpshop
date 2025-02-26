@@ -40,6 +40,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             max-height: 80vh;
             overflow-y: auto;
+            padding-bottom: 60px;
         }
         .data-row {
             display: flex;
@@ -153,31 +154,34 @@
                         원가(원)
                     </div>
                     <div class="checkbox-container">
-                        <input type="checkbox" class="allCheckbox">
                     </div>
                 </div>
                 <?php
-                foreach($listResult as $listRow) {
 
-                ?>  
-                    <div class="data-row" data-ix="<?=htmlspecialchars($listRow['detailIx'])?>">
-                        <div class="source"><?=htmlspecialchars($listRow['market_name'])?></div>
-                        <div class="input-container"><?=htmlspecialchars($listRow['name'])?></div>
-                        <input type="hidden" class="orderName" value="<?=htmlspecialchars($listRow['name'])?>">
-                        <div class="input-container">
-                            <input type="text" placeholder="값 입력" class="matchingText">
-                            <div class="autocomplete-results"></div>
+                if ($result->num_rows > 0) {
+                    foreach($listResult as $listRow) {
+
+                    ?>  
+                        <div class="data-row" data-ix="<?=htmlspecialchars($listRow['detailIx'])?>">
+                            <div class="source"><?=htmlspecialchars($listRow['market_name'])?></div>
+                            <div class="input-container"><?=htmlspecialchars($listRow['name'])?></div>
+                            <input type="hidden" class="orderName" value="<?=htmlspecialchars($listRow['name'])?>">
+                            <div class="input-container">
+                                <input type="text" placeholder="값 입력" class="matchingText">
+                                <div class="autocomplete-results"></div>
+                            </div>
+                            <div class="input-container" style="width:120px;">
+                                <input type="text" class="form-control localeNumber matchingCost">
+                            </div>
+                            <div class="checkbox-container">
+                                <!-- <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]"> -->
+                                <button class="btn sync-button">동기화</button>
+                            </div>
                         </div>
-                        <div class="input-container" style="width:120px;">
-                            <input type="text" class="form-control localeNumber cost">
-                        </div>
-                        <div class="checkbox-container">
-                            <!-- <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]"> -->
-                            <button class="btn sync-button">동기화</button>
-                        </div>
-                    </div>
-                
-                <?php } ?>
+                    
+                    <?php } }else{?>
+                        <p class="text-center pt-5">주문을 등록해주세요.</p>
+                    <?php } ?>
                 <!-- Example Row -->
                 
                 <!-- More rows dynamically loaded here -->
@@ -212,7 +216,7 @@
                         if (response.length > 0) {
                             resultsContainer.show();
                             response.forEach(item => {
-                                resultsContainer.append('<div class="result-item" data-v='+item.ix+'>' + item.matching_name+'</div>');
+                                resultsContainer.append('<div class="result-item" data-v='+item.cost+'>' + item.matching_name+'</div>');
                             });
                         } else {
                             resultsContainer.hide();
@@ -228,9 +232,17 @@
         // 검색된 항목 클릭 시 검색어로 채우기
         $(document).on('click', '.result-item', function() {
             var selectedValue = $(this).text();
+            var selectedCost = $(this).attr('data-v');
+            console.log(selectedCost);
             $(this).parent().parent().find(".matchingText").val(selectedValue);
-            $(this).parent().parent().find(".matchingValue").val($(this).attr('data-v'));
+            $(this).parent().parent().parent().find(".matchingCost").val(selectedCost);
             $(this).parent().hide();
+        });
+
+        $(document).on("click", function (e) {
+            if (!$(e.target).closest(".autocomplete-results").length) {
+                $(".autocomplete-results").hide();
+            }
         });
 
         $(".allCheckbox").click(function(){
@@ -244,7 +256,8 @@
             const orderName = $(db).find('.orderName').val();
             const odIx = $(db).attr('data-ix');
             const matchingName = $(db).find(".matchingText").val();
-            const cost = $(db).find('.cost').val();
+            const cost = $(db).find('.matchingCost').val();
+
 
             if(matchingName=="" || cost==""){
                 basicSwal("빈칸을 채워주세요.",true);

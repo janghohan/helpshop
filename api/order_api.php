@@ -52,13 +52,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($orderNames as $index => $orderName){
             if($index==0) continue;
 
-            $orderPrice = changeTextToIntForMoney($orderPrices[$index]) * $orderQuantitys[$index];
+            $orderPrice = changeTextToIntForMoney($orderPrices[$index]);
             $orderCost = changeTextToIntForMoney($orderCosts[$index]);
             $orderDetailStmt = $conn->prepare("INSERT INTO order_details(orders_ix,name,cost,quantity,price) VALUES(?,?,?,?,?)");
             $orderDetailStmt->bind_param("ssiii",$ordersIx,$orderName,$orderCost,$orderQuantitys[$index],$orderPrice);
             if(!$orderDetailStmt->execute()){
                 $response['status'] = 'fail';
                 $response['msg'] = 'orderDetail Stmt Fail';
+            }else{
+                $detailIx = $orderDetailStmt->insert_id;
+
+                $accountStmt = $conn->prepare("SELECT * FROM account WHERE user_ix=?");
+                $accountStmt->bind_param("s",$userIx);
+                $accountStmt->execute();
+                $accountResult = $accountStmt->get_result();
+                if ($accountResult->num_rows > 0) {
+                    $accountRow = $accountResult->fetch_assoc(); // 결과에서 한 행을 가져옴
+                    $accountIx = $accountRow['ix'];
+                }
+
+                $categoryStmt = $conn->prepare("SELECT * FROM category WHERE user_ix=?");
+                $categoryStmt->bind_param("s",$userIx);
+                $categoryStmt->execute();
+                $categoryResult = $categoryStmt->get_result();
+                if ($categoryResult->num_rows > 0) {
+                    $categoryRow = $categoryResult->fetch_assoc(); // 결과에서 한 행을 가져옴
+                    $categoryIx = $categoryRow['ix'];
+                }
+
+                // matching_name table 저장
+                $matchingStmt = $conn->prepare("INSERT IGNORE INTO matching_name(user_ix,category_ix,account_ix,matching_name,cost) VALUES(?,?,?,?,?)");
+                $matchingStmt->bind_param("sssss",$userIx,$categoryIx,$accountIx,$orderName,$orderCost);
+                $matchingStmt->execute();
+
+                if ($matchingStmt->affected_rows === 0) {
+                    
+                }else{
+                    $nameIx = $matchingStmt->insert_id;
+                    // db_match table 저장
+                    $dbStmt = $conn->prepare("INSERT INTO db_match(user_ix,details_ix,name_of_excel,matching_ix) VALUES(?,?,?,?)");
+                    $dbStmt->bind_param("ssss",$userIx,$detailIx,$orderName,$nameIx);
+                    $dbStmt->execute();
+                }
+
+               
+
             }
         }
 

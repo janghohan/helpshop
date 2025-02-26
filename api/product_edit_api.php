@@ -85,6 +85,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+    
+    }else if($type=='matchingEdit'){
+        $matchingIx = $_POST['matchingIx'] ?? '';
+        $value = $_POST['value'] ?? '';
+        $editCol = $_POST['editCol'] ?? '';
+
+        $allowedColumns = ['cost', 'stock']; // 수정 가능한 컬럼들 추가
+
+        // 2️⃣ 컬럼명 검증
+        if (!in_array($editCol, $allowedColumns)) {
+            echo json_encode(['status' => 'fail', 'message' => 'no allowed column'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+            die("잘못된 컬럼명입니다.");
+            
+        }
+  
+
+        //옵션값, 원가, 재고 수정
+        $sql = "UPDATE matching_name SET `$editCol`=? WHERE ix=? AND user_ix=?";
+        $matchingStmt = $conn->prepare($sql);
+        $matchingStmt->bind_param("sss",$value,$matchingIx,$userIx);
+        if(!$matchingStmt->execute()){
+            // throw new Exception("Error executing productUpdateStmt statement: " . $productStmt->error); // *** 수정 ***
+            echo json_encode(['status' => 'fail', 'message' => 'Error executing matchingUpdate statement'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        }else{
+            echo json_encode(['status' => 'success', 'message' => 'matching update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        }
+
+        
+
+        // matchingIx': ix, 'value': newValue, 'type':'matchingEdit', 'editCol':type 
     }
     
 } else {
