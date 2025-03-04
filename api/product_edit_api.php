@@ -91,7 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $value = $_POST['value'] ?? '';
         $editCol = $_POST['editCol'] ?? '';
 
-        $allowedColumns = ['cost', 'stock']; // 수정 가능한 컬럼들 추가
+        $allowedColumns = ['cost', 'stock', 'category_ix', 'account_ix']; // 수정 가능한 컬럼들 추가
+        $value = str_replace(",","",$value);
 
         // 2️⃣ 컬럼명 검증
         if (!in_array($editCol, $allowedColumns)) {

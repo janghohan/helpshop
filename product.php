@@ -106,8 +106,8 @@
                 <div class="row">
                     <div class="filter-group col-md-6">
                         <label for="account-cate">거래처</label>
-                        <select id="product-account">
-                            <option>전체</option>
+                        <select class="product-account">
+                            <option value="0">전체</option>
                             <?php
                                 $accountResult = [];
                                 $query = "SELECT * FROM account WHERE user_ix='$userIx'";
@@ -126,8 +126,8 @@
                     </div>
                     <div class="filter-group col-md-6">
                         <label for="product-cate">카테고리</label>
-                        <select id="product-cate">
-                            <option>전체</option>
+                        <select class="product-cate">
+                            <option value="0">전체</option>
                             <?php
                                 $categoryResult = [];
                                 $query = "SELECT * FROM category WHERE user_ix='$userIx'";
@@ -176,8 +176,8 @@
                             <col style="width: 50%;"> <!-- 첫 번째 열은 30% -->
                             <col style="width: 10%;"> <!-- 두 번째 열은 50% -->
                             <col style="width: 15%;"> <!-- 세 번째 열은 20% -->
-                            <col style="width: 15%;"> <!-- 세 번째 열은 20% -->
-                            <col style="width: 5%;"> <!-- 세 번째 열은 20% -->
+                            <col style="width: 10%;"> <!-- 세 번째 열은 20% -->
+                            <col style="width: 10%;"> <!-- 세 번째 열은 20% -->
                             <col style="width: 5%;"> <!-- 세 번째 열은 20% -->
                         </colgroup>
                         <thead class=" table-light">
@@ -341,18 +341,45 @@
         });
 
         function searchOrderList(){
-            location.href = './product.php?account='+$("#product-account option:selected").val()+'&category='+$("#product-cate option:selected").val()+'&name='+$("#search-input").val()+'&itemsPerPage='+$("#itemsPerPage option:selected").val()+'&page='+<?=$page?>;
+            location.href = './product.php?account='+$(".product-account option:selected").val()+'&category='+$(".product-cate option:selected").val()+'&name='+$("#search-input").val()+'&itemsPerPage='+$("#itemsPerPage option:selected").val()+'&page='+<?=$page?>;
         }
 
         // 항목 더블클릭시 수정 가능하도록
         $(".editTd").dblclick(function(){
             let td = $(this);
             let originalText = td.text().trim();
-            let input = $("<input type='text' class='form-control'>").val(originalText);
+            let input = $("<input type='text' class='form-control localeNumber'>").val(originalText);
 
             td.html(input);
             input.focus();
             
+            function saveData(input,originalText) {
+                let newValue = "";
+                newValue = input.val().trim();
+                let ix = td.attr('data-ix');
+
+                td.text(newValue); // 성공하면 td에 새로운 값 적용
+
+                console.log(type,'type', ix, 'ix',newValue, 'newValue');
+                if (newValue !== originalText) { // 값이 변경된 경우에만 AJAX 실행
+                    $.ajax({
+                        url: "./api/product_edit_api.php",  // 데이터를 처리할 PHP 파일
+                        type: "POST",
+                        data: { 'matchingIx': ix, 'value': newValue, 'type':'matchingEdit', 'editCol':type },
+                        success: function(response) {
+                            console.log("서버 응답:", response);  // 응답 확인
+                            td.text(newValue); // 성공하면 td에 새로운 값 적용
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("에러 발생:", error);
+                            td.text(originalText); // 에러 발생 시 원래 값 유지
+                        }
+                    });
+                } else {
+                    td.text(originalText); // 변경이 없으면 원래 값으로 돌아감
+                }
+            }
+
             // Enter 키 입력 시 저장
             input.keypress(function(event) {
                 if (event.which == 13) {
@@ -368,80 +395,104 @@
 
         $(".acTd").dblclick(function(){
             let td = $(this);
-            let accountDiv = $("#product-account").clone();
             let originalText = td.text().trim();
-
+            let accountDiv = $(".product-account").clone();
+            let ix = td.attr('data-ix');
             td.html(accountDiv);
-            let select = td.find('#product-account');
+            let select = td.find('.product-account');
             select.focus();
+
+            function saveData(select) {
+                let newValue = "";
+                newValue = select.val();
+                let newText = select.find("option:selected").text();
+                td.text(newText); // 성공하면 td에 새로운 값 적용
+
+                if (newText !== originalText && newValue!=0) { // 값이 변경된 경우에만 AJAX 실행
+                    $.ajax({
+                        url: "./api/product_edit_api.php",  // 데이터를 처리할 PHP 파일
+                        type: "POST",
+                        data: { 'matchingIx': ix, 'value': newValue, 'type':'matchingEdit', 'editCol': 'account_ix' },
+                        success: function(response) {
+                            console.log("서버 응답:", response);  // 응답 확인
+                            td.text(newText); // 성공하면 td에 새로운 값 적용
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("에러 발생:", error);
+                            td.text(originalText); // 에러 발생 시 원래 값 유지
+                        }
+                    });
+                } else {
+                    td.text(originalText); // 변경이 없으면 원래 값으로 돌아감
+                }
+            }
 
             // Enter 키 입력 시 저장
             select.keypress(function(event) {
                 if (event.which == 13) {
-                    saveData(select,td,originalText,'select');
+                    saveData(select);
                 }
             });
 
             // 포커스를 잃으면 저장 후 td로 변경
             select.blur(function() {
-                saveData(select,td,originalText,'select');
+                saveData(select);
             });
 
         });
 
         $(".caTd").dblclick(function(){
             let td = $(this);
-            let accountDiv = $("#product-cate").clone();
+            let originalText = td.text().trim();
+            let cateDiv = $(".product-cate").clone();
+            let ix = td.attr('data-ix');
+            console.log(originalText,'original');
+            td.html(cateDiv);
+            let select = td.find('.product-cate');
+            select.focus();
 
-            td.html(accountDiv);
-            input.focus();
+            function saveData(select) {
+                let newValue = "";
+                newValue = select.val();
+                let newText = select.find("option:selected").text();
+                td.text(newText); // 성공하면 td에 새로운 값 적용
+
+                console.log(ix,'ix', newValue,'newValue', originalText,'originalText');
+                if (newText !== originalText && newValue!=0) { // 값이 변경된 경우에만 AJAX 실행
+                    $.ajax({
+                        url: "./api/product_edit_api.php",  // 데이터를 처리할 PHP 파일
+                        type: "POST",
+                        data: { 'matchingIx': ix, 'value': newValue, 'type':'matchingEdit', 'editCol': 'category_ix' },
+                        success: function(response) {
+                            console.log("서버 응답:", response);  // 응답 확인
+                            td.text(newText); // 성공하면 td에 새로운 값 적용
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("에러 발생:", error);
+                            td.text(originalText); // 에러 발생 시 원래 값 유지
+                        }
+                    });
+                } else {
+                    td.text(originalText); // 변경이 없으면 원래 값으로 돌아감
+                }
+            }
 
             // Enter 키 입력 시 저장
-            input.keypress(function(event) {
+            select.keypress(function(event) {
                 if (event.which == 13) {
-                    saveData(input,td,originalText);
+                    saveData(select);
                 }
             });
 
             // 포커스를 잃으면 저장 후 td로 변경
-            input.blur(function() {
-                saveData(input,td,originalText);
+            select.blur(function() {
+                saveData(select);
             });
 
         });
 
         // 수정 데이터 전송
-        function saveData(input,td,originalText,col) {
-            let newValue = "";
-            if(col=="input"){
-                newValue = input.val().trim();
-            }else{
-                newValue = $(input).find("option:selected").text();
-            }
-            let ix = td.attr('data-ix');
-            let type = td.attr('data-t');
-
-            td.text(newValue); // 성공하면 td에 새로운 값 적용
-
-            console.log(type,'type', ix, 'ix',newValue, 'newValue');
-            // if (newValue !== originalText) { // 값이 변경된 경우에만 AJAX 실행
-            //     $.ajax({
-            //         url: "./api/product_edit_api.php",  // 데이터를 처리할 PHP 파일
-            //         type: "POST",
-            //         data: { 'matchingIx': ix, 'value': newValue, 'type':'matchingEdit', 'editCol':type },
-            //         success: function(response) {
-            //             console.log("서버 응답:", response);  // 응답 확인
-            //             td.text(newValue); // 성공하면 td에 새로운 값 적용
-            //         },
-            //         error: function(xhr, status, error) {
-            //             console.error("에러 발생:", error);
-            //             td.text(originalText); // 에러 발생 시 원래 값 유지
-            //         }
-            //     });
-            // } else {
-            //     td.text(originalText); // 변경이 없으면 원래 값으로 돌아감
-            // }
-        }
+        
 
         function toast(){
             const toastElement = document.getElementById('myToast');
