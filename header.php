@@ -102,6 +102,11 @@ if (!isset($_SESSION['user_ix'])) {
             <p>발주 관리</p>
         </a>
     </div>
+    <div>
+        <a href="./memo.php">
+            <p>메모</p>
+        </a>
+    </div>
 </div>
 
 
