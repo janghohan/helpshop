@@ -10,6 +10,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src='./js/common.js' ></script>
     <title>계산기</title>
+    <style>
+        /* 모든 브라우저에서 number input의 화살표(스피너) 활성화 */
+        input[type="number"].form-control {
+            -moz-appearance: textfield;
+        }
+        input[type="number"].form-control::-webkit-inner-spin-button,
+        input[type="number"].form-control::-webkit-outer-spin-button {
+            -webkit-appearance: auto;
+        }
+
+    </style>
 </head>
 <body>
     <!-- 헤더 -->
@@ -33,51 +44,70 @@
             </ul>
             <!-- 메인 콘텐츠 -->
             <div class="main-content">
-                
-                <h2>마켓 등록</h2>
+                <div>
+                <?php
+                    $searchResult = [];
+                    
+                    $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                    $result = $conn->query($query);
+            
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            $searchResult[] = $row;
+                        }
+                    }
 
-                <!-- 기본정보 섹션 -->
-                <div class="info-section">
-                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#martketModal">+ 새로운 마켓 등록</button>
+                    foreach($searchResult as $marketRow){
+                    ?>
+                    <button type="button" class="btn btn-outline-secondary me-2 marketBtn" data-basic="<?=htmlspecialchars($marketRow['basic_fee'])?>" data-link="<?=htmlspecialchars($marketRow['linked_fee'])?>" data-ship="<?=htmlspecialchars($marketRow['ship_fee'])?>"><?=htmlspecialchars($marketRow['market_name'])?></button>
+                    <?php }?>
                 </div>
-
-                <!-- 마케팅 정보 수신 동의 섹션 -->
-                <h3>내 마켓</h3>
                 <div class="product-list">
                     <div class="d-flex">
-                        <div class="flex-grow-1 justify-content-between">
-                            <span>네이버</span>
-                            <div class="row">
-                                <div class="col-sm-2">
-                                    <label class="charge-label" for="">원가</label>
-                                    <input type="text" class="form-control" name="basicFee" value="">
-                                </div>
-                                <div class="col-sm-1">
-                                    <label class="charge-label" for="">수량</label>
-                                    <input type="text" class="form-control" name="basicFee" value="">
-                                </div>
-                                <div class="col-sm-2">
-                                    <label class="charge-label" for="">판매가</label>
-                                    <input type="text" class="form-control" name="basicFee" value="">
-                                </div>
-                                <div class="col-sm-1">
-                                    <label class="charge-label" for="">마진율</label>
-                                    <input type="text" class="form-control" name="basicFee" value="">
-                                </div>
-                                <div class="col-sm-2">
-                                    <label class="charge-label" for="">순수익</label>
-                                    <input type="text" class="form-control" name="basicFee" value="">
-                                </div>
-                                <div class="col-sm-2">
-                                    <label class="charge-label" for="">수수료(%)</label>
-                                    <input type="text" class="form-control" name="basicFee" value="">
-                                </div>
-                                <div class="col-sm-2">
-                                    <label class="charge-label" for="">배송수수료(%)</label>
-                                    <input type="text" class="form-control" name="basicFee" value="">
+                        <div class="flex-grow-1 justify-content-between" id="cal-box">
+                            <div class="calRow mb-2" style="display:none;">
+                                <span style="font-size:12px;" class="text-info">네이버</span>
+                                <div class="row g-2">
+                                    <div class=" col-lg">
+                                        <label class="form-label">원가</label>
+                                        <input type="text" class="form-control localeNumber cost">
+                                    </div>
+                                    <div class=" col-lg">
+                                        <label class="form-label">수량</label>
+                                        <input type="number" class="form-control quantity">
+                                    </div>
+                                    <div class=" col-lg">
+                                        <label class="form-label">판매가</label>
+                                        <input type="text" class="form-control localeNumber price">
+                                    </div>
+                                    <div class=" col-lg">
+                                        <label class="form-label">마진율(%)</label>
+                                        <input type="text" class="form-control marginRate">
+                                    </div>
+                                    <div class=" col-lg">
+                                        <label class="form-label">순수익</label>
+                                        <input type="text" class="form-control profit">
+                                    </div>
+                                    <div class=" col-lg">
+                                        <label class="form-label">수수료(%)</label>
+                                        <input type="text" class="form-control fee">
+                                    </div>
+                                    <!-- <div class=" col-lg">
+                                        <label class="form-label">배송수수료(%)</label>
+                                        <input type="text" class="form-control shipFee">
+                                    </div> -->
+                                    <div class=" col-lg">
+                                        <label class="form-label">*</label>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn d-block">저장</button>
+                                            <button class="btn d-block">reset</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            
                         </div>
+                        
                     </div>
                     
                 </div>
@@ -123,56 +153,87 @@
     </div>
 </body>
 <script>
-    function newMarketCreate(){
-        $.ajax({
-            url: "./api/market_api.php",
-            type: "post",
-            dataType: "json",
-            data: $("#newMarketForm").serialize(),
-            success: function(data){
-                if(data['msg']=='suc'){					
-                    location.reload();		
-                }else if(data['msg']=='exist')  {
-                    alert('error');
-                }
-                $('#newMarketForm')[0].reset();
-            },
-            error: function (request, status, error){
-                alert('정보 신청에 실패하셨습니다.');    
+    
 
-            }                     
-        });
-    }
+    $(".marketBtn").click(function(){
+        const basicFee = $(this).data('basic');
+        const linkedFee = $(this).data('link');
+        const shipFee = $(this).data('ship');
 
-    $(".market-edit").click(function(){
-        const parent = $(this).parent().parent();
-        const inputs = parent.find("input");
+        var calDiv = $(".calRow").eq(0).clone();
+        calDiv.css("display",'block');
+        $("#cal-box").append(calDiv);
 
-        const formData = new FormData();
-        formData.append('type', 'edit');
-        inputs.each(function() {
-            console.log($(this).attr('name'), $(this).val());
-            formData.append($(this).attr('name'), $(this).val());
-        });
+        calDiv.find('span').text($(this).text());
+        calDiv.find(".fee").val(linkedFee+basicFee);
+        calDiv.find(".shipFee").val(shipFee);
 
-        $.ajax({
-            url: './api/market_api.php', // 데이터를 처리할 서버 URL
-            type: 'POST',
-            data: formData,
-            processData: false, // FormData 객체를 문자열로 변환하지 않음
-            contentType: false, // 기본 Content-Type 설정을 막음
-            success: function(response) {
-                const result = JSON.parse(response);
-                if(result.status=='suc'){
-                    toast();
-                }
-            },
-            error: function(xhr, status, error) {
-                alert('전송 실패: ' + error);
-            }
-        });
+        // const formData = new FormData();
+        // formData.append('type', 'edit');
+        // inputs.each(function() {
+        //     console.log($(this).attr('name'), $(this).val());
+        //     formData.append($(this).attr('name'), $(this).val());
+        // });
+
+        // $.ajax({
+        //     url: './api/market_api.php', // 데이터를 처리할 서버 URL
+        //     type: 'POST',
+        //     data: formData,
+        //     processData: false, // FormData 객체를 문자열로 변환하지 않음
+        //     contentType: false, // 기본 Content-Type 설정을 막음
+        //     success: function(response) {
+        //         const result = JSON.parse(response);
+        //         if(result.status=='suc'){
+        //             toast();
+        //         }
+        //     },
+        //     error: function(xhr, status, error) {
+        //         alert('전송 실패: ' + error);
+        //     }
+        // });
 
     });
+    
+    // 입력값 변경 시 계산 실행
+    $(document).on('input', '.cost, .quantity, .price, .marginRate', function() {
+        let row = $(this).closest('.calRow');
+        calculateRow(row);
+    });
+
+    function calculateRow(row) {
+        let cost = parseNumber(row.find('.cost').val()) || 0;
+        let quantity = parseFloat(row.find('.quantity').val()) || 0;
+        let sellingPrice = parseNumber(row.find('.price').val()) || 0;
+        let feeRate = parseFloat(row.find('.fee').val()) || 0;
+
+        console.log(sellingPrice,cost);
+        
+        // 총 매출
+        let totalRevenue = sellingPrice * quantity;
+        
+        // 총 원가
+        let totalCost = cost * quantity;
+        
+        // 수수료 계산 (판매가의 % 적용)
+        let totalFee = (totalRevenue * feeRate) / 100;
+
+        // 총 부가세세
+        let surtax = (totalRevenue-totalCost) * 0.1;
+        
+        // 순수익 계산
+        let netProfit = totalRevenue - totalCost - totalFee - surtax;
+        
+        // 마진율 계산
+        let marginRate = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(2) : 0;
+
+        // 결과 반영
+        row.find('.profit').val(netProfit.toFixed(2));  // 소수점 2자리까지 표시
+        row.find('.marginRate').val(marginRate);
+    }
+
+    function parseNumber(value) {
+        return parseFloat(value.replace(/,/g, '')) || 0; // 콤마 제거 후 숫자로 변환
+    }
 
     function toast(){
         const toastElement = document.getElementById('myToast');
