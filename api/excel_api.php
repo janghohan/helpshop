@@ -84,11 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if($indexA===0){
                     continue;
                 }         
-                // 1 : 주문번호, 10 : 구매자, 17 : 주문일, 24 : 수량, 30 : 할인후 옵션별 주문금액, 40 : 배송비, 51 : 구매자연락처
+                // 1 : 주문번호, 10 : 구매자, 17 : 주문일, 25 : 수량, 30 : 할인후 옵션별 주문금액, 40 : 배송비, 51 : 구매자연락처
                 $name = $rowA[12]; // A 파일의 수취인 컬럼 값
-                $phone = $rowA[46]; // A 파일의 전화번호 컬럼 값
+                $phone = $rowA[47]; // A 파일의 전화번호 컬럼 값
                 $code = $rowA[52]; // A 파일의 우편번호 컬럼 값
-                $address = $rowA[48]; // A 파일의 주소 값
+                $address = $rowA[49]; // A 파일의 주소 값
                 $memo = $rowA[53]; // A 파일의 배송메세지 컬럼 값
 
 
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $dataB[$indexA-1][5] = "낚시용품";
                 $dataB[$indexA-1][6] = $memo;
 
-                $combinedData[] = ["네이버",$rowA[24], $rowA[19]." : ".$rowA[22], $rowA[12], extractMiddlePhoneNumber($rowA[46]),$rowA[48],$rowA[53]];
+                $combinedData[] = ["네이버",$rowA[25], $rowA[19]." : ".$rowA[23], $rowA[12], extractMiddlePhoneNumber($rowA[53]),$rowA[49],$rowA[54]];
 
 
                 // $tmpInsertStmt = $conn->prepare("INSERT INTO temp_orders(market_ix,order_number,order_date,user_ix,payment,shipping,product_name,quantity,buyer_name,buyer_phone,address) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
@@ -306,7 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             foreach ($dataB as $rowB) {
                 $valueInBColumn = $rowB[23]; // B 파일의 B 컬럼 값
                 foreach ($dataA as &$rowA) {
-                    if ($rowA[48] == $valueInBColumn) { // A 파일의 B 컬럼 값과 비교
+                    if ($rowA[49] == $valueInBColumn) { // A 파일의 B 컬럼 값과 비교
                         $rowA[6] = "CJ대한통운";
                         $rowA[7] = $rowB[7]; // B 파일의 A 컬럼 값을 A 파일의 A 컬럼에 삽입
                     }

@@ -65,7 +65,7 @@
                 </div>
                 <div class="product-list">
                     <div class="d-flex">
-                        <div class="flex-grow-1 justify-content-between" id="cal-box">
+                        <div class="flex-grow-1 justify-content-between" id="cal-box" style="max-width:1200px;">
                             <span class="text-info" style="font-size:12px;">네이버</span>
                             <div class="calRow mb-2" style="display:none;">
                                 <span style="font-size:12px;" class="text-info">네이버</span>
@@ -107,40 +107,45 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row g-4">
+                            <div class="row g-4 calRow">
                                 <!-- 왼쪽 섹션: 입력 필드 -->
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="d-flex gap-2 justify-content-center">
                                         <div>
                                             <div>
-                                                <label class="form-label">상품구매가</label>
+                                                <label class="form-label">상품구매가(원)</label>
                                             </div>
                                             <div class="w-100">
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control cost localeNumber" value="0">
                                             </div>
                                         </div>
                                         
                                         <div>
                                             <div>
-                                                <label class="form-label">상품구매가</label>
+                                                <label class="form-label">배송비(원)</label>
                                             </div>
                                             <div>
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control myship localeNumber" value="0">
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="d-flex mt-3">
+                                    <div class="d-flex mt-3 d-flex gap-2 justify-content-center">
+                                        <div>
+                                            <div>
+                                                <label class="form-label">수량(개)</label>
+                                            </div>
+                                            <div>
+                                                <input type="number" class="form-control quantity" value="0">
+                                            </div>
+                                        </div>
                                         <div>
                                             <div>
                                                 <label class="form-label">기타(재료비)</label>
                                             </div>
                                             <div>
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control etc localeNumber" value="0">
                                             </div>
-                                        </div>
-                                        <div>
-                                            
                                         </div>
                                     </div>
                                 </div>
@@ -150,37 +155,37 @@
                                     <div class="d-flex gap-2 justify-content-center">
                                         <div>
                                             <div>
-                                                <label class="form-label">판매가</label>
+                                                <label class="form-label">판매가(원)</label>
                                             </div>
                                             <div class="w-100">
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control price localeNumber" value="0">
                                             </div>
                                         </div>
                                         
                                         <div>
                                             <div>
-                                                <label class="form-label">총 지출비용</label>
+                                                <label class="form-label">총 지출비용(원)</label>
                                             </div>
                                             <div>
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control totalFee localeNumber" value="0">
                                             </div>
                                         </div>
                                         <div>
                                             <div>
-                                                <label class="form-label">순이익</label>
+                                                <label class="form-label">순이익(원)</label>
                                             </div>
                                             <div>
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control profit localeNumber" value="0">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="d-flex gap-2 justify-content-center mt-3">
                                         <div>
                                             <div>
-                                                <label class="form-label">마진율</label>
+                                                <label class="form-label">마진율(%)</label>
                                             </div>
                                             <div class="w-100">
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control marginRate" value="0">
                                             </div>
                                         </div>
                                         
@@ -189,15 +194,15 @@
                                                 <label class="form-label">배송비</label>
                                             </div>
                                             <div>
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control ship localeNumber" value="0">
                                             </div>
                                         </div>
                                         <div>
                                             <div>
-                                                <label class="form-label">수수료</label>
+                                                <label class="form-label">수수료(%)</label>
                                             </div>
                                             <div>
-                                                <input type="number" class="form-control" value="0">
+                                                <input type="text" class="form-control fee" value="0">
                                             </div>
                                         </div>
                                     </div>
@@ -205,18 +210,27 @@
                                 </div>
                                 
                                 <!-- 오른쪽 섹션: 판매 부가세 -->
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="d-flex gap-2 justify-content-center">
                                         <div>
                                             <div>
-                                                <label class="form-label">부가세</label>
-                                            </div>
-                                            <div class="w-100">
-                                                <input type="number" class="form-control" value="0">
+                                                <label class="form-label">부가세(원)</label>
                                             </div>
                                             <div>
-                                                <input type="checkbox" name="gwa">
-                                                <label for="gwa">비과세</label>
+                                                <input type="text" class="form-control localeNumber surtax">
+                                            </div>
+                                            <div>
+                                                <input type="checkbox" name="surtaxCheck" class="surtaxCheck">
+                                                <label for="surtaxCheck">비과세</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-center">
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <div >
+                                            <div>
+                                                <button class="btn ">저장</button>
                                             </div>
                                         </div>
                                     </div>
