@@ -22,60 +22,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // echo $formCombination[0]['name'];
     // echo $_POST['productName'];
     if($addCount==1){
-        if (!empty($formCombination)) {
-            //상품명에 넣는다. 
-            $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
-            $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
-            $productStmt->execute();
-    
-            $productIx = $productStmt->insert_id;
-            $productResult = $productStmt->get_result();
-    
-            //product_option
-            $options = isset($_POST['options']) ? json_decode($_POST['options'], true) : [];
-            foreach ($options as $option){
-                $optionName = $option['name'];
-                $optionValues = $option['value'];
-                foreach($optionValues as $optionValue) {
-                    $optionStmt = $conn->prepare("INSERT INTO product_option(product_ix,name,value) VALUES(?,?,?)");
-                    $optionStmt->bind_param("sss",$productIx,$optionName,$optionValue);
-                    $optionStmt->execute();
-                }
-            }
-    
-            //product_option_combination
-            foreach ($formCombination as $combination) {
-                $name = $combination['name'];
-                $price = str_replace(",", "", $combination['price']);
-                $stock = $combination['stock'];
-                $sellings = $combination['selling'];   
-    
-                $combiStmt = $conn->prepare("INSERT INTO product_option_combination(product_ix,combination_key,cost_price,stock) VALUES(?,?,?,?)");
-                $combiStmt -> bind_param("ssss",$productIx,$name,$price,$stock);
-                $combiStmt->execute();
-    
-                $combiIx = $combiStmt->insert_id;
-    
-                // 옵션 데이터
-                foreach ($sellings as $selling) {
-                    $marketStmt = $conn->prepare("INSERT INTO product_option_market_price(product_option_comb_ix,market_ix,price) VALUES(?,?,?)");
-                    $sellingPrice = str_replace("","",$selling['value']);
-                    $marketStmt->bind_param("sss",$combiIx,$selling['ix'],$sellingPrice);
-                    $marketStmt->execute();
-                    // echo "Market ID $marketIx: $sellingPrice<br>";
-                }
-            }
-    
-            $conn->commit();
+        $productName = $_POST['productName'] ?? '';
+        $productName = $_POST['productName'] ?? '';
 
-            ob_clean();
-            $response['status'] = 'success';
-            echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        // if (!empty($formCombination)) {
+        //     //상품명에 넣는다. 
+        //     $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
+        //     $productStmt->bind_param("sssss",$userIx,$accountIx,$categoryIx,$productName,$productMemo);
+        //     $productStmt->execute();
+    
+        //     $productIx = $productStmt->insert_id;
+        //     $productResult = $productStmt->get_result();
+    
+        //     //product_option
+        //     $options = isset($_POST['options']) ? json_decode($_POST['options'], true) : [];
+        //     foreach ($options as $option){
+        //         $optionName = $option['name'];
+        //         $optionValues = $option['value'];
+        //         foreach($optionValues as $optionValue) {
+        //             $optionStmt = $conn->prepare("INSERT INTO product_option(product_ix,name,value) VALUES(?,?,?)");
+        //             $optionStmt->bind_param("sss",$productIx,$optionName,$optionValue);
+        //             $optionStmt->execute();
+        //         }
+        //     }
+    
+        //     //product_option_combination
+        //     foreach ($formCombination as $combination) {
+        //         $name = $combination['name'];
+        //         $price = str_replace(",", "", $combination['price']);
+        //         $stock = $combination['stock'];
+        //         $sellings = $combination['selling'];   
+    
+        //         $combiStmt = $conn->prepare("INSERT INTO product_option_combination(product_ix,combination_key,cost_price,stock) VALUES(?,?,?,?)");
+        //         $combiStmt -> bind_param("ssss",$productIx,$name,$price,$stock);
+        //         $combiStmt->execute();
+    
+        //         $combiIx = $combiStmt->insert_id;
+    
+        //         // 옵션 데이터
+        //         foreach ($sellings as $selling) {
+        //             $marketStmt = $conn->prepare("INSERT INTO product_option_market_price(product_option_comb_ix,market_ix,price) VALUES(?,?,?)");
+        //             $sellingPrice = str_replace("","",$selling['value']);
+        //             $marketStmt->bind_param("sss",$combiIx,$selling['ix'],$sellingPrice);
+        //             $marketStmt->execute();
+        //             // echo "Market ID $marketIx: $sellingPrice<br>";
+        //         }
+        //     }
+    
+        //     $conn->commit();
+
+        //     ob_clean();
+        //     $response['status'] = 'success';
+        //     echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     
             
-        } else {
-            echo "No data received!";
-        }
+        // } else {
+        //     echo "No data received!";
+        // }
     }else if($addCount==100){
         //대량등록 
         $startTime = date("Y-m-d H:i:s");
