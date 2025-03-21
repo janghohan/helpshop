@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- 생성 시간: 25-03-20 17:23
+-- 생성 시간: 25-03-21 17:13
 -- 서버 버전: 10.4.32-MariaDB
 -- PHP 버전: 8.2.12
 
@@ -119,6 +119,30 @@ INSERT INTO `db_match` (`ix`, `user_ix`, `details_ix`, `name_of_excel`, `matchin
 -- --------------------------------------------------------
 
 --
+-- 테이블 구조 `expense`
+--
+
+CREATE TABLE `expense` (
+  `ix` int(11) NOT NULL,
+  `user_ix` int(11) NOT NULL,
+  `expense_type` varchar(255) NOT NULL,
+  `expense_price` decimal(10,2) NOT NULL,
+  `expense_memo` tinytext NOT NULL DEFAULT '',
+  `expense_date` date DEFAULT NULL,
+  `create_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 테이블의 덤프 데이터 `expense`
+--
+
+INSERT INTO `expense` (`ix`, `user_ix`, `expense_type`, `expense_price`, `expense_memo`, `expense_date`, `create_at`) VALUES
+(8, 1, '광고비', 30000.00, '', '2025-02-08', '2025-02-08 09:57:37'),
+(9, 1, '광고비', 45000.00, '', '2025-02-08', '2025-02-08 09:58:14');
+
+-- --------------------------------------------------------
+
+--
 -- 테이블 구조 `market`
 --
 
@@ -140,6 +164,60 @@ CREATE TABLE `market` (
 INSERT INTO `market` (`ix`, `user_ix`, `market_name`, `basic_fee`, `linked_fee`, `ship_fee`, `created_at`, `updated_at`) VALUES
 (1, 1, '네이버', '2.75', '2', '2.75', '2024-11-17 08:17:27', '2024-11-28 18:13:27'),
 (2, 1, '쿠팡', '11.88', '0', '3.3', '2024-11-17 08:17:27', '2024-11-28 18:13:27');
+
+-- --------------------------------------------------------
+
+--
+-- 테이블 구조 `matching_name`
+--
+
+CREATE TABLE `matching_name` (
+  `ix` int(11) NOT NULL,
+  `user_ix` int(11) NOT NULL,
+  `category_ix` int(11) NOT NULL DEFAULT 0,
+  `account_ix` int(11) NOT NULL DEFAULT 0,
+  `matching_name` varchar(400) NOT NULL,
+  `cost` decimal(10,2) NOT NULL,
+  `stock` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 테이블의 덤프 데이터 `matching_name`
+--
+
+INSERT INTO `matching_name` (`ix`, `user_ix`, `category_ix`, `account_ix`, `matching_name`, `cost`, `stock`, `created_at`) VALUES
+(22, 1, 1, 10, '쎄네 삼봉 만세기 / 1개', 3500.00, 5, '2025-02-25 16:29:33'),
+(24, 1, 1, 10, '쎄네 삼봉 리얼참돔 / 1개', 3500.00, 0, '2025-02-25 16:31:48'),
+(28, 1, 1, 10, '쎄네 삼봉 리얼수박 / 1개', 3500.00, 0, '2025-02-25 17:17:50'),
+(29, 1, 1, 10, '쎄네 삼봉 케이무라우럭 / 1개', 3500.00, 5, '2025-02-25 17:34:03'),
+(30, 1, 1, 25, '쎄네 삼봉 케이무라퍼플참돔 / 1개', 3500.00, 0, '2025-02-25 17:46:56'),
+(31, 1, 1, 10, '쎄네 삼봉 케이무라우럭 / 3개', 10500.00, 0, '2025-02-25 17:49:30');
+
+-- --------------------------------------------------------
+
+--
+-- 테이블 구조 `memo`
+--
+
+CREATE TABLE `memo` (
+  `ix` int(11) NOT NULL,
+  `user_ix` int(11) NOT NULL,
+  `title` varchar(300) NOT NULL,
+  `contents` mediumtext NOT NULL DEFAULT '',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 테이블의 덤프 데이터 `memo`
+--
+
+INSERT INTO `memo` (`ix`, `user_ix`, `title`, `contents`, `created_at`, `updated_at`) VALUES
+(1, 1, '테스트메모', 'ㅁㅇㄴㄹㅇㄴㄹ ㅁㄴㅇㄹ\n\n\nㅁㄴㅇ라\n\n테스트 완료\n\n글 작성중', '2025-03-04 23:14:54', '2025-03-04 23:14:54'),
+(5, 1, '4월', '한치로드\n한치낚시대\n오모리그로드\n광어다운샷로드   /  바다선상\n닉스팝2   / 민물루어낚싯대\n빅소드b3  /민물루어 /  2400\n외수질로드 /  바다선상\n타일바라로드 / 바다루어\n알바트로스vip / 바다찌치로드\n한치낚시대\n오모리그로드\n광어다운샷로드   /  바다선상\n닉스팝2   / 민물루어낚싯대\n빅소드b3  /민물루어 /  2400\n외수질로드 /  바다선상\n타일바라로드 / 바다루어\n알바트로스vip / 바다찌\n스토이스트rt / 바다루어 / 1730 / 다이와 에깅대\n빅소드a4 / 바다루어 / 광어 우럭대 \n빅소드r4 /바다루어 / 락피쉬\n\n', '2025-03-14 10:53:10', '2025-03-14 10:53:10'),
+(6, 1, '올려볼것', '마루이카 exlc / 갑오징어대 올려볼만함 / 다이와 재고있음\n', '2025-03-14 11:31:12', '2025-03-14 11:31:12'),
+(7, 1, 'AI 툴', 'Adobe Express - 이미지 배경제거\nAdobe Firefly - 이미지 생성 (갤러리 보면 어떤 프롬프트 썼는지 확인할 수 있다.)\nimmersity AI - 이미지를 살짝 움직이는 영상으로 바꿔줌\nLilys AI - 유튜브 요약 ai\nKhroma - 컬러조합 추천\nNapkin Ai - 도식화\n', '2025-03-14 17:00:20', '2025-03-14 17:00:20');
 
 -- --------------------------------------------------------
 
@@ -171,6 +249,32 @@ INSERT INTO `orders` (`ix`, `global_order_number`, `order_number`, `order_date`,
 (1777, '202502251717500001', '1111', '2025-02-25', 1, 1, '', 29400.00, 9000.00, 'completed', '2025-02-25 17:17:50'),
 (1778, '2025022517332600011', '3100098435316', '2025-02-25', 2, 1, '', 29400.00, 3000.00, 'completed', '2025-02-25 17:33:26'),
 (1780, '202502251734030001', '1', '2025-02-25', 2, 1, '', 24500.00, 3000.00, 'completed', '2025-02-25 17:34:03');
+
+-- --------------------------------------------------------
+
+--
+-- 테이블 구조 `order_address`
+--
+
+CREATE TABLE `order_address` (
+  `ix` int(11) NOT NULL,
+  `order_ix` int(11) NOT NULL,
+  `order_name` varchar(255) DEFAULT '' COMMENT '주문자 이름',
+  `order_contact` varchar(255) DEFAULT '' COMMENT '주문자 연락처',
+  `receiver_name` varchar(255) DEFAULT '' COMMENT '수령인 이름',
+  `receiver_contact` varchar(255) DEFAULT '' COMMENT '수령인 연락처',
+  `post_code` varchar(10) DEFAULT '' COMMENT '우편번호',
+  `address` varchar(255) DEFAULT '' COMMENT '주소',
+  `address_detail` varchar(255) NOT NULL DEFAULT '' COMMENT '상세주소',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 테이블의 덤프 데이터 `order_address`
+--
+
+INSERT INTO `order_address` (`ix`, `order_ix`, `order_name`, `order_contact`, `receiver_name`, `receiver_contact`, `post_code`, `address`, `address_detail`, `created_at`) VALUES
+(1053, 1778, '강구영', '0502-4531-4803', '강구영', '0502-4531-4803', '22368', '인천광역시 중구 영종대로27번길 40 풍림1차아파트 206동206호 ( 운서동, 풍림 아이원아파트 )', '', '2025-02-25 17:33:26');
 
 -- --------------------------------------------------------
 
@@ -833,6 +937,24 @@ INSERT INTO `product_option_market_price` (`ix`, `product_option_comb_ix`, `mark
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `product_search_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `product_search_view` (
+`product_name` varchar(500)
+,`combination_key` varchar(255)
+,`cost_price` decimal(10,2)
+,`stock` tinyint(11)
+,`price` decimal(10,2)
+,`market_ix` int(11)
+,`market_name` varchar(200)
+,`product_user_ix` int(11)
+,`market_user_ix` int(11)
+);
+
+-- --------------------------------------------------------
+
+--
 -- 테이블 구조 `user`
 --
 
@@ -853,6 +975,15 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`ix`, `id`, `pwd`, `name`, `contact`, `email`, `create_at`, `updated_at`) VALUES
 (1, 'wkdgh5430', '81dc9bdb52d04dc20036dbd8313ed055', '한장호', '010-5613-5430', 'wkdgh5430@naver.com', '2024-11-17 08:23:27', '2024-11-28 17:55:07');
+
+-- --------------------------------------------------------
+
+--
+-- 뷰 구조 `product_search_view`
+--
+DROP TABLE IF EXISTS `product_search_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `product_search_view`  AS SELECT `p`.`name` AS `product_name`, `poc`.`combination_key` AS `combination_key`, `poc`.`cost_price` AS `cost_price`, `poc`.`stock` AS `stock`, `pomp`.`price` AS `price`, `pomp`.`market_ix` AS `market_ix`, `m`.`market_name` AS `market_name`, `p`.`user_ix` AS `product_user_ix`, `m`.`user_ix` AS `market_user_ix` FROM (((`product` `p` join `product_option_combination` `poc` on(`p`.`ix` = `poc`.`product_ix`)) join `product_option_market_price` `pomp` on(`poc`.`ix` = `pomp`.`product_option_comb_ix`)) join `market` `m` on(`m`.`ix` = `pomp`.`market_ix`)) ;
 
 --
 -- 덤프된 테이블의 인덱스
@@ -884,11 +1015,30 @@ ALTER TABLE `db_match`
   ADD KEY `fk_dbmatch_matching` (`matching_ix`);
 
 --
+-- 테이블의 인덱스 `expense`
+--
+ALTER TABLE `expense`
+  ADD PRIMARY KEY (`ix`);
+
+--
 -- 테이블의 인덱스 `market`
 --
 ALTER TABLE `market`
   ADD PRIMARY KEY (`ix`),
   ADD KEY `fk_market_user` (`user_ix`);
+
+--
+-- 테이블의 인덱스 `matching_name`
+--
+ALTER TABLE `matching_name`
+  ADD PRIMARY KEY (`ix`),
+  ADD UNIQUE KEY `unique_column_pair` (`user_ix`,`matching_name`);
+
+--
+-- 테이블의 인덱스 `memo`
+--
+ALTER TABLE `memo`
+  ADD PRIMARY KEY (`ix`);
 
 --
 -- 테이블의 인덱스 `orders`
@@ -897,6 +1047,13 @@ ALTER TABLE `orders`
   ADD PRIMARY KEY (`ix`),
   ADD UNIQUE KEY `idx_market_order` (`market_ix`,`order_number`),
   ADD KEY `fk_orders_user` (`user_ix`);
+
+--
+-- 테이블의 인덱스 `order_address`
+--
+ALTER TABLE `order_address`
+  ADD PRIMARY KEY (`ix`),
+  ADD KEY `fk_address_orders` (`order_ix`);
 
 --
 -- 테이블의 인덱스 `order_details`
@@ -964,16 +1121,40 @@ ALTER TABLE `db_match`
   MODIFY `ix` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
+-- 테이블의 AUTO_INCREMENT `expense`
+--
+ALTER TABLE `expense`
+  MODIFY `ix` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
 -- 테이블의 AUTO_INCREMENT `market`
 --
 ALTER TABLE `market`
   MODIFY `ix` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- 테이블의 AUTO_INCREMENT `matching_name`
+--
+ALTER TABLE `matching_name`
+  MODIFY `ix` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
+-- 테이블의 AUTO_INCREMENT `memo`
+--
+ALTER TABLE `memo`
+  MODIFY `ix` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- 테이블의 AUTO_INCREMENT `orders`
 --
 ALTER TABLE `orders`
   MODIFY `ix` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1785;
+
+--
+-- 테이블의 AUTO_INCREMENT `order_address`
+--
+ALTER TABLE `order_address`
+  MODIFY `ix` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1054;
 
 --
 -- 테이블의 AUTO_INCREMENT `order_details`
@@ -1041,6 +1222,12 @@ ALTER TABLE `market`
 ALTER TABLE `orders`
   ADD CONSTRAINT `fk_orders_market` FOREIGN KEY (`market_ix`) REFERENCES `market` (`ix`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_ix`) REFERENCES `user` (`ix`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- 테이블의 제약사항 `order_address`
+--
+ALTER TABLE `order_address`
+  ADD CONSTRAINT `fk_address_orders` FOREIGN KEY (`order_ix`) REFERENCES `orders` (`ix`) ON DELETE CASCADE;
 
 --
 -- 테이블의 제약사항 `order_details`
