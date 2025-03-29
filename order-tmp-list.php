@@ -183,18 +183,19 @@
                                             if($fileType=='realtime'){
                                                 $orderNumber = $rowA[1];
                                                 $orderDate = $rowA[17];
-                                                $orderName = $rowA[19]." / ".$rowA[22];
-                                                $orderQuantity = $rowA[24];
-                                                $price = $rowA[30];
-                                                $orderShipping = $rowA[40];
+                                                $orderName = $rowA[19]." / ".$rowA[23];
+                                                $orderQuantity = $rowA[25];
+                                                $price = $rowA[32];
+                                                $orderShipping = $rowA[41];
                                                 $currentOrderNumber = $rowA[1]; // 현재 주문번호
                                             }else if($fileType=='ex'){
+                                                //구매확정내역
                                                 $orderNumber = $rowA[1];
                                                 $orderDate = $rowA[10];
-                                                $orderName = $rowA[16]." / ".$rowA[19];
-                                                $orderQuantity = $rowA[21];
-                                                $price = $rowA[27]; // 수량 * 낱개 금액
-                                                $orderShipping = $rowA[35];
+                                                $orderName = $rowA[16]." / ".$rowA[20];
+                                                $orderQuantity = $rowA[22];
+                                                $price = $rowA[28]; // 수량 * 낱개 금액
+                                                $orderShipping = $rowA[36];
                                                 $currentOrderNumber = $rowA[1]; // 현재 주문번호
 
                                             }
@@ -244,6 +245,8 @@
 
                                 <?php }
                                 }else if($marketName=='쿠팡' && $fileType=='ex'){ 
+                                    //결제일 기준 정산현황
+                                    
                                     $groupedOrders = []; // 주문을 저장할 배열
 
                                     $previousOrderNumber = null; // 이전 주문번호를 저장
@@ -252,24 +255,38 @@
                                             continue;
                                         }     
 
-                                        $orderNumber = $rowA[0];
-                                        $refundQuantity = $rowA[8];
+                                        $orderNumber = $rowA[0]; //주문번호
+                                       
                                         $currentOrderNumber = $orderNumber;
 
+                                        //settlement dashboard(24-07 이전 주문 엑셀)에서는 optionId가 -1값이다.
                                         $optionID = $rowA[4];
-                                        $optionID = str_replace("<","",$optionID);
-                                        $optionID = str_replace(">","",$optionID);
-                                        $orderDate = $rowA[19];
-                                        $orderQuantity = $rowA[7];
-                                        $orderPrice = $rowA[9];
-                                        $orderName = str_replace('"','',$rowA[5]);
+                                        if($optionID==-1){
+                                            $optionID = $rowA[6];
+                                            $optionID = str_replace("<","",$optionID);
+                                            $optionID = str_replace(">","",$optionID);
+                                            $orderDate = $rowA[29];
+                                            $orderQuantity = $rowA[9];
+                                            $orderPrice = $rowA[11];
+                                            $orderName = str_replace('"','',$rowA[7]);
+                                            $refundQuantity = $rowA[10]; //환불수량
+                                        }else{
+                                            $optionID = str_replace("<","",$optionID);
+                                            $optionID = str_replace(">","",$optionID);
+                                            $orderDate = $rowA[19];
+                                            $orderQuantity = $rowA[7];
+                                            $orderPrice = $rowA[9];
+                                            $orderName = str_replace('"','',$rowA[5]);
+                                            $refundQuantity = $rowA[8]; //환불수량
+                                        }
+                                    
 
                                         if ($currentOrderNumber !== $previousOrderNumber) {
                                             // 주문번호가 변경될 때
                                             $toggle = !$toggle;
 
                                             //is_numberic : 처음이 기본배송료인 경우, ($orderName!="" && $refundQuantity<0) : 처음이 상품명이지만 반품인경우우
-                                            if(!is_numeric($optionID) || ($orderName!="" && $refundQuantity<0)){
+                                            if(!is_numeric($optionID) || ($orderName!="" && $refundQuantity<0) || ($orderName!="" && $orderQuantity==0)){
                                                 //이름 없는 반품
                                                 $orderName = "반품";
                                                 $groupedOrders[$orderNumber] = [
@@ -303,7 +320,7 @@
                                         if($orderName!="" && $orderQuantity>0){ //상품
                                             $groupedOrders[$orderNumber]['order_name'][] = $orderName;
                                             $groupedOrders[$orderNumber]['order_quantity'][] = $orderQuantity;
-                                            $groupedOrders[$orderNumber]['order_price'][] = ceil((int)$rowA[9] / (int)$orderQuantity);
+                                            $groupedOrders[$orderNumber]['order_price'][] = ceil((int)$orderPrice / (int)$orderQuantity);
                                         }else{ //배송비
                                             if($orderName!="반품"){
                                                 $groupedOrders[$orderNumber]['shipping_fee'] = (int)$orderPrice + (int)$groupedOrders[$orderNumber]['shipping_fee'];
