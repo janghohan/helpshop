@@ -295,7 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $orderDate = $rowA[10];
                             $orderName = $rowA[16]." / ".$rowA[20];
                             $orderQuantity = $rowA[22];
-                            $orderPrice = $rowA[28]; // 수량 * 낱개 금액
+                            $price = $rowA[28]; // 수량 * 낱개 금액
                             $orderShipping = $rowA[36];
                             $currentOrderNumber = $rowA[1]; // 현재 주문번호
                         }
@@ -455,7 +455,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $totalDetails ++;
                     $groupedOrders[$orderNumber]['order_name'][] = $orderName;
                     $groupedOrders[$orderNumber]['order_quantity'][] = $orderQuantity;
-                    $groupedOrders[$orderNumber]['order_price'][] = ceil((int)$rowA[9] / (int)$orderQuantity);
+                    $groupedOrders[$orderNumber]['order_price'][] = ceil((int)$orderPrice / (int)$orderQuantity);
                     $groupedOrders[$orderNumber]['total_payment'] = (int)$orderPrice + $groupedOrders[$orderNumber]['total_payment'];
                 }else{ //배송비
                     if($orderName!="반품"){

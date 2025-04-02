@@ -107,14 +107,35 @@
     
     $userIx = isset($_SESSION['user_ix']) ? : '1';
 
+    $page = $_GET['page'] ?? 1;
+    $itemsPerPage =  $_GET['itemsPerPage'] ?? 50;
+
+    if(!isset($_SESSION['db_matchingPage_'.$userIx])){
+        $totalStmt = "SELECT COUNT(*) as total FROM orders o
+            JOIN order_details od ON o.ix = od.orders_ix
+            JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
+            WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name";
+        $totalStmt = $conn->prepare($totalStmt);
+        $totalStmt->bind_param("s",$userIx);
+        $totalStmt->execute();
+        $totalItems = $totalStmt->get_result()->num_rows;
+        $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
+
+        $_SESSION['db_matchingPage_'.$userIx] = $totalPages;
+    }else{
+        $totalPages = $_SESSION['db_matchingPage_'.$userIx];
+    }
+
+    $startIndex = ($page - 1) * $itemsPerPage;
+
     $listStmt = $conn->prepare("SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
             JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
-            WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name");
+            WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name LIMIT ? OFFSET ?");
 
-    $listStmt->bind_param("s",$userIx);
+    $listStmt->bind_param("sss",$userIx,$itemsPerPage,$startIndex);
 
     // Execute and Fetch Results
     $listStmt->execute();
@@ -125,6 +146,18 @@
             $listResult[] = $row;
         }
     }
+
+
+    // 페이지 링크 범위 설정 (예: 현재 페이지를 기준으로 ±2개의 링크 표시)
+    $visibleRange = 2;
+    $startPage = max(1, $page - $visibleRange);
+    $endPage = min($totalPages, $page + $visibleRange);
+
+    // 이전/다음 페이지 계산
+    $hasPrev = $page > 1;
+    $hasNext = $page < $totalPages;
+    $prevPage = $hasPrev ? $page - 1 : null;
+    $nextPage = $hasNext ? $page + 1 : null;
 
 
     ?>
@@ -179,7 +212,33 @@
                             </div>
                         </div>
                     
-                    <?php } }else{?>
+                    <?php } 
+                    ?>
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-center mt-3">
+                            <?php if($hasPrev): ?>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>">Previous</a></li>
+                            <?php else: ?>
+                                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                            <?php endif; ?>
+
+                            <?php for($i = $startPage; $i <= $endPage; $i++): ?>
+                                <?php if ($i == $page): ?>
+                                    <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
+                                <?php else: ?>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+
+                            <?php if ($hasNext): ?>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage?>">Next</a></li>
+                            <?php else: ?>
+                                <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
+                    
+                    <?php }else{?>
                         <p class="text-center pt-5">주문을 등록해주세요.</p>
                     <?php } ?>
                 <!-- Example Row -->
