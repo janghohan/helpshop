@@ -106,46 +106,82 @@
     include './dbConnect.php';
     
     $userIx = isset($_SESSION['user_ix']) ? : '1';
+    $searchKeyword = $_GET['searchKeyword'] ?? '';
 
     $page = $_GET['page'] ?? 1;
     $itemsPerPage =  $_GET['itemsPerPage'] ?? 50;
 
-    if(!isset($_SESSION['db_matchingPage_'.$userIx])){
-        $totalStmt = "SELECT COUNT(*) as total FROM orders o
-            JOIN order_details od ON o.ix = od.orders_ix
-            JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
-            WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name";
-        $totalStmt = $conn->prepare($totalStmt);
-        $totalStmt->bind_param("s",$userIx);
-        $totalStmt->execute();
-        $totalItems = $totalStmt->get_result()->num_rows;
-        $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
-
-        $_SESSION['db_matchingPage_'.$userIx] = $totalPages;
-    }else{
-        $totalPages = $_SESSION['db_matchingPage_'.$userIx];
-    }
-
-    $startIndex = ($page - 1) * $itemsPerPage;
-
-    $listStmt = $conn->prepare("SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
-            od.cost, m.basic_fee, m.linked_fee, m.ship_fee
-            FROM orders o
-            JOIN order_details od ON o.ix = od.orders_ix
-            JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
-            WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name LIMIT ? OFFSET ?");
-
-    $listStmt->bind_param("sss",$userIx,$itemsPerPage,$startIndex);
-
-    // Execute and Fetch Results
-    $listStmt->execute();
-    $result = $listStmt->get_result();
-
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $listResult[] = $row;
+    if($searchKeyword=='' || !isset($_GET['searchKeyword'])){
+        if(!isset($_SESSION['db_matchingPage_'.$userIx])){
+            $totalStmt = "SELECT COUNT(*) as total FROM orders o
+                JOIN order_details od ON o.ix = od.orders_ix
+                JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
+                WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name";
+            $totalStmt = $conn->prepare($totalStmt);
+            $totalStmt->bind_param("s",$userIx);
+            $totalStmt->execute();
+            $totalItems = $totalStmt->get_result()->num_rows;
+            $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
+    
+            $_SESSION['db_matchingPage_'.$userIx] = $totalPages;
+        }else{
+            $totalPages = $_SESSION['db_matchingPage_'.$userIx];
         }
+    
+        $startIndex = ($page - 1) * $itemsPerPage;
+    
+        $listStmt = $conn->prepare("SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+                od.cost, m.basic_fee, m.linked_fee, m.ship_fee
+                FROM orders o
+                JOIN order_details od ON o.ix = od.orders_ix
+                JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
+                WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name LIMIT ? OFFSET ?");
+    
+        $listStmt->bind_param("sss",$userIx,$itemsPerPage,$startIndex);
+    
+        // Execute and Fetch Results
+        $listStmt->execute();
+        $result = $listStmt->get_result();
+    
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $listResult[] = $row;
+            }
+        }
+    }else{
+        if(isset($_GET['searchKeyword'])){
+            $dbMatchingKeyworSql = "AND od.name LIKE ?";
+            $searchParams[] = '%' . $searchKeyword . '%';
+        }else{
+            $dbMatchingKeyworSql = "";
+        }
+
+        $startIndex = ($page - 1) * $itemsPerPage;
+
+        $dbQuery = "SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+                od.cost, m.basic_fee, m.linked_fee, m.ship_fee
+                FROM orders o
+                JOIN order_details od ON o.ix = od.orders_ix $dbMatchingKeyworSql
+                JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
+                WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name";
+
+        $dbStmt = $conn->prepare($dbQuery);
+        $bindParams = array_merge($searchParams,[$userIx]);
+        $dbStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
+
+        $dbStmt->execute();
+        $result = $dbStmt->get_result();
+    
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $listResult[] = $row;
+            }
+        }
+        $totalItems = $result->num_rows;
+        $totalPages = ceil($totalItems / 1000); //전체페이지
     }
+
+    
 
 
     // 페이지 링크 범위 설정 (예: 현재 페이지를 기준으로 ±2개의 링크 표시)
@@ -163,6 +199,17 @@
     ?>
     <div class="full-content">
         <div class="container">
+            <div style="margin: 20px;">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" placeholder="상품명 검색" id="search-input">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary" id="search-btn">조회하기</button>
+                        <button class="btn btn-primary" onclick="location.href='./db-matching.php';">전체보기</button>
+                    </div>
+                </div>
+            </div>
             <div class="main-content">
                 <div class="syncBtn d-flex justify-content-between">
                     <span>
@@ -175,76 +222,76 @@
                         </button>
                     </span>
                 </div>
-            <div class="data-list">
-                <!-- Example Row -->
-                <div class="data-row" style="font-weight:bold;">
-                    <div class="source">판매처</div>
-                    <div class="input-container">상품명</div>
-                    <div class="input-container">
-                        매칭 상품
-                    </div>
-                    <div class="input-container" style="width:120px;">
-                        원가(원)
-                    </div>
-                    <div class="checkbox-container">
-                    </div>
-                </div>
-                <?php
-
-                if ($result->num_rows > 0) {
-                    foreach($listResult as $listRow) {
-
-                    ?>  
-                        <div class="data-row" data-ix="<?=htmlspecialchars($listRow['detailIx'])?>">
-                            <div class="source"><?=htmlspecialchars($listRow['market_name'])?></div>
-                            <div class="input-container"><?=htmlspecialchars($listRow['name'])?></div>
-                            <input type="hidden" class="orderName" value="<?=htmlspecialchars($listRow['name'])?>">
-                            <div class="input-container">
-                                <input type="text" placeholder="값 입력" class="matchingText">
-                                <div class="autocomplete-results"></div>
-                            </div>
-                            <div class="input-container" style="width:120px;">
-                                <input type="text" class="form-control localeNumber matchingCost">
-                            </div>
-                            <div class="checkbox-container">
-                                <!-- <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]"> -->
-                                <button class="btn sync-button">동기화</button>
-                            </div>
+                <div class="data-list">
+                    <!-- Example Row -->
+                    <div class="data-row" style="font-weight:bold;">
+                        <div class="source">판매처</div>
+                        <div class="input-container">상품명</div>
+                        <div class="input-container">
+                            매칭 상품
                         </div>
-                    
-                    <?php } 
-                    ?>
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination justify-content-center mt-3">
-                            <?php if($hasPrev): ?>
-                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>">Previous</a></li>
-                            <?php else: ?>
-                                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                            <?php endif; ?>
+                        <div class="input-container" style="width:120px;">
+                            원가(원)
+                        </div>
+                        <div class="checkbox-container">
+                        </div>
+                    </div>
+                    <?php
 
-                            <?php for($i = $startPage; $i <= $endPage; $i++): ?>
-                                <?php if ($i == $page): ?>
-                                    <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
+                    if ($result->num_rows > 0) {
+                        foreach($listResult as $listRow) {
+
+                        ?>  
+                            <div class="data-row" data-ix="<?=htmlspecialchars($listRow['detailIx'])?>">
+                                <div class="source"><?=htmlspecialchars($listRow['market_name'])?></div>
+                                <div class="input-container"><?=htmlspecialchars($listRow['name'])?></div>
+                                <input type="hidden" class="orderName" value="<?=htmlspecialchars($listRow['name'])?>">
+                                <div class="input-container">
+                                    <input type="text" placeholder="값 입력" class="matchingText">
+                                    <div class="autocomplete-results"></div>
+                                </div>
+                                <div class="input-container" style="width:120px;">
+                                    <input type="text" class="form-control localeNumber matchingCost">
+                                </div>
+                                <div class="checkbox-container">
+                                    <!-- <input type="checkbox" class="matchingCheckbox" name="matchingCheckbox[]"> -->
+                                    <button class="btn sync-button">동기화</button>
+                                </div>
+                            </div>
+                        
+                        <?php } 
+                        ?>
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-center mt-3">
+                                <?php if($hasPrev): ?>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>">Previous</a></li>
                                 <?php else: ?>
-                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
+                                    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
                                 <?php endif; ?>
-                            <?php endfor; ?>
 
-                            <?php if ($hasNext): ?>
-                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage?>">Next</a></li>
-                            <?php else: ?>
-                                <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
-                            <?php endif; ?>
-                        </ul>
-                    </nav>
+                                <?php for($i = $startPage; $i <= $endPage; $i++): ?>
+                                    <?php if ($i == $page): ?>
+                                        <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
+                                    <?php else: ?>
+                                        <li class="page-item"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+
+                                <?php if ($hasNext): ?>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $nextPage?>">Next</a></li>
+                                <?php else: ?>
+                                    <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                                <?php endif; ?>
+                            </ul>
+                        </nav>
+                        
+                        <?php }else{?>
+                            <p class="text-center pt-5">주문을 등록해주세요. </p>
+                        <?php } ?>
+                    <!-- Example Row -->
                     
-                    <?php }else{?>
-                        <p class="text-center pt-5">주문을 등록해주세요.</p>
-                    <?php } ?>
-                <!-- Example Row -->
-                
-                <!-- More rows dynamically loaded here -->
-            </div>
+                    <!-- More rows dynamically loaded here -->
+                </div>
             </div>
         </div>
     </div>
@@ -351,9 +398,21 @@
             });
 
             // 부모 요소에 위치 속성 추가 (position: relative)
-            
 
         });
+
+        // 검색
+        $("#search-btn").click(function(){
+            searchQuanList();
+        });
+
+        function searchQuanList(){
+            if($("#search-input").val()==''){
+                location.href = './db-matching.php?start='+startDate+"&end="+endDate;
+            }else{
+                location.href = './db-matching.php?searchKeyword='+$("#search-input").val();
+            }
+        }
     </script>
 
 </body>
