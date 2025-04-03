@@ -20,6 +20,12 @@
             -webkit-appearance: auto;
         }
 
+        .plus{
+            color:#0d6efd;
+        }
+        .minus{
+            color:#ff0000;
+        }
         
     </style>
 </head>
@@ -136,7 +142,7 @@
                                                 <label class="form-label">수량(개)</label>
                                             </div>
                                             <div>
-                                                <input type="number" class="form-control quantity" value="0">
+                                                <input type="number" class="form-control quantity" value="1">
                                             </div>
                                         </div>
                                         <div>
@@ -162,12 +168,12 @@
                                             </div>
                                         </div>
                                         
-                                        <div>
+                                        <div>        
                                             <div>
                                                 <label class="form-label">총 지출비용(원)</label>
                                             </div>
                                             <div>
-                                                <input type="text" class="form-control totalFee localeNumber" value="0">
+                                                <input type="text" class="form-control totalExpense localeNumber" value="0">
                                             </div>
                                         </div>
                                         <div>
@@ -335,7 +341,12 @@
         let cost = parseNumber(row.find('.cost').val()) || 0;
         let quantity = parseFloat(row.find('.quantity').val()) || 0;
         let sellingPrice = parseNumber(row.find('.price').val()) || 0;
+        let sellingShipping = parseNumber(row.find('.ship').val()) || 0;
+        let myShipping = parseNumber(row.find('.myship').val()) || 0;
+        let etc = parseNumber(row.find('.etc').val()) || 0;
         let feeRate = parseFloat(row.find('.fee').val()) || 0;
+        let shipRate = 3.3;
+    
 
         console.log(sellingPrice,cost);
         
@@ -345,21 +356,33 @@
         // 총 원가
         let totalCost = cost * quantity;
         
-        // 수수료 계산 (판매가의 % 적용)
-        let totalFee = (totalRevenue * feeRate) / 100;
+        // 상품 수수료 계산 (판매가의 % 적용)
+        let totalPriceFee = (totalRevenue * feeRate) / 100;
+        // 배송비 수수료 계산
+        let totalShipFee = ((sellingShipping+myShipping) * shipRate) / 100;
 
-        // 총 부가세세
-        let surtax = (totalRevenue-totalCost) * 0.1;
+        // 총 부가세
+        let surtax = (totalRevenue+sellingShipping-totalCost-myShipping-etc) * 0.1;
+        if($('input:checkbox[name="surtaxCheck"]').is(':checked')){
+            let surtax = (sellingShipping-myShipping-etc) * 0.1;
+        }
         
         // 순수익 계산
-        let netProfit = totalRevenue - totalCost - totalFee - surtax;
+        let netProfit = totalRevenue + sellingShipping - totalCost - myShipping - totalPriceFee - totalShipFee - surtax - etc;
         
         // 마진율 계산
         let marginRate = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(2) : 0;
 
+        let totalExpense = totalPriceFee + totalShipFee + surtax + etc;
         // 결과 반영
+        if(netProfit>=0){
+            
+            row.find('.profit').addClass("plus");
+        }
         row.find('.profit').val(netProfit.toFixed(2));  // 소수점 2자리까지 표시
         row.find('.marginRate').val(marginRate);
+        row.find('.totalExpense').val(totalExpense);
+        row.find('.surtax').val(surtax);
     }
 
     function parseNumber(value) {
