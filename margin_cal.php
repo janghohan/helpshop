@@ -26,6 +26,13 @@
         .minus{
             color:#ff0000;
         }
+        .grey{
+            background:#efefef;
+        }
+        .marketBtn.selected{
+            background: #2f3b7e;
+            color: #fff;
+        }
         
     </style>
 </head>
@@ -35,6 +42,7 @@
     include './header.php';
     include './sidebar.html';
     include './dbConnect.php';
+
     ?>
 
 
@@ -43,10 +51,10 @@
         <div class="container">
             <ul class="nav nav-pills text-center" style="margin:20px;">
                 <li class="nav-item col-sm-6">
-                    <a class="nav-link active" aria-current="page" href="#">마진율 계산기</a>
+                    <a class="nav-link active" aria-current="page" href="./margin_cal.php">마진율 계산기</a>
                 </li>
                 <li class="nav-item col-sm-6">
-                    <a class="nav-link" href="#">광고비 계산기</a>
+                    <a class="nav-link" href="./roas_cal.php">광고비 계산기</a>
                 </li>
             </ul>
             <!-- 메인 콘텐츠 -->
@@ -73,46 +81,7 @@
                     <div class="d-flex">
                         <div class="flex-grow-1 justify-content-between" id="cal-box" style="max-width:1200px;">
                             <span class="text-info" style="font-size:12px;">네이버</span>
-                            <div class="calRow mb-2" style="display:none;">
-                                <span style="font-size:12px;" class="text-info">네이버</span>
-                                <div class="row g-2">
-                                    <div class=" col-lg">
-                                        <label class="form-label">원가</label>
-                                        <input type="text" class="form-control localeNumber cost">
-                                    </div>
-                                    <div class=" col-lg">
-                                        <label class="form-label">수량</label>
-                                        <input type="number" class="form-control quantity">
-                                    </div>
-                                    <div class=" col-lg">
-                                        <label class="form-label">판매가</label>
-                                        <input type="text" class="form-control localeNumber price">
-                                    </div>
-                                    <div class=" col-lg">
-                                        <label class="form-label">마진율(%)</label>
-                                        <input type="text" class="form-control marginRate">
-                                    </div>
-                                    <div class=" col-lg">
-                                        <label class="form-label">순수익</label>
-                                        <input type="text" class="form-control profit">
-                                    </div>
-                                    <div class=" col-lg">
-                                        <label class="form-label">수수료(%)</label>
-                                        <input type="text" class="form-control fee">
-                                    </div>
-                                    <!-- <div class=" col-lg">
-                                        <label class="form-label">배송수수료(%)</label>
-                                        <input type="text" class="form-control shipFee">
-                                    </div> -->
-                                    <div class=" col-lg">
-                                        <label class="form-label">*</label>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn d-block">저장</button>
-                                            <button class="btn d-block">reset</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            
                             <div class="row g-4 calRow">
                                 <!-- 왼쪽 섹션: 입력 필드 -->
                                 <div class="col-md-3">
@@ -173,7 +142,7 @@
                                                 <label class="form-label">총 지출비용(원)</label>
                                             </div>
                                             <div>
-                                                <input type="text" class="form-control totalExpense localeNumber" value="0">
+                                                <input type="text" class="form-control totalExpense localeNumber" value="0" readOnly>
                                             </div>
                                         </div>
                                         <div>
@@ -181,7 +150,7 @@
                                                 <label class="form-label">순이익(원)</label>
                                             </div>
                                             <div>
-                                                <input type="text" class="form-control profit localeNumber" value="0">
+                                                <input type="text" class="form-control profit localeNumber" value="0" readOnly>
                                             </div>
                                         </div>
                                     </div>
@@ -191,7 +160,7 @@
                                                 <label class="form-label">마진율(%)</label>
                                             </div>
                                             <div class="w-100">
-                                                <input type="text" class="form-control marginRate" value="0">
+                                                <input type="text" class="form-control marginRate grey" value="0" readOnly>
                                             </div>
                                         </div>
                                         
@@ -208,7 +177,7 @@
                                                 <label class="form-label">수수료(%)</label>
                                             </div>
                                             <div>
-                                                <input type="text" class="form-control fee" value="0">
+                                                <input type="text" class="form-control fee" value="0" readOnly>
                                             </div>
                                         </div>
                                     </div>
@@ -293,41 +262,18 @@
     
 
     $(".marketBtn").click(function(){
+        $(".marketBtn").removeClass("selected");
         const basicFee = $(this).data('basic');
         const linkedFee = $(this).data('link');
         const shipFee = $(this).data('ship');
 
-        var calDiv = $(".calRow").eq(0).clone();
-        calDiv.css("display",'block');
-        $("#cal-box").append(calDiv);
+        var calDiv = $("#cal-box");
 
         calDiv.find('span').text($(this).text());
         calDiv.find(".fee").val(linkedFee+basicFee);
         calDiv.find(".shipFee").val(shipFee);
 
-        // const formData = new FormData();
-        // formData.append('type', 'edit');
-        // inputs.each(function() {
-        //     console.log($(this).attr('name'), $(this).val());
-        //     formData.append($(this).attr('name'), $(this).val());
-        // });
-
-        // $.ajax({
-        //     url: './api/market_api.php', // 데이터를 처리할 서버 URL
-        //     type: 'POST',
-        //     data: formData,
-        //     processData: false, // FormData 객체를 문자열로 변환하지 않음
-        //     contentType: false, // 기본 Content-Type 설정을 막음
-        //     success: function(response) {
-        //         const result = JSON.parse(response);
-        //         if(result.status=='suc'){
-        //             toast();
-        //         }
-        //     },
-        //     error: function(xhr, status, error) {
-        //         alert('전송 실패: ' + error);
-        //     }
-        // });
+        $(this).addClass("selected");
 
     });
     
@@ -364,7 +310,7 @@
         // 총 부가세
         let surtax = (totalRevenue+sellingShipping-totalCost-myShipping-etc) * 0.1;
         if($('input:checkbox[name="surtaxCheck"]').is(':checked')){
-            let surtax = (sellingShipping-myShipping-etc) * 0.1;
+            surtax = (sellingShipping-myShipping-etc) * 0.1;
         }
         
         // 순수익 계산
@@ -376,8 +322,19 @@
         let totalExpense = totalPriceFee + totalShipFee + surtax + etc;
         // 결과 반영
         if(netProfit>=0){
-            
             row.find('.profit').addClass("plus");
+            row.find('.profit').removeClass("minus");
+        }else{
+            row.find('.profit').addClass("minus");
+            row.find('.profit').removeClass("plus");
+        }
+
+        if(totalExpense>=0){
+            row.find('.totalExpense').addClass("minus");
+            row.find('.totalExpense').removeClass("plus");
+        }else{
+            row.find('.totalExpense').addClass("plus");
+            row.find('.totalExpense').removeClass("minus");
         }
         row.find('.profit').val(netProfit.toFixed(2));  // 소수점 2자리까지 표시
         row.find('.marginRate').val(marginRate);
