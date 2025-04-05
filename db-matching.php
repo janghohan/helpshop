@@ -112,31 +112,27 @@
     $itemsPerPage =  $_GET['itemsPerPage'] ?? 50;
 
     if($searchKeyword=='' || !isset($_GET['searchKeyword'])){
-        if(!isset($_SESSION['db_matchingPage_'.$userIx])){
-            $totalStmt = "SELECT COUNT(*) as total FROM orders o
-                JOIN order_details od ON o.ix = od.orders_ix
-                JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
-                WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name";
+        if(!isset($_COOKIE['db_matchingPage_'.$userIx])){
+            $totalStmt = "SELECT COUNT(*) as total FROM (SELECT 1 FROM orders o JOIN order_details od ON o.ix = od.orders_ix JOIN market m ON m.ix = o.market_ix
+            LEFT JOIN db_match dm ON od.name = dm.name_of_excel WHERE o.user_ix = ? AND od.status = 'completed' AND dm.name_of_excel IS NULL GROUP BY od.name) AS sub";
             $totalStmt = $conn->prepare($totalStmt);
             $totalStmt->bind_param("s",$userIx);
             $totalStmt->execute();
-            $totalItems = $totalStmt->get_result()->num_rows;
+            $totalRow = $totalStmt->get_result()->fetch_assoc();
+            $totalItems = $totalRow['total'];
             $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
     
-            $_SESSION['db_matchingPage_'.$userIx] = $totalPages;
+            $_COOKIE['db_matchingPage_'.$userIx] = $totalPages;
         }else{
-            $totalPages = $_SESSION['db_matchingPage_'.$userIx];
+            $totalPages = $_COOKIE['db_matchingPage_'.$userIx];
         }
     
         $startIndex = ($page - 1) * $itemsPerPage;
     
-        $listStmt = $conn->prepare("SELECT o.order_date, o.global_order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
-                od.cost, m.basic_fee, m.linked_fee, m.ship_fee
-                FROM orders o
-                JOIN order_details od ON o.ix = od.orders_ix
-                JOIN market m ON m.ix = o.market_ix LEFT JOIN db_match dm ON od.name = dm.name_of_excel
-                WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name LIMIT ? OFFSET ?");
-    
+        $listStmt = $conn->prepare("SELECT MAX(o.order_date) AS order_date, MAX(o.global_order_number) AS global_order_number, MAX(m.market_name) AS market_name, MAX(od.ix) AS detailIx,
+                od.name, SUM(od.quantity) AS total_quantity, SUM(od.price) AS total_price, SUM(o.total_payment) AS total_payment, SUM(o.total_shipping) AS total_shipping, SUM(od.cost) AS total_cost,
+                MAX(m.basic_fee) AS basic_fee, MAX(m.linked_fee) AS linked_fee, MAX(m.ship_fee) AS ship_fee FROM orders o JOIN order_details od ON o.ix = od.orders_ix JOIN market m ON m.ix = o.market_ix
+                LEFT JOIN db_match dm ON od.name = dm.name_of_excel WHERE o.user_ix = ? AND od.status='completed' AND dm.name_of_excel IS NULL GROUP BY od.name LIMIT ? OFFSET ?");
         $listStmt->bind_param("sss",$userIx,$itemsPerPage,$startIndex);
     
         // Execute and Fetch Results
@@ -204,7 +200,7 @@
                     <div class="col-md-5">
                         <input type="text" class="form-control" placeholder="상품명 검색" id="search-input">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <button class="btn btn-primary" id="search-btn">조회하기</button>
                         <button class="btn btn-primary" onclick="location.href='./db-matching.php';">전체보기</button>
                     </div>

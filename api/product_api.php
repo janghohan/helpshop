@@ -23,8 +23,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // echo $_POST['productName'];
     if($addCount==1){
         $productName = $_POST['productName'] ?? '';
-        $productName = $_POST['productName'] ?? '';
+        $productCost = $_POST['productCost'] ?? '';
+        $productStock = $_POST['productStock'] ?? '';
+        $accountIx = $_POST['accountIx'] ?? '';
+        $categoryIx = $_POST['categoryIx'] ?? '';
 
+        $productCost = str_replace(",","",$productCost);
+        $productStock = str_replace(",","",$productStock);
+
+        $productStmt = $conn->prepare("INSERT INTO matching_name(user_ix,category_ix,account_ix,matching_name,cost,stock) VALUES(?,?,?,?,?,?)");
+        $productStmt->bind_param("ssssss",$userIx,$categoryIx,$accountIx,$productName,$productCost,$productStock);
+        if( $productStmt->execute()){
+            $response['status'] = 'success';
+        }else{
+            $response['status'] = 'fail';
+        }
+
+        echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         // if (!empty($formCombination)) {
         //     //상품명에 넣는다. 
         //     $productStmt = $conn->prepare("INSERT INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");

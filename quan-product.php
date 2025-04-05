@@ -92,42 +92,81 @@
     $itemsPerPage =  20;
     $startIndex = ($page - 1) * $itemsPerPage;
 
-    $startDate = $_GET['start'] ?? date("y-m-d");
-    $endDate = $_GET['end'] ?? date("y-m-d");
+    //해당 get 데이터에 따른 page로 넘길때 같이 넘길 값들
+    $pagingLink = "";
+
+    if(isset($_GET['searchKeyword'])){
+        $sellQuantityKeywordSql = "AND mn.matching_name LIKE ?";
+        $searchParams[] = '%' . $_GET['searchKeyword'] . '%';
+        $pagingLink.="&searchKeyword".$_GET['searchKeyword'];
+    }else{
+        $sellQuantityKeywordSql = "";
+    }
+
+    $startDate = $_GET['start'] ?? date("Y-m-d");
+    $endDate = $_GET['end'] ?? date("Y-m-d");
+
+    if(isset($_GET['date'])){
+        $searchDateSql = "";
+        $dateParams = [];
+        $pagingLink.="&date=all";
+    }else{
+        $searchDateSql = "AND o.order_date>= ? AND o.order_date<= ?";
+        $dateParams[] = $startDate;
+        $dateParams[] = $endDate;
+        $pagingLink.="&start=".$startDate."&end=".$endDate;
+    }
+
+    $pagingParam[] = $itemsPerPage;
+    $pagingParam[] = $startIndex;
+
+   
+
+    $sellQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN orders o ON o.ix = od.orders_ix $searchDateSql JOIN db_match dm ON od.name = dm.name_of_excel 
+        JOIN matching_name mn ON dm.matching_ix = mn.ix AND dm.user_ix = ? $sellQuantityKeywordSql GROUP BY mn.matching_name ORDER BY sellQuantity DESC LIMIT ? OFFSET ?";
+
+    $sellStmt = $conn->prepare($sellQuery);
+    $bindParams = array_merge($dateParams, [$userIx], $searchParams, $pagingParam);
+    $sellStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
+
+
+    $totalQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN orders o ON o.ix = od.orders_ix $searchDateSql JOIN db_match dm ON od.name = dm.name_of_excel 
+        JOIN matching_name mn ON dm.matching_ix = mn.ix AND dm.user_ix = ? $sellQuantityKeywordSql GROUP BY mn.matching_name ORDER BY sellQuantity DESC";
+    $totalStmt = $conn->prepare($totalQuery);
+    $totalBindParams = array_merge($dateParams, [$userIx], $searchParams,);
+    $totalStmt->bind_param(str_repeat('s', count($totalBindParams)), ...$totalBindParams);
 
     //검색 영역에 값이 들어오면
-    if(isset($_GET['searchKeyword'])){
-        $searchKeyword = $_GET['searchKeyword'] ?? "";
+    // if(isset($_GET['searchKeyword'])){
+    //     $searchKeyword = $_GET['searchKeyword'] ?? "";
 
-        if(isset($_GET['searchKeyword'])){
-            $orderTypeSearchKeyworSql = "AND mn.matching_name LIKE ?";
-            $searchParams[] = '%' . $searchKeyword . '%';
-        }else{
-            $orderTypeSearchKeyworSql = "";
-        }
+    //     if(isset($_GET['searchKeyword'])){
+    //         $orderTypeSearchKeyworSql = "AND mn.matching_name LIKE ?";
+    //         $searchParams[] = '%' . $searchKeyword . '%';
+    //     }else{
+    //         $orderTypeSearchKeyworSql = "";
+    //     }
 
-        $sellQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN db_match dm ON od.name = dm.name_of_excel 
-        JOIN matching_name mn ON dm.matching_ix = mn.ix AND dm.user_ix = ? $orderTypeSearchKeyworSql GROUP BY mn.matching_name ORDER BY sellQuantity DESC";
+    //     $sellQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN db_match dm ON od.name = dm.name_of_excel 
+    //     JOIN matching_name mn ON dm.matching_ix = mn.ix AND dm.user_ix = ? $sellQuantityKeywordSql GROUP BY mn.matching_name ORDER BY sellQuantity DESC";
 
-        $sellStmt = $conn->prepare($sellQuery);
-        $bindParams = array_merge([$userIx], $searchParams);
-        $sellStmt->bind_param(str_repeat('s', count($bindParams)), ...$bindParams);
+        
 
-    }else{     
-        $sellQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN orders o ON o.ix = od.orders_ix 
-        AND o.order_date>= ? AND o.order_date<= ? JOIN db_match dm ON od.name = dm.name_of_excel JOIN matching_name mn ON dm.matching_ix = mn.ix 
-        AND dm.user_ix = ? GROUP BY mn.matching_name ORDER BY sellQuantity DESC LIMIT ? OFFSET ?";
+    // }else{     
+    //     $sellQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity, SUM(od.quantity * od.price) AS sellPrice FROM order_details od JOIN orders o ON o.ix = od.orders_ix 
+    //     AND o.order_date>= ? AND o.order_date<= ? JOIN db_match dm ON od.name = dm.name_of_excel JOIN matching_name mn ON dm.matching_ix = mn.ix 
+    //     AND dm.user_ix = ? GROUP BY mn.matching_name ORDER BY sellQuantity DESC LIMIT ? OFFSET ?";
 
-        $sellStmt = $conn->prepare($sellQuery);
-        $sellStmt->bind_param("sssss",$startDate,$endDate,$userIx,$itemsPerPage,$startIndex);
+    //     $sellStmt = $conn->prepare($sellQuery);
+    //     $sellStmt->bind_param("sssss",$startDate,$endDate,$userIx,$itemsPerPage,$startIndex);
 
 
-        $totalQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity FROM order_details od JOIN orders o ON o.ix = od.orders_ix 
-        AND o.order_date>= ? AND o.order_date<= ? JOIN db_match dm ON od.name = dm.name_of_excel JOIN matching_name mn ON dm.matching_ix = mn.ix 
-        AND dm.user_ix = ? GROUP BY mn.matching_name ORDER BY sellQuantity";
-        $totalStmt = $conn->prepare($totalQuery);
-        $totalStmt->bind_param("sss",$startDate,$endDate,$userIx);
-    }   
+    //     $totalQuery = "SELECT mn.matching_name AS product_name, SUM(od.quantity) AS sellQuantity FROM order_details od JOIN orders o ON o.ix = od.orders_ix 
+    //     AND o.order_date>= ? AND o.order_date<= ? JOIN db_match dm ON od.name = dm.name_of_excel JOIN matching_name mn ON dm.matching_ix = mn.ix 
+    //     AND dm.user_ix = ? GROUP BY mn.matching_name ORDER BY sellQuantity";
+    //     $totalStmt = $conn->prepare($totalQuery);
+    //     $totalStmt->bind_param("sss",$startDate,$endDate,$userIx);
+    // }   
 
     // Execute and Fetch Results
     $sellStmt->execute();
@@ -171,9 +210,13 @@
                 <div class="container mt-4">
                     <!-- Search Options -->
                     <div class="search-options">
-                        <div class="row justify-content-between ">
-                            <div class="col-md-4 mb-3">
+                        <div class="row">
+                            <div class="col-4 mb-3">
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
+                            </div>
+                            <div class="col-md-4 mb-3 d-flex align-items-center gap-1">
+                                <input type="checkbox" class="form-check-input" id="everyday" name="everyday">
+                                <label for="everyday">전체 날짜로 보기</label>
                             </div>
                             <!-- <div class="col-md-2 mb-3">
                                 <button class="btn btn-outline-secondary w-100">이번 주</button>
@@ -195,7 +238,7 @@
                                 </select>
                             </div>
                             <div class="col-md-5">
-                                <input type="text" class="form-control" placeholder="주문번호 검색" id="search-input">
+                                <input type="text" class="form-control" placeholder="상품명 입력" id="search-input">
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-primary" id="search-btn">조회하기</button>
@@ -259,7 +302,7 @@
                     <nav aria-label="Page navigation example">
                         <ul class="pagination">
                             <?php if($hasPrev): ?>
-                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&start=<?= $startDate ?>&end=<?= $endDate ?>">Previous</a></li>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?><?= $pagingLink ?>">Previous</a></li>
                             <?php else: ?>
                                 <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
                             <?php endif; ?>
@@ -268,12 +311,12 @@
                                 <?php if ($i == $page): ?>
                                     <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
                                 <?php else: ?>
-                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&start=<?= $startDate ?>&end=<?= $endDate ?>"><?= $i ?></a></li>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $i ?><?= $pagingLink ?>"><?= $i ?></a></li>
                                 <?php endif; ?>
                             <?php endfor; ?>
 
                             <?php if ($hasNext): ?>
-                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&start=<?= $startDate ?>&end=<?= $endDate ?>">Next</a></li>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?><?= $pagingLink ?>">Next</a></li>
                             <?php else: ?>
                                 <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
                             <?php endif; ?>
@@ -447,15 +490,22 @@
 		}
 
         function searchQuanList(){
-            console.log("start",startDate);
-            console.log("end",endDate);
-            
-            if($("#search-input").val()==''){
-                location.href = './quan-product.php?start='+startDate+"&end="+endDate;
+            if($('input:checkbox[name="everyday"]').is(':checked')){
+                if($("#search-input").val()==''){
+                    location.href = './quan-product.php?date=all';
+                }else{
+                    const searchType = $("#order-filter option:selected").val();
+                    location.href = './quan-product.php?searchKeyword='+$("#search-input").val()+'&date=all';
+                }
             }else{
-                const searchType = $("#order-filter option:selected").val();
-                location.href = './quan-product.php?searchKeyword='+$("#search-input").val();
+                if($("#search-input").val()==''){
+                    location.href = './quan-product.php?start='+startDate+"&end="+endDate;
+                }else{
+                    const searchType = $("#order-filter option:selected").val();
+                    location.href = './quan-product.php?searchKeyword='+$("#search-input").val()+'&start='+startDate+"&end="+endDate;
+                }
             }
+            
         }
 
         $(document).on("click", "#orderCancel", function (event) {

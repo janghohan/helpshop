@@ -91,8 +91,8 @@
                             <input type="text" placeholder="상품명" maxlength="100" name="productName">
                         </div>
                         <div class="field">
-                            <label>판매금액</label>
-                            <input type="text" class="localeNumber" placeholder="판매금액" name="productPrice">
+                            <label>원가</label>
+                            <input type="text" class="localeNumber" placeholder="원가" name="productCost">
                         </div>
                         <div class="field">
                             <label>재고</label>
@@ -185,7 +185,7 @@
     
     function productAdd(){
         const productName = $("input[name='productName']").val();
-        const productPrice = $("input[name='productPrice']").val();
+        const productCost = $("input[name='productCost']").val();
         const productStock = $("input[name='productStock']").val();
         const accountIx = $("select[name='accountIx']").val();
         const categoryIx = $("select[name='categoryIx']").val();
@@ -198,7 +198,7 @@
         $.ajax({
             url: './api/product_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
-            data: {'addCount':1,'productName':productName,'productPrice':productPrice, 'productStock':productStock, 'accountIx':accountIx, 'categoryIx':categoryIx},
+            data: {'addCount':1,'productName':productName,'productCost':productCost, 'productStock':productStock, 'accountIx':accountIx, 'categoryIx':categoryIx},
             success: function(response) {
                 if(response.status=='success'){
                     basicFunctionSwal('상품이 등록되었습니다.',function() {

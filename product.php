@@ -357,10 +357,10 @@
                 let newValue = "";
                 newValue = input.val().trim();
                 let ix = td.attr('data-ix');
+                let type = td.attr('data-t');
 
                 td.text(newValue); // 성공하면 td에 새로운 값 적용
 
-                console.log(type,'type', ix, 'ix',newValue, 'newValue');
                 if (newValue !== originalText) { // 값이 변경된 경우에만 AJAX 실행
                     $.ajax({
                         url: "./api/product_edit_api.php",  // 데이터를 처리할 PHP 파일

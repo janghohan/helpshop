@@ -33,6 +33,23 @@
             background: #2f3b7e;
             color: #fff;
         }
+        .nav-link{
+            color: #000;
+            border: 1px solid #e9ecef !important;
+        }
+
+        .nav-link.active{
+            color: #fff;
+            background-color: #2f3b7e !important;
+        }
+        .explain{
+            margin-left: 20px;
+            font-size: 14px;
+            display: grid;
+            color: #2C3E50;
+            font-weight: 600;
+            
+        }
         
     </style>
 </head>
@@ -49,7 +66,7 @@
     <!-- 메인 컨테이너 -->
     <div class="full-content">
         <div class="container">
-            <ul class="nav nav-pills text-center" style="margin:20px;">
+            <ul class="nav nav-pills text-center" style="margin:20px; width:400px;">
                 <li class="nav-item col-sm-6">
                     <a class="nav-link" aria-current="page" href="./margin_cal.php">마진율 계산기</a>
                 </li>
@@ -58,6 +75,11 @@
                 </li>
             </ul>
             <!-- 메인 콘텐츠 -->
+            <div class="explain">
+                <span>* 손해보지 않기 위한 END(최저) ROAS를 계산해주는 계산기입니다.</span>
+                <span>* 광고시 해당 ROAS보다 낮게 나온다면 팔수록 손해라는 뜻입니다.</span>
+                <span>* 상품 원가와 판매가 값이 바뀔때 새로이 계산됩니다.</span>
+            </div>
             <div class="main-content">
                 <div>
                 <?php
@@ -88,7 +110,7 @@
                                     <div class="d-flex gap-2 justify-content-center">
                                         <div>
                                             <div>
-                                                <label class="form-label">상품구매가(원)</label>
+                                                <label class="form-label">상품 원가(원)</label>
                                             </div>
                                             <div class="w-100">
                                                 <input type="text" class="form-control cost localeNumber" value="0">
@@ -159,7 +181,7 @@
                                                 <label class="form-label">수수료(%)</label>
                                             </div>
                                             <div>
-                                                <input type="text" class="form-control fee" value="0" readOnly>
+                                                <input type="text" class="form-control fee" value="0">
                                             </div>
                                         </div>
                                     </div>
@@ -183,7 +205,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-2 d-flex align-items-center">
+                                <!-- <div class="col-md-2 d-flex align-items-center">
                                     <div class="d-flex gap-2 justify-content-center">
                                         <div >
                                             <div>
@@ -191,7 +213,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                             
                         </div>
@@ -241,6 +263,9 @@
     </div>
 </body>
 <script>
+    $(document).ready(function(){
+        $(".calRow input").attr("disabled",true);
+    });
     
 
     $(".marketBtn").click(function(){
@@ -256,6 +281,7 @@
         calDiv.find(".shipFee").val(shipFee);
 
         $(this).addClass("selected");
+        $(".calRow input").attr("disabled",false);
 
     });
     

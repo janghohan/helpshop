@@ -33,6 +33,23 @@
             background: #2f3b7e;
             color: #fff;
         }
+        .nav-link{
+            color: #000;
+            border: 1px solid #e9ecef !important;
+        }
+
+        .nav-link.active{
+            color: #fff;
+            background-color: #2f3b7e !important;
+        }
+        .explain{
+            margin-left: 20px;
+            font-size: 14px;
+            display: grid;
+            color: #2C3E50;
+            font-weight: 600;
+            
+        }
         
     </style>
 </head>
@@ -49,7 +66,7 @@
     <!-- 메인 컨테이너 -->
     <div class="full-content">
         <div class="container">
-            <ul class="nav nav-pills text-center" style="margin:20px;">
+            <ul class="nav nav-pills text-center" style="margin:20px; width: 400px;">
                 <li class="nav-item col-sm-6">
                     <a class="nav-link active" aria-current="page" href="./margin_cal.php">마진율 계산기</a>
                 </li>
@@ -58,6 +75,12 @@
                 </li>
             </ul>
             <!-- 메인 콘텐츠 -->
+            <div class="explain">
+                <span>* 소득세는 고려하지 않은 값입니다.</span>
+                <span>* 비과세 상품의 경우 비과세를 먼저 체크후 값을 입력해주세요.</span>
+                <span>* 상품 원가와 판매가 값이 바뀔때 새로이 계산됩니다.</span>
+                <span>* 배송수수료는 기본 3.3%(VAT 포함)으로 계산됩니다.</span>
+            </div>
             <div class="main-content">
                 <div>
                 <?php
@@ -88,7 +111,7 @@
                                     <div class="d-flex gap-2 justify-content-center">
                                         <div>
                                             <div>
-                                                <label class="form-label">상품구매가(원)</label>
+                                                <label class="form-label">상품 원가(원)</label>
                                             </div>
                                             <div class="w-100">
                                                 <input type="text" class="form-control cost localeNumber" value="0">
@@ -97,7 +120,7 @@
                                         
                                         <div>
                                             <div>
-                                                <label class="form-label">배송비(원)</label>
+                                                <label class="form-label">지출 배송비(원)</label>
                                             </div>
                                             <div>
                                                 <input type="text" class="form-control myship localeNumber" value="0">
@@ -177,7 +200,7 @@
                                                 <label class="form-label">수수료(%)</label>
                                             </div>
                                             <div>
-                                                <input type="text" class="form-control fee" value="0" readOnly>
+                                                <input type="text" class="form-control fee" value="0">
                                             </div>
                                         </div>
                                     </div>
@@ -201,7 +224,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-2 d-flex align-items-center">
+                                <!-- <div class="col-md-2 d-flex align-items-center">
                                     <div class="d-flex gap-2 justify-content-center">
                                         <div >
                                             <div>
@@ -209,7 +232,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                             
                         </div>
@@ -259,6 +282,9 @@
     </div>
 </body>
 <script>
+    $(document).ready(function(){
+        $(".calRow input").attr("disabled",true);
+    });
     
 
     $(".marketBtn").click(function(){
@@ -274,6 +300,8 @@
         calDiv.find(".shipFee").val(shipFee);
 
         $(this).addClass("selected");
+
+        $(".calRow input").attr("disabled",false);
 
     });
     
