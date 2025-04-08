@@ -329,6 +329,8 @@
         
         // 총 원가
         let totalCost = cost * quantity;
+
+        console.log(feeRate,"feeRate");
         
         // 상품 수수료 계산 (판매가의 % 적용)
         let totalPriceFee = (totalRevenue * feeRate) / 100;
