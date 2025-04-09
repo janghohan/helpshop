@@ -130,32 +130,41 @@
 <style>
     .sidebar {
         width: 250px;
-        background-color: #333;
-        color: white;
+        background-color: #f9f9f9;
         height: 100vh;
         overflow-y: auto;
         transition: width 0.3s ease;
         position: fixed;
         top: 0;
         left: 0;
-        }
+        font-size: 14px;
+    }
 
     .sidebar ul {
         list-style: none;
         padding: 0;
         margin: 0;
     }
+    .sidebar ul.menu{
+        padding-left: calc(.25rem * 3);
+        padding-right: calc(.25rem * 3);
+    }
 
     .sidebar .menu-link {
-        color: white;
+        color: #0d0d0d;
         text-decoration: none;
         display: block;
         padding: 15px 20px;
         transition: background-color 0.3s ease;
     }
 
-    .sidebar .menu-link:hover, .sidebar .menu-link.active {
-        background-color: #555;
+    .sidebar .menu-link.active {
+        background-color: #e3e3e3;
+        border-radius: .5rem;
+    }
+    .sidebar .menu-link:hover{
+        background-color: #ececec;
+        border-radius: .5rem;
     }
 
     .sidebar .submenu {
@@ -165,12 +174,18 @@
     .sidebar .submenu li {
         padding: 8px;
     }
+    .sidebar .submenu li:hover{
+        background-color: #ececec;
+        border-radius: .5rem;
+    }
     .sidebar .submenu li.active {
-        background-color: #444;
+        background-color: #e3e3e3;
+        border-radius: .5rem;
     }
     .sidebar .submenu a {
         padding: 10px 20px;
-        color: #fff;
+        font-weight: normal;
+        font-size: 14px;
     }
 
     /* .sidebar .submenu a:hover, .sidebar .submenu a.active {
@@ -178,9 +193,8 @@
     } */
 
     .sidebar .sidebar-toggle {
-        text-align: right;
+        text-align: left;
         padding: 10px;
-        background-color: #222;
     }
 
     .sidebar.collapsed {
@@ -243,7 +257,7 @@
 
 <div class="sidebar">
     <div class="sidebar-toggle">
-      <button id="toggleSidebar">☰</button>
+      <button id="toggleSidebar" style="border: 0px;">☰</button>
     </div>
     <ul class="menu">
       <li>
