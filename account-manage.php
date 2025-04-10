@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공통 레이아웃</title>
-    <link rel="stylesheet" href="./css/common.css">
     <link rel="stylesheet" href="./css/account.css">
     <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/common.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="./js/common.js"></script>
 </head>

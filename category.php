@@ -53,7 +53,7 @@
             <div class="d-flex mb-3">
                 <h2 class="flex-grow-1">카테고리</h2>
             </div>
-            <div class="category-list">
+            <div class="category-list" style="line-height: 50px;">
                 <!-- 상품 아이템 -->
 
                 <?php 

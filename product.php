@@ -273,7 +273,7 @@
                 </nav>
             </div>
         </div>
-        <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
+        <div id="myToast" style="z-index:-1" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
             <div class="d-flex">
                 <div class="toast-body">
                 삭제 되었습니다.
@@ -498,6 +498,7 @@
             const toastElement = document.getElementById('myToast');
             const toast = new bootstrap.Toast(toastElement);
             // 토스트 표시
+            $("#myToast").css("z-index",1);
             toast.show();
         }
     </script>
