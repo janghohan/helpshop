@@ -25,8 +25,8 @@
     $userIx = isset($_SESSION['user_ix']) ? : '1';
     $productIx = isset($_GET['ix']) ? $_GET['ix'] : '';
 
-    // 상품품
-    $productStmt = $conn->prepare("SELECT * FROM product WHERE ix=? AND user_ix=?");
+    // 상품
+    $productStmt = $conn->prepare("SELECT * FROM matching_name WHERE ix=? AND user_ix=?");
     $productStmt->bind_param("ss",$productIx, $userIx);
 
     if (!$productStmt->execute()) {
@@ -37,52 +37,53 @@
 
     if ($productResult->num_rows > 0) {
         while ($productRow = $productResult->fetch_assoc()) {
-            $productName = $productRow['name'];
+            $productName = $productRow['matching_name'];
             $accountIx = $productRow['account_ix'];
             $categoryIx = $productRow['category_ix'];
-            $memo = $productRow['memo'];
+            $stock = $productRow['stock'];
+            $cost = $productRow['cost'];
         }
         $productStmt -> close();
     }
 
-    // 옵션
-    $productOptionStmt = $conn->prepare("SELECT * FROM product_option WHERE product_ix=? GROUP BY name");
-    $productOptionStmt->bind_param("s",$productIx);
+    // // 옵션
+    // $productOptionStmt = $conn->prepare("SELECT * FROM product_option WHERE product_ix=? GROUP BY name");
+    // $productOptionStmt->bind_param("s",$productIx);
 
-    if (!$productOptionStmt->execute()) {
-        throw new Exception("Error executing list statement: " . $productOptionStmt->error); // *** 수정 ***
-    }
+    // if (!$productOptionStmt->execute()) {
+    //     throw new Exception("Error executing list statement: " . $productOptionStmt->error); // *** 수정 ***
+    // }
 
-    $result = $productOptionStmt->get_result();
-    $optionName = [];
+    // $result = $productOptionStmt->get_result();
+    // $optionName = [];
     
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            array_push($optionName,$row['name']);
+    // if ($result->num_rows > 0) {
+    //     while ($row = $result->fetch_assoc()) {
+    //         array_push($optionName,$row['name']);
             
-        }
-        $productOptionStmt-> close();
+    //     }
+    //     $productOptionStmt-> close();
 
-    }
-    $optionNameText = implode(",",$optionName);
+    // }
+    // $optionNameText = implode(",",$optionName);
 
 
-    // 옵션 키 
-    $productOptionCombiStmt = $conn->prepare("SELECT poc.ix as combIx, pomp.market_ix, pomp.ix as mPriceIx, m.market_name,poc.combination_key,poc.cost_price,poc.stock,pomp.price 
-    FROM product_option_combination poc JOIN product_option_market_price pomp ON poc.product_ix=? AND poc.ix = pomp.product_option_comb_ix 
-    JOIN market m ON m.ix = pomp.market_ix ORDER BY poc.ix");
-    $productOptionCombiStmt->bind_param("s",$productIx);
-    if (!$productOptionCombiStmt->execute()) {
-        throw new Exception("Error executing list statement: " . $productOptionCombiStmt->error); // *** 수정 ***
-    }
+    // // 옵션 키 
+    // $productOptionCombiStmt = $conn->prepare("SELECT poc.ix as combIx, pomp.market_ix, pomp.ix as mPriceIx, m.market_name,poc.combination_key,poc.cost_price,poc.stock,pomp.price 
+    // FROM product_option_combination poc JOIN product_option_market_price pomp ON poc.product_ix=? AND poc.ix = pomp.product_option_comb_ix 
+    // JOIN market m ON m.ix = pomp.market_ix ORDER BY poc.ix");
+    // $productOptionCombiStmt->bind_param("s",$productIx);
+    // if (!$productOptionCombiStmt->execute()) {
+    //     throw new Exception("Error executing list statement: " . $productOptionCombiStmt->error); // *** 수정 ***
+    // }
 
-    $result = $productOptionCombiStmt->get_result();
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $listResult[] = $row;
-        }
+    // $result = $productOptionCombiStmt->get_result();
+    // if ($result->num_rows > 0) {
+    //     while ($row = $result->fetch_assoc()) {
+    //         $listResult[] = $row;
+    //     }
         
-    }
+    // }
 
 
     // $productOptionCombiStmt = $conn->prepare("SELECT * FROM product_option_combination WHERE product_ix=?");
@@ -202,63 +203,70 @@
                                 <div class="char-count">0 / 100</div>
                             </div>
                             <div class="field">
+                                <label>상품원가</label>
+                                <input type="text" placeholder="상품원가" class="localeNumber" maxlength="100" name="productCost" value="<?=htmlspecialchars($cost)?>">
+                            </div>
+                            <div class="field">
+                                <label>상품수량</label>
+                                <input type="text" placeholder="상품수량" class="localeNumber"  maxlength="100" name="productStock" value="<?=htmlspecialchars($stock)?>">
+                            </div>
+                            <!-- <div class="field">
                                 <label>상품별 메모</label>
                                 <textarea placeholder="상품별 메모" maxlength="200" name="productMemo"><?=htmlspecialchars($memo)?></textarea>
                                 <div class="char-count">0 / 200</div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
 
-                <div class="option-info-section">
+                <!-- <div class="option-info-section">
                     <div class="option-combination">
                         <label>옵션</label>
                         <div class="d-flex gap-sm-2">
                             <div class="col-sm-1">
-                                <input type="text" class="optionName form-control" readonly value="판매처"> <!-- 인풋(1) -->
+                                <input type="text" class="optionName form-control" readonly value="판매처"> 
                             </div> 
                             <div class="col-sm-3">
-                                <input type="text" class="optionName form-control" readonly placeholder="색상,크기" value="옵션명"> <!-- 인풋(1) -->
+                                <input type="text" class="optionName form-control" readonly placeholder="색상,크기" value="옵션명"> 
                             </div> 
                             <div class="col-sm-3">
-                                <input type="text" class="optionValue form-control" readonly value="옵션값"> <!-- 인풋(2) -->
+                                <input type="text" class="optionValue form-control" readonly value="옵션값">
                             </div>
                             <div class="col-sm-1">
-                                <input type="text" class="optionValue form-control" readonly value="원가"> <!-- 인풋(2) -->
+                                <input type="text" class="optionValue form-control" readonly value="원가">
                             </div>
                             <div class="col-sm-1">
-                                <input type="text" class="optionValue form-control" readonly value="수량"> <!-- 인풋(2) -->
+                                <input type="text" class="optionValue form-control" readonly value="수량">
                             </div>
                             <div class="col-sm-1">
                                 <input type="text" class="optionValue form-control" readonly value="판매가">
                             </div>
-                        </div>
+                        </div> -->
                         <?php 
                         
 
-                        if(isset($listResult)){
+                        // if(isset($listResult)){
+                        //     $previousCombIx = null;
+                        //     foreach ($listResult as $index => $row) {
 
-                            $previousCombIx = null;
-                            foreach ($listResult as $index => $row) {
-
-                                $currentCombIx = $row['combIx'];
-                                if($previousCombIx!=$currentCombIx) {
+                        //         $currentCombIx = $row['combIx'];
+                        //         if($previousCombIx!=$currentCombIx) {
                                 ?>
-                                <div class="d-flex gap-sm-2" data-op-com="<?=htmlspecialchars($row['combIx'])?>" data-op-m="<?=htmlspecialchars($row['mPriceIx'])?>" data-m="<?=htmlspecialchars($row['market_ix'])?>">
+                                <!-- <div class="d-flex gap-sm-2" data-op-com="<?=htmlspecialchars($row['combIx'])?>" data-op-m="<?=htmlspecialchars($row['mPriceIx'])?>" data-m="<?=htmlspecialchars($row['market_ix'])?>">
                                     <div class="col-sm-1">
-                                        <input type="text" class="form-control" readonly placeholder="판매처" value="<?=htmlspecialchars($row['market_name'])?>"> <!-- 인풋(1) -->
+                                        <input type="text" class="form-control" readonly placeholder="판매처" value="<?=htmlspecialchars($row['market_name'])?>"> 
                                     </div> 
                                     <div class="col-sm-3">
-                                        <input type="text" class="form-control" readonly placeholder="옵션명" value="<?=htmlspecialchars($optionNameText)?>"> <!-- 인풋(1) -->
+                                        <input type="text" class="form-control" readonly placeholder="옵션명" value="<?=htmlspecialchars($optionNameText)?>"> 
                                     </div> 
                                     <div class="col-sm-3">
-                                        <input type="text" class="form-control" name="optionValue" value="<?=htmlspecialchars($row['combination_key'])?>"> <!-- 인풋(2) -->
+                                        <input type="text" class="form-control" name="optionValue" value="<?=htmlspecialchars($row['combination_key'])?>"> 
                                     </div>
                                     <div class="col-sm-1">
-                                        <input type="text" class="form-control localeNumber" name="optionCost" value="<?=htmlspecialchars(number_format($row['cost_price']))?>"> <!-- 인풋(2) -->
+                                        <input type="text" class="form-control localeNumber" name="optionCost" value="<?=htmlspecialchars(number_format($row['cost_price']))?>"> 
                                     </div>
                                     <div class="col-sm-1">
-                                        <input type="text" class="form-control " name="optionStock" value="<?=htmlspecialchars($row['stock'])?>"> <!-- 인풋(2) -->
+                                        <input type="text" class="form-control " name="optionStock" value="<?=htmlspecialchars($row['stock'])?>"> 
                                     </div>
                                     <div class="col-sm-1">
                                         <input type="text" class="form-control localeNumber" name="optionPrice" value="<?=htmlspecialchars(number_format($row['price']))?>">
@@ -277,12 +285,13 @@
                                             </svg>
                                         </button>
                                     </div>
-                                </div>
-                                <?php }else{
+                                </div> -->
+                                <?php 
+                                // }else{
                                 ?>
-                                <div class="d-flex gap-sm-2" data-op-com="<?=htmlspecialchars($row['combIx'])?>" data-op-m="<?=htmlspecialchars($row['mPriceIx'])?>" data-m="<?=htmlspecialchars($row['market_ix'])?>">
+                                <!-- <div class="d-flex gap-sm-2" data-op-com="<?=htmlspecialchars($row['combIx'])?>" data-op-m="<?=htmlspecialchars($row['mPriceIx'])?>" data-m="<?=htmlspecialchars($row['market_ix'])?>">
                                     <div class="col-sm-1">
-                                        <input type="text" class="form-control" readonly value="<?=htmlspecialchars($row['market_name'])?>"> <!-- 인풋(1) -->
+                                        <input type="text" class="form-control" readonly value="<?=htmlspecialchars($row['market_name'])?>">
                                     </div> 
                                     <div class="col-sm-3">
                                         
@@ -313,13 +322,15 @@
                                             </svg>
                                         </button>
                                     </div>
-                                </div>
+                                </div> -->
 
-                                <?php } 
-                                $previousCombIx = $currentCombIx;
-                                } } ?>
+                                <?php 
+                                // } 
+                                // $previousCombIx = $currentCombIx;
+                                // } } 
+                                ?>
                         <!-- <button class="apply-btn" onclick="generateCombinations()">적용</button> -->
-                    </div>
+                    <!-- </div> -->
 
                     <!-- <div class="option-list">
                         <label>옵션 목록 (총 4개)</label>
@@ -342,7 +353,7 @@
 
                     </div> -->
 
-                    <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
+                    <!-- <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
                         <div class="d-flex">
                             <div class="toast-body">
                             수정 되었습니다.
@@ -350,7 +361,7 @@
                             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div class="mb-5">
                     <button class="btn btn-primary float-md-end" onclick="productEdit();">수정</button>
                 </div>
@@ -410,6 +421,7 @@
     </div>
 </body>
 <script src="./js/product-add.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     
     $(document).ready(function(){
@@ -452,13 +464,11 @@
         const stock = $(thisDiv).find("input[name='optionStock']").val();
         const price = $(thisDiv).find("input[name='optionPrice']").val();
 
-        console.log(value,cost,stock,price);
         $.ajax({
             url: './api/product_edit_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
             data: {'type':'opEdit', 'combIx':combIx,'mPriceIx':mPriceIx,'optionValue':value,'optionCost':cost,'optionStock':stock,'optionPrice':price},
             success: function(response) {
-                console.log(response.status);
                 if(response.status=='success'){
                     toast(btn);
                 }
@@ -479,12 +489,14 @@
 
     function productEdit(){
         const productName = $("input[name='productName']").val();
-        const productMemo = $("textarea[name='productMemo']").val();
         const accountIx = $("select[name='accountIx']").val();
         const categoryIx = $("select[name='categoryIx']").val();
+        const cost = $("input[name='productCost']").val();
+        const stock = $("input[name='productStock']").val();
 
         if(productName==""){
-            alert('상품명을 입력해주세요.');
+            basicSwal("상품명을 입력해주세요.",true);
+            // alert('상품명을 입력해주세요.');
             return false;
         }
 
@@ -492,7 +504,7 @@
         $.ajax({
             url: './api/product_edit_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
-            data: {'type':'productEdit','productName':productName,'productMemo':productMemo, 'accountIx':accountIx, 'categoryIx':categoryIx, 'productIx':"<?=$productIx?>"},
+            data: {'type':'productEdit','productName':productName, 'accountIx':accountIx, 'categoryIx':categoryIx, 'productIx':"<?=$productIx?>", 'cost':cost, 'stock':stock},
             success: function(response) {
                 console.log(response.status);
                 if(response.status=='success'){

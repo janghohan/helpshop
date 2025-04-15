@@ -38,7 +38,7 @@
             <!-- 거래처 선택 -->
             <div class="category-box">
                 <label><span class="required">•</span>거래처</label>
-                <select name="accountIx">
+                <select name="accountIx" id="accountIx">
                     <?php
                     $accountResult = [];
                     $query = "SELECT * FROM account WHERE user_ix='$user_ix'";
@@ -62,7 +62,7 @@
             <!-- 카테고리 선택 -->
             <div class="category-box">
                 <label><span class="required">•</span>카테고리</label>
-                <select class="category" name="categoryIx">
+                <select class="category" name="categoryIx" id="categoryIx">
                 <?php
                     $categoryResult = [];
                     $query = "SELECT * FROM category WHERE user_ix='$user_ix'";
@@ -181,7 +181,15 @@
 <script src="./js/product-add.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    
+    $(document).ready(function() {
+        // 저장된 값 불러오기
+        if (localStorage.getItem('selectedCategory')) {
+            $('#categoryIx').val(localStorage.getItem('selectedCategory'));
+        }
+        if (localStorage.getItem('selectedAccount')) {
+            $('#accountIx').val(localStorage.getItem('selectedAccount'));
+        }
+    });
     
     function productAdd(){
         const productName = $("input[name='productName']").val();
@@ -189,6 +197,9 @@
         const productStock = $("input[name='productStock']").val();
         const accountIx = $("select[name='accountIx']").val();
         const categoryIx = $("select[name='categoryIx']").val();
+
+        localStorage.setItem('selectedAccount', accountIx);
+        localStorage.setItem('selectedCategory', categoryIx);
 
         if(productName==""){
             alert('상품명을 입력해주세요.');

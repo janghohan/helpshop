@@ -3,7 +3,7 @@
 var marketPriceDiv = $(".marketPriceFormDiv").clone();
 var marketPriceHtml = marketPriceDiv.html();
 
-console.log(marketPriceHtml);
+// console.log(marketPriceHtml);
 var newOptionNames = '<div class="option-row" data-id=""><div class="option-name-group"></div><div class="option-price"><input type="text" class="option-input localeNumber price-input" value="0"></div><div class="stock"><input type="text" class="option-input localeNumber stock-input" value="0"></div><div class="buying-price"><button class="btn btn-outline-dark priceModal">입력</button>'+marketPriceHtml+'</div><div class="op-delete"><button class="btn btn-secondary">×</button></div></div>';
 {/* <div class="option-checkbox"><input type="checkbox"></div> */}
 //옵션 적용버튼 누를때
@@ -22,7 +22,7 @@ function generateCombinations() {
         const optionName = $(this).find('.optionName').val().trim();
         const optionValues = $(this).find('.optionValue').val().split(',').map(val => val.trim());
         
-        console.log("옵션명", optionName);
+        // console.log("옵션명", optionName);
         optionNamesArr.push(optionName);
         // 옵션명과 옵션값이 모두 있는 경우만 추가
         if (optionName && optionValues.length > 0) {
@@ -31,7 +31,7 @@ function generateCombinations() {
     });
     // 조합 생성
 
-    console.log(options,"option"); // options = [{name:색상, values:[]}, {name:크기, values:[]}]
+    // console.log(options,"option"); // options = [{name:색상, values:[]}, {name:크기, values:[]}]
 
     let combinations = [{}]; // 초기 조합은 빈 객체로 시작
     options.forEach(option => { //ex)  { name: "색상", values: ["빨강", "파랑"] } 각 옵션에 대해 처리
@@ -96,8 +96,8 @@ $(document).on("click", ".priceModal", function () {
 
     priceParent.find('.price_by_market').each(function(index, element){
         // priceArr.push($(this).val());
-        console.log($(this).val(),"price");
-        console.log(index,"index");
+        // console.log($(this).val(),"price");
+        // console.log(index,"index");
         $(".modal-body").find('.price_by_market').eq(index).val($(this).val());
     });
     
@@ -150,7 +150,7 @@ function insertPriceAndStock(){
         });
 
         optionsArray.push(resultObject);
-        console.log(optionsArray,"optionsArray");
+        // console.log(optionsArray,"optionsArray");
     });
 
     
@@ -199,7 +199,7 @@ function insertPriceAndStock(){
         // 요소의 값을 읽기
         const value = $element.val();
         
-        console.log(value,"stock");
+        // console.log(value,"stock");
         formCombinations[index].stock = value;
     });
 
@@ -218,9 +218,9 @@ function insertPriceAndStock(){
             resultArray.push(resultObject);
         });
         formCombinations[index].selling = resultArray;
-        console.log(resultArray,"resultArray")
+        // console.log(resultArray,"resultArray")
     });
 
     //배열 체크
-    console.log(formCombinations,"formCombinations2");
+    // console.log(formCombinations,"formCombinations2");
 }

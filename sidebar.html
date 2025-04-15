@@ -149,6 +149,9 @@
         padding-left: calc(.25rem * 3);
         padding-right: calc(.25rem * 3);
     }
+    .sidebar ul.menu.hide{
+        display: none;
+    }
 
     .sidebar .menu-link {
         color: #0d0d0d;
@@ -326,6 +329,9 @@
     // Sidebar toggle
         $('#toggleSidebar').on('click', function () {
             $('.sidebar').toggleClass('collapsed');
+            $("ul.menu").toggleClass("hide");
+
+            
         });
 
         // Submenu toggle
@@ -336,7 +342,6 @@
 
         // Highlight current page
         const currentPage = window.location.pathname;
-        console.log(currentPage,"currentPage");
         $('.menu-link').each(function () {
             const link = $(this).attr("href")
             // console.log(currentPage,"currentPage");
@@ -345,7 +350,7 @@
                 const aa = submenu.find('a');
                 aa.each(function(){
                     const submenuLink = new URL($(this).prop("href"), window.location.origin).pathname;
-                    console.log(submenuLink,"is #");
+                    // console.log(submenuLink,"is #");
                     if (submenuLink==currentPage) {
                         submenu.show();
                         // submenu.prev('.has-submenu').addClass('active');
@@ -354,7 +359,7 @@
                 });
             }else{
                 const menuLink = new URL($(this).prop("href"), window.location.origin).pathname;
-                console.log(menuLink,"not #");
+                // console.log(menuLink,"not #");
                 if (menuLink === currentPage) {
                     $(this).addClass('active');
                 }

@@ -23,9 +23,6 @@
     $page = $_GET['page'] ?? 1;
     $itemsPerPage =  $_GET['itemsPerPage'] ?? 20;
 
-    $totalItems = $conn->query("SELECT COUNT(*) as total FROM matching_name WHERE user_ix='$userIx'")->fetch_assoc()['total'];
-    
-    $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
     $startIndex = ($page - 1) * $itemsPerPage;
     
     $where = ["mn.user_ix = ?"];
@@ -50,10 +47,27 @@
         $paramTypes .= "s"; // 문자열이므로 "s"
     }
 
+    // 검색후 page get 값
+    if (!empty($_GET['name'])) {
+        $getValue = "itemsPerPage=".$itemsPerPage."&account=".$_GET['account']."&category=".$_GET['category']."&name=".$_GET['name'];
+    }else{
+        $getValue = "itemsPerPage=".$itemsPerPage;
+    }
+
+
     $limit = $_GET['itemsPerPage'] ?? 20;
     $offset = $startIndex;
 
     $whereClause = implode(" AND ", $where);
+
+    // $totalItems = $conn->query("SELECT COUNT(*) as total FROM matching_name WHERE user_ix='$userIx'")->fetch_assoc()['total'];
+    $totalStmt = $conn->prepare("SELECT mn.ix AS mnIx,mn.matching_name AS productName FROM matching_name mn 
+    JOIN account a ON a.ix = mn.account_ix JOIN category c ON c.ix = mn.category_ix WHERE $whereClause");
+    $totalStmt->bind_param($paramTypes,...$params);
+    $totalStmt->execute();
+    $totalResult = $totalStmt->get_result();
+    $totalItems = $totalResult->num_rows;
+    $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
 
     $listStmt = $conn->prepare("SELECT mn.ix AS mnIx, mn.matching_name AS productName, a.name AS acName, c.name AS cateName, mn.stock, mn.cost FROM matching_name mn 
     JOIN account a ON a.ix = mn.account_ix JOIN category c ON c.ix = mn.category_ix WHERE $whereClause LIMIT ? OFFSET ?");
@@ -61,6 +75,7 @@
     $params[] = $limit;
     $params[] = $offset;
     $paramTypes .= "ii";
+
 
 // SELECT IFNULL(a.name,'') as acName,IFNULL(c.name,'') as cateName, poc.ix as combIx,p.ix as pIx, p.name, p.create_at, poc.combination_key, poc.cost_price, poc.stock FROM product p JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=1 LEFT JOIN account a ON p.account_ix = a.ix LEFT JOIN category c ON p.category_ix = c.ix LIMIT 20 OFFSET 0;
 
@@ -251,7 +266,7 @@
                 <nav aria-label="Page navigation example">
                     <ul class="pagination">
                         <?php if($hasPrev): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Previous</a></li>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $prevPage ?>&<?= $getValue ?>">Previous</a></li>
                         <?php else: ?>
                             <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
                         <?php endif; ?>
@@ -260,12 +275,12 @@
                             <?php if ($i == $page): ?>
                                 <li class="page-item active"><a class="page-link" href="#"><?= $i ?></a></li>
                             <?php else: ?>
-                                <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&itemsPerPage=<?= $itemsPerPage ?>"><?= $i ?></a></li>
+                                <li class="page-item"><a class="page-link" href="?page=<?= $i ?>&<?= $getValue ?>"><?= $i ?></a></li>
                             <?php endif; ?>
                         <?php endfor; ?>
 
                         <?php if ($hasNext): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&itemsPerPage=<?= $itemsPerPage ?>">Next</a></li>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $nextPage ?>&<?= $getValue ?>">Next</a></li>
                         <?php else: ?>
                             <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
                         <?php endif; ?>
@@ -341,7 +356,7 @@
         });
 
         function searchOrderList(){
-            location.href = './product.php?account='+$(".product-account option:selected").val()+'&category='+$(".product-cate option:selected").val()+'&name='+$("#search-input").val()+'&itemsPerPage='+$("#itemsPerPage option:selected").val()+'&page='+<?=$page?>;
+            location.href = './product.php?account='+$(".product-account option:selected").val()+'&category='+$(".product-cate option:selected").val()+'&name='+$("#search-input").val()+'&itemsPerPage='+$("#itemsPerPage option:selected").val()+'&page=1';
         }
 
         // 항목 더블클릭시 수정 가능하도록

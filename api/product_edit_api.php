@@ -70,16 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     
     }else if($type=='productEdit'){
-        $productName = isset($_POST['productName']) ? $_POST['productName'] : '';
-        $productMemo = isset($_POST['productMemo']) ? $_POST['productMemo'] : '';
-        $accountIx = isset($_POST['accountIx']) ? $_POST['accountIx'] : '';
-        $categoryIx = isset($_POST['categoryIx']) ? $_POST['categoryIx'] : '';
-        $productIx = isset($_POST['productIx']) ? $_POST['productIx'] : '';
+        $productName = $_POST['productName'] ?? '';
+        $accountIx = $_POST['accountIx'] ?? '';
+        $categoryIx = $_POST['categoryIx'] ?? '';
+        $productIx = $_POST['productIx'] ?? '';
+        $productCost =  $_POST['cost'] ?? 0;
+        $productStock = $_POST['stock'] ?? 0;
         $updateTime = date("Y-m-d H:i:s");
 
         //옵션값, 원가, 재고 수정
-        $productStmt = $conn->prepare("UPDATE product SET name=?, memo=?, account_ix=?, category_ix=?, update_at=? WHERE ix=? AND user_ix=?");
-        $productStmt->bind_param("sssssss",$productName,$productMemo,$accountIx,$categoryIx,$updateTime,$productIx,$userIx);
+        $productStmt = $conn->prepare("UPDATE matching_name SET matching_name=?, account_ix=?, category_ix=?, cost =?, stock=? WHERE ix=? AND user_ix=?");
+        $productStmt->bind_param("sssssss",$productName,$accountIx,$categoryIx,$productCost,$productStock,$productIx,$userIx);
         if(!$productStmt->execute()){
             throw new Exception("Error executing productUpdateStmt statement: " . $productStmt->error); // *** 수정 ***
         }
