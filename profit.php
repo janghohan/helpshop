@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product.css">
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     
     <title>주문 관리</title>
     <style>
@@ -212,7 +213,7 @@
                             </div>
                         </div>
                         <div class="card">
-                            <h5>총 세금금액</h5>
+                            <h5>총 세금금액(부가세+소득세)</h5>
                             <div class="value">
                                 <button class="btn btn-lg" data-v="totalDuty">
                                     <i class="bi bi-arrow-clockwise"></i>
@@ -228,6 +229,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="summary-cards d-flex justify-content-between" id="marginCard">
+                        <div class="card">
+                            <h5>적용 소득률(%)</h5>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="incomeRate">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h5>총 지출내역</h5>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="incomeRate">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                    
                 </div>
             </div>
@@ -235,12 +254,10 @@
         
 
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="./js/product.js"></script>
     <script src="./js/common.js"></script>
     
     
@@ -281,6 +298,21 @@
 
 		}
 
+        $(".btn").click(function(){
+            $.ajax({
+                url: './api/margin_api.php', // 데이터를 처리할 서버 URL
+                dataType:'json',
+                type: 'POST',
+                data: {'startDate' : startDate, 'endDate' : endDate, 'searchKeyword':""},
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
+                }
+            });
+        });
         
 
     </script>

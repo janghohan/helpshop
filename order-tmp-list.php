@@ -150,7 +150,10 @@
                         <button class="btn btn-primary" id="upload-btn">주문등록</button>
                     </div>
                 </div>
-                <p>확인용으로 보여지는 리스트입니다. 최종 주문으로 등록하시려면 왼쪽 상단 "주문등록" 버튼을 눌러주세요.</p>
+                <p>확인용으로 보여지는 리스트입니다. 
+                    <br>최종 주문으로 등록하시려면 왼쪽 상단 "주문등록" 버튼을 눌러주세요.
+                    <br>취소한 주문의 경우 엑셀에서 삭제 후 등록하거나, 최종 주문등록 후 삭제할 수 있습니다.
+                </p>
                 <div class="container mt-4">
                     <!-- Order Table -->
                     <div class="table-container">
