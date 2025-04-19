@@ -282,7 +282,9 @@
                     <div class="text-center" style="width: 80px;">마진율</div>
                     <div class="text-center ms-auto" style="width: 60px;">작업</div>
                 </div>
-                <?php foreach($calResult as $calRow) {
+                <?php 
+                if ($result->num_rows > 0) {
+                    foreach($calResult as $calRow) {
                 ?>
                 <div class="d-flex align-items-center gap-2 border rounded p-2 mb-1">
       
@@ -302,7 +304,7 @@
                     <!-- 삭제 버튼 -->
                     <button type="button" class="btn btn-outline-danger btn-sm ms-auto remove_list" data-v="<?=htmlspecialchars($calRow['ix'])?>">삭제</button>
                 </div>
-                <?php } ?>
+                <?php }} ?>
                 
             </div>
             <div class="modal fade" id="martketModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -448,8 +450,9 @@
             type: 'POST',
             data: $("#margin-form").serialize(),
             success: function(response) {
-                console.log(response); 
+                
                 if(response.status=='success'){
+                    $("#saved_margin_list").show();
                     $("#saved_margin_list").append('<div class="d-flex align-items-center gap-2 border rounded p-2 mb-1">'
                     +'<input type="text" class="form-control form-control-sm product_name" placeholder="상품명" value="" style="width: 200px;"/>'+
                     '<span class="small text-center" style="width: 80px;">'+$("input[name='cost']").val()+'</span>'+
