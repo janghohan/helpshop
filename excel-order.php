@@ -10,7 +10,23 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="./js/common.js"></script>
-
+    <style>
+        .explain{
+            font-size: 14px;
+            display: grid;
+            color: #2C3E50;
+            font-weight: 300;
+            margin-left:20px;
+            margin-top : 8px;
+            background:#efefef;
+            padding:10px;
+            border-radius : 5px;
+        }   
+        .explain a{
+            color: #0d6cfd;
+            padding-left: 3px;
+        }
+    </style>
 </head>
 <body>
     <?php
@@ -19,9 +35,13 @@
 
     ?>
     <div class="full-content">
+        <div class="explain">
+            <span>* 현재 택배지원 기능은 CJ대한통운만 가능합니다.</span>
+            <span>* 추가 택배사를 원하시는 분은 옆 버튼을 눌러 요청해주세요. <a href="./excel-request.php">요청하기</a></span>
+        </div>
         <!-- 주문 파일 등록 -->
         <div class="section">
-            <h2>주문 파일 등록</h2>
+            <h5>주문 파일 등록</h5>
             <form action="" method="post" id="file_to_deliver">
                 <input type="hidden" name="type" value="deliver">
                 <div class="upload-group">
