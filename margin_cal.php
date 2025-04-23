@@ -385,23 +385,28 @@
         let myShipping = parseNumber(row.find('.myship').val()) || 0;
         let etc = parseNumber(row.find('.etc').val()) || 0;
         let feeRate = parseFloat(row.find('.fee').val()) || 0;
-        let shipRate = 3.3;
+        let shipRate = 3;
     
 
         console.log(sellingPrice,cost);
         
-        // 총 매출
-        let totalRevenue = sellingPrice * quantity;
-        
-        // 총 원가
-        let totalCost = cost * quantity;
+        // 총 상품 매출
+        let totalProductRevenue = sellingPrice * quantity;
+        // 총 배송비 매출
+        let totalShipRevenue = sellingPrice;
 
         console.log(feeRate,"feeRate");
         
         // 상품 수수료 계산 (판매가의 % 적용)
-        let totalPriceFee = (totalRevenue * feeRate) / 100;
+        let totalPriceFee = (totalProductRevenue * feeRate) / 100;
         // 배송비 수수료 계산
-        let totalShipFee = ((sellingShipping+myShipping) * shipRate) / 100;
+        let totalShipFee = (totalShipRevenue * shipRate) / 100;
+
+        // 총 원가
+        let totalCost = cost * quantity + totalPriceFee; //원가 + 판매수수료
+
+        //총 매입
+        let totalPurchase = cost * quantity + totalPriceFee ;
 
         // 총 부가세
         let surtax = (totalRevenue+sellingShipping-totalCost-myShipping-etc) * 0.1;
