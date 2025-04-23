@@ -17,28 +17,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if($orderType=='single'){
         $orderDate = $_POST['orderDate'] ?? date("Y-m-d");
+        $orderMarket = $_POST['orderMarket'] ?? date("Y-m-d");
+
         $orderNames = $_POST['orderName'] ?? '';
-        $orderNumbers = $_POST['orderNumber'] ?? '';
         $orderCosts = $_POST['orderCost'] ?? '1';
         $orderPrices = $_POST['orderPrice'] ?? '';
         $orderQuantitys = $_POST['orderQuantity'] ?? 1;
-        $orderMarkets = $_POST['orderMarket'] ?? '';
-        $orderShipping = $_POST['orderShipping'] ?? 0;
+        $shipPrice = $_POST['shipPrice'] ?? 0;
+        $orderNumber = $_POST['orderNumber'] ?? '';
 
-        $totalShipping = 0;
+        $totalShipping = $shipPrice;
         $totalPrice = 0;
         $globalOrderNumber = generateOrderNumber($userIx);
 
-        //총 택배비와 총 상품금액 구하기
+        //총 상품금액 구하기
         foreach ($orderNames as $index => $orderName){
             $totalPrice = $totalPrice + (changeTextToIntForMoney($orderPrices[$index]) * changeTextToIntForMoney($orderQuantitys[$index]));
-            $totalShipping = $totalShipping + changeTextToIntForMoney($orderShipping[$index]);
-
         }
 
         // orders 테이블에 저장
         $orderStmt = $conn->prepare("INSERT INTO orders(global_order_number,order_number,order_date,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?)");
-        $orderStmt->bind_param("sssssss", $globalOrderNumber,$orderNumbers[1],$orderDate,$orderMarkets[1],$userIx,$totalPrice,$totalShipping);
+        $orderStmt->bind_param("sssssss", $globalOrderNumber,$orderNumber,$orderDate,$orderMarket,$userIx,$totalPrice,$totalShipping);
         if(!$orderStmt->execute()){
             $response['status'] = 'fail';
             $response['msg'] = 'order Stmt Fail';
@@ -50,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         //order_detail 테이블 저장
         foreach ($orderNames as $index => $orderName){
-            if($index==0) continue;
 
             $orderPrice = changeTextToIntForMoney($orderPrices[$index]);
             $orderCost = changeTextToIntForMoney($orderCosts[$index]);
@@ -85,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $matchingStmt->bind_param("sssss",$userIx,$categoryIx,$accountIx,$orderName,$orderCost);
                 $matchingStmt->execute();
 
+                //matching_name에 값이 있는경우
                 if ($matchingStmt->affected_rows === 0) {
                     
                 }else{

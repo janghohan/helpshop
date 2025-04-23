@@ -39,6 +39,16 @@
         padding-bottom: 5px;
         padding-top: 5px;
     }
+
+    /* 배송비 swal */
+    .ship-swal-title{
+        font-size: 18px;
+        padding-top: 15px !important;
+    }
+    .ship-swal-input{
+        height: 2.3rem !important;
+        margin: 5px;
+    }
 </style>
 <body>
     <!-- 헤더 -->
@@ -107,68 +117,11 @@
                 <h2>주문 리스트</h2>
                 <form action="./api/order_api.php" id="order-form" method="post">
                     <input type="hidden" name="orderType" value="single">
-                    <input type="hidden" name="orderDate" >
-                    <input type="hidden" name="orderMarket" >
-                    <div class="single-order gap-2" style="display:none;">
-                        <div class="filter-group col-md-3">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="orderName[]" placeholder="상품명" readonly>
-                            </div>
-                        </div>
-                        <div class="filter-group col-md-2">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="orderNumber[]" placeholder="주문번호" >
-                            </div>
-                        </div>
-                        <div class="filter-group col-md-1">
-                            <div class="form-group">
-                                <input type="text" class="form-control localeNumber" name="orderCost[]" placeholder="원가" >
-                            </div>
-                        </div>
-                        <div class="filter-group col-md-1">
-                            <div class="form-group">
-                                <input type="text" class="form-control localeNumber" name="orderPrice[]" placeholder="판매가">
-                            </div>
-                        </div>
-                        <div class="filter-group col-md-1">
-                            <div class="form-group">
-                                <input type="number" class="form-control" name="orderQuantity[]" placeholder="수량">
-                            </div>
-                        </div>
-                        <div class="filter-group col-md-1">
-                            <div class="form-group">
-                                <input type="text" class="form-control localeNumber" name="orderShipping[]" placeholder="택배비" >
-                            </div>
-                        </div>
-                        <div class="filter-group col-md-1" id="martketData">
-                            <div class="form-group">
-                                <select name="orderMarket[]" class="form-select" id="">
-                                <?php
-                                    $searchResult = [];
-                                    
-                                    $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
-                                    $result = $conn->query($query);
-                            
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            $searchResult[] = $row;
-                                        }
-                                    }
-
-                                    foreach($searchResult as $marketRow){
-                                
-                                ?>
-                                    <option value="<?=htmlspecialchars($marketRow['ix'])?>"><?=htmlspecialchars($marketRow['market_name'])?></option>
-                                <?php }?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="filter-group col-md-1">
-                            <div class="form-group">
-                                <button class="btn btn-secondary remove-btn">X</button>
-                            </div>
-                        </div>
-                    </div>
+                    <input type="hidden" name="orderDate">
+                    <input type="hidden" name="orderMarket">
+                    <input type="hidden" name="shipPrice">
+                    <input type="hidden" name="orderNumber">
+                    
                    
                 </form>
                 <div class="d-grid mt-3">
@@ -223,7 +176,7 @@
                                 suggestionBox.append(`<button type="button" data-c="`+item.cost+`" class="list-group-item list-group-item-action">`+item.matching_name+`</button>`);
                             });
                         } else {
-                        suggestionBox.append(`<button type="button" class="list-group-item list-group-item-action text-muted">+ "`+searchKeyword+`" 추가 등록</button>`);
+                            suggestionBox.append(`<button type="button" class="list-group-item plus-item list-group-item-action text-muted">+ "`+searchKeyword+`" 추가 등록</button>`);
                         }
 
                         suggestionBox.show();
@@ -233,10 +186,17 @@
 
             // 클릭 시 선택 처리
             let selectedProducts = [];
-            $(document).on('click', '#product_suggestions button', function () {
+            $(document).on('click', '#product_suggestions .list-group-item', function () {
                 $("#selected_products").show();
                 let selectedName = $(this).text();
                 let cost = $(this).attr('data-c');
+                if($(this).hasClass("plus-item")){
+                    let matched = selectedName.match(/"([^"]+)"/);
+                    if (matched) {
+                        let newSelectedName = matched[1]; // "sadf"
+                        selectedName = newSelectedName;
+                    }
+                }
                 console.log(selectedName);
                 // 중복 선택 방지
                 if (selectedProducts.includes(selectedName)) return;
@@ -273,8 +233,88 @@
             //         $('#product_suggestions').hide();
             //     }
             // });
+
+            $("#order-add").click(function(event){
+                event.preventDefault();
+                $("input[name='orderDate']").val($("#flatpickr").val());
+                $("input[name='orderMarket']").val($("#market_select option:selected").val());
+
+                // console.log($("#order-form .selected-product-item").length);
+                if($("#order-form .selected-product-item").length<1){
+                    basicSwal("주문을 등록해주세요.",true);
+                    return false;
+                }   
+                
+                let isValid = true; // 모든 input이 채워졌는지 체크하는 변수
+                $("#order-form .selected-product-item").each(function(index, element) {
+
+                    $(element).find("input").each(function () {
+                        if ($(this).val().trim() === "") {
+                            isValid = false; // 하나라도 비어 있으면 false 설정
+                            return false; // 반복문 종료
+                        }
+                    });
+
+                    if (!isValid) {
+                        basicSwal("주문에 대한 값을 입력해주세요.",true);
+                        return false; // `each` 루프 종료
+                    }
+
+                });
+                if($("#market_select option:selected").val()==""){
+                    basicSwal("마켓을 선택해주세요.",true);
+                }
+
+
+                Swal.fire({
+                    title: '추가 정보를 입력하세요',
+                    html:
+                        `<input id="orderNumber-swal-input" class="ship-swal-input swal2-input" placeholder="마켓 주문번호 (선택)">` +
+                        `<input id="ship-swal-input" class="ship-swal-input swal2-input" placeholder="배송비 (필수)" type="number">`,
+                    showCancelButton: true,
+                    confirmButtonText: '등록',
+                    cancelButtonText: '취소',
+                    customClass: {
+                        title: 'ship-swal-title',
+                    },
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        addOrder();
+                        // 여기서 입력값을 활용하면 됩니다.
+                    }
+                });
+  
+                
+                function addOrder(){
+                    
+                    $("input[name='shipPrice']").val($("#ship-swal-input").val());
+                    $("input[name='orderNumber']").val($("#orderNumber-swal-input").val());
+                    $.ajax({
+                        url: './api/order_api.php', // 데이터를 처리할 서버 URL
+                        type: 'POST',
+                        dataType : 'json',
+                        data: $("#order-form").serialize(),
+                        success: function(response) { 
+                            if(response.status=='success'){
+                                basicFunctionSwal('주문이 등록되었습니다.',function() {
+                                    location.reload();
+                                });
+                            }else{
+                                alert(response.msg);
+                            }
+
+                        },
+                        error: function(xhr, status, error) {
+                            // alert('전송 실패: ' + error);
+                        }
+                    });
+                }
+                
+            });
         });
 
+
+        // 옛날꺼꺼
 
         // 상품 검색 
         $("#search-btn").click(function(){
@@ -385,57 +425,7 @@
             }
         });
 
-        $("#order-add").click(function(event){
-            event.preventDefault();
-            $("input[name='orderDate']").val($("#flatpickr").val());
-            $("input[name='orderMarket']").val($("#market_select option:selected").val());
-
-            console.log($("#order-form .selected-product-item").length);
-            if($("#order-form .selected-product-item").length<=1){
-                basicSwal("주문을 등록해주세요.",true);
-                return false;
-            }   
-
-            let isValid = true; // 모든 input이 채워졌는지 체크하는 변수
-            $("#order-form .selected-product-item").each(function(index, element) {
-                if(index==0) return;
-
-                $(element).find("input").each(function () {
-                    if ($(this).val().trim() === "" && $(this).attr("name")!="orderNumber[]") {
-                        isValid = false; // 하나라도 비어 있으면 false 설정
-                        return false; // 반복문 종료
-                    }
-                });
-
-                if (!isValid) {
-                    basicSwal("빈칸을 채워주세요.",true);
-                    return false; // `each` 루프 종료
-                }
-
-            });
-
-            
-            $.ajax({
-                url: './api/order_api.php', // 데이터를 처리할 서버 URL
-                type: 'POST',
-                dataType : 'json',
-                data: $("#order-form").serialize(),
-                success: function(response) { 
-                    if(response.status=='success'){
-                        basicFunctionSwal('주문이 등록되었습니다.',function() {
-                            location.reload();
-                        });
-                    }else{
-                        alert(response.msg);
-                    }
-
-                },
-                error: function(xhr, status, error) {
-                    // alert('전송 실패: ' + error);
-                }
-            });
-            
-        });
+        
     </script>
 </body>
 </html>

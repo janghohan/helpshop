@@ -3,11 +3,10 @@ session_start();
 include '../dbConnect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
-    ob_start();
+    // header('Content-Type: application/json');
+    // ob_start();
 
     $userIx = isset($_SESSION['user_ix']) ? : '1';
-    $calculateType = isset($_POST['calculateType']) ? $_POST['calculateType'] : '';
     $startDate = isset($_POST['startDate']) ? $_POST['startDate'] : date("Y-m-d");
     $endDate = isset($_POST['endDate']) ? $_POST['endDate'] : date("Y-m-d");
 
@@ -89,12 +88,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         
-        $price = $orderRow['price'];
-        $shipping = $orderRow['total_shipping'];
+        $price = $orderRow['price'] * $orderRow['quantity'];
         $basicFee = $orderRow['basic_fee'];
         $linkedFee = $orderRow['linked_fee'];
         $shipFee = $orderRow['ship_fee'];
-        $cost = $orderRow['cost'];
+        $cost = $orderRow['cost'] * $orderRow['quantity'];
 
         // 마진 계산
         $incomeTaxRate = 0.033; // 소득세 (3.3%)
@@ -123,40 +121,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id ++;
 
         // 최종 판매금액, 택배 금액, 마진
-        $totalPayment += $orderRow['price']; //매출
-        $totalShipping += $orderRow['total_shipping'];
+        $totalPayment += $price; //매출
+        $totalShipping += $shipping;
         $totalProfit += $netProfit;
         $totalSaleVat += $salesVat;
 
+        $previousOrderNumber = $currentOrderNumber;
     }
 
     // 지출내역 확인 쿼리
     $expenseStmt = $conn->prepare("SELECT SUM(expense_price) AS totalPurchase FROM expense WHERE user_ix=? AND expense_date >=? AND expense_date<=?");
     $expenseStmt->bind_param('sss',$userIx,$startDate,$endDate);
+    $expenseStmt->execute();
     $expenseResult = $expenseStmt->get_result();
+
     $expenseRow = $expenseResult->fetch_assoc();
     $totalPurchase = $expenseRow['totalPurchase'] ?? 0; //매입
 
     $totalVat = ($totalPayment - $totalPurchase) * $vatRate; //최종 부가세
     
 
-    if($calculateType=='totalPayment'){
-        $response['result'] = number_format($totalPayment)."원";
-    }else if($calculateType=='totalShipping'){
-        $response['result'] =  number_format($totalShipping)."원";
-    }else if($calculateType=='totalProfit'){
-        $response['result'] =  number_format($totalProfit)."원";
-    }else if($calculateType=='totalDuty'){
-        $response['result'] =  number_format($salesVat+$incomeTax)."원";
-    }else if($calculateType=='totalPurchase'){
-        $response['result'] =  number_format($totalPurchase)."원";
-    }else if($calculateType=='totalCommission'){
-        $response['result'] =  number_format($totalFees)."원";
-    }
 
-    // $response['result'] = $totalPayment;
-    // $response['totalShipping'] = $totalShipping;
-    // $response['totalProfit'] = $totalProfit;
+    $response['msg'] = 'suc';
+    // if($calculateType=='totalPayment'){
+    //     $response['result'] = number_format($totalPayment)."원";
+    // }else if($calculateType=='totalShipping'){
+    //     $response['result'] =  number_format($totalShipping)."원";
+    // }else if($calculateType=='totalProfit'){
+    //     $response['result'] =  number_format($totalProfit)."원";
+    // }else if($calculateType=='totalDuty'){
+    //     $response['result'] =  number_format($salesVat+$incomeTax)."원";
+    // }else if($calculateType=='totalPurchase'){
+    //     $response['result'] =  number_format($totalPurchase)."원";
+    // }else if($calculateType=='totalCommission'){
+    //     $response['result'] =  number_format($totalFees)."원";
+    // }
+
+    $response['result'] = $totalPayment; //판매금액
+    $response['totalShipping'] = $totalShipping; //판매배송비
+    $response['totalProfit'] = $totalProfit; //순익
+    $response['incomeTax'] = $incomeTax; //소득세
+
     // $response['startDate'] = $startDate;
     // $response['endDate'] = $endDate;
     // $response['searchType'] = $searchType;
@@ -165,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // $response['result'] = $result->num_rows;
 
     
-    $output = ob_get_clean();
+    // $output = ob_get_clean();
     // file_put_contents('debug_output.txt', $output); // 파일에 기록
 
     echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
