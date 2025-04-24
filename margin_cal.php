@@ -395,30 +395,40 @@
         // 총 배송비 매출
         let totalShipRevenue = sellingPrice;
 
-        console.log(feeRate,"feeRate");
-        
-        // 상품 수수료 계산 (판매가의 % 적용)
+        // 총 매출
+        let totalRevenue = totalProductRevenue + totalShipRevenue;
+        // 총 매출 부가세
+        let totalRevenueSurtax = totalRevenue - (totalRevenue / 1.1);
+
+        //총 상품 원가
+        let totalProductCost = cost * quantity;
+        //총 배송비 원가
+        let totalShipCost = myShipping;
+
+        //상품 매출 수수료
         let totalPriceFee = (totalProductRevenue * feeRate) / 100;
-        // 배송비 수수료 계산
+        //배송비 매출 수수료
         let totalShipFee = (totalShipRevenue * shipRate) / 100;
 
-        // 총 원가
-        let totalCost = cost * quantity + totalPriceFee; //원가 + 판매수수료
+        //총 매입금액(vat 포함)
+        let totalPurchase = totalProductCost + totalShipCost + (totalPriceFee*1.1) + (totalShipFee*1.1) + etc;
 
-        //총 매입
-        let totalPurchase = cost * quantity + totalPriceFee ;
+        //총 매입 부가세
+        let totalPurchaseSurtax = totalPurchase - (totalPurchase / 1.1);
 
-        // 총 부가세
-        let surtax = (totalRevenue+sellingShipping-totalCost-myShipping-etc) * 0.1;
+
+        // 총 지출 부가세
+        let surtax = totalRevenueSurtax - totalPurchaseSurtax;
         if($('input:checkbox[name="surtaxCheck"]').is(':checked')){
-            surtax = (sellingShipping-myShipping-etc) * 0.1;
+            surtax = (totalPurchase) * 0.1;
         }
         
-        // 순수익 계산
-        let netProfit = totalRevenue + sellingShipping - totalCost - myShipping - totalPriceFee - totalShipFee - surtax - etc;
+        // 세전순수익 계산
+        let exNetProfit = totalRevenue  - totalPurchase;
+        let afterNetProfit = exNetProfit - surtax;
         
         // 마진율 계산
-        let marginRate = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(2) : 0;
+        let marginRate = totalRevenue > 0 ? ((afterNetProfit / totalRevenue) * 100).toFixed(2) : 0;
 
         let totalExpense = totalPriceFee + totalShipFee + surtax + etc;
         // 결과 반영
