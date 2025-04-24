@@ -51,6 +51,36 @@
             
         }
         
+        .tooltip-icon {
+            background-color: #fff;
+            border: 1px solid #acacac;
+            color: #acacac;
+            border-radius: 50%;
+            padding: 0px 7px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .tooltip-text {
+            display: none;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            padding: 8px;
+            border-radius: 5px;
+
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* 위치 조정 */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
     </style>
 </head>
 <body>
@@ -81,7 +111,7 @@
                 <span>* 소득세는 고려하지 않은 값입니다.</span>
                 <span>* 비과세 상품의 경우 비과세를 먼저 체크후 값을 입력해주세요.</span>
                 <span>* 상품 원가와 판매가 값이 바뀔때 새로이 계산됩니다.</span>
-                <span>* 배송수수료는 기본 3.3%(VAT 포함)으로 계산됩니다.</span>
+                <span>* 배송수수료는 기본 3%(VAT별도)로 계산됩니다.</span>
             </div>
             <div class="main-content">
                 <div>
@@ -192,12 +222,15 @@
                                                 </div>
                                             </div>
                                             <div>        
-                                                <div>
-                                                    <label class="form-label">총 지출비용(원)</label>
+                                                <div style="position: relative;">
+                                                    <label class="form-label">총 지출비용(원) <span class="tooltip-icon">i</span></label>
+                                                    <div class="tooltip-text">
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <input type="text" class="form-control totalExpense localeNumber" value="0" readOnly name="expense">
                                                 </div>
+                                                
                                             </div>
                                             
                                             <div>
@@ -361,7 +394,7 @@
 
         var calDiv = $("#cal-box");
 
-        calDiv.find('span').text($(this).text());
+        calDiv.find('span.text-info').text($(this).text());
         calDiv.find(".fee").val(linkedFee+basicFee);
         calDiv.find(".shipFee").val(shipFee);
 
@@ -393,7 +426,7 @@
         // 총 상품 매출
         let totalProductRevenue = sellingPrice * quantity;
         // 총 배송비 매출
-        let totalShipRevenue = sellingPrice;
+        let totalShipRevenue = sellingShipping;
 
         // 총 매출
         let totalRevenue = totalProductRevenue + totalShipRevenue;
@@ -410,29 +443,36 @@
         //배송비 매출 수수료
         let totalShipFee = (totalShipRevenue * shipRate) / 100;
 
-        //총 매입금액(vat 포함)
-        let totalPurchase = totalProductCost + totalShipCost + (totalPriceFee*1.1) + (totalShipFee*1.1) + etc;
+        //총 매입금액 (상품원가 + 지출배송비 + 기타비용) (vat 포함)
+        let totalPurchase = totalProductCost + totalShipCost + etc;
 
-        //총 매입 부가세
-        let totalPurchaseSurtax = totalPurchase - (totalPurchase / 1.1);
+        //총 매입 부가세 (총 매입 부가세 + 매출수수료의 부가세)
+        let totalPurchaseSurtax = (totalPurchase - (totalPurchase / 1.1)) + ((totalPriceFee+totalShipFee)*0.1);
 
-
-        // 총 지출 부가세
-        let surtax = totalRevenueSurtax - totalPurchaseSurtax;
-        if($('input:checkbox[name="surtaxCheck"]').is(':checked')){
-            surtax = (totalPurchase) * 0.1;
-        }
         
-        // 세전순수익 계산
-        let exNetProfit = totalRevenue  - totalPurchase;
+        // 총 지출 부가세
+        let surtax = Math.round(totalRevenueSurtax - totalPurchaseSurtax);
+        if($('input:checkbox[name="surtaxCheck"]').is(':checked')){
+            surtax = (totalPurchase) * 0.1; //매입 부가세 공제 
+        }
+
+        
+        // 세전순수익 계산 (매출 - 매입금액 - 상품,배송 수수료)
+        let exNetProfit = totalRevenue  - totalPurchase - totalPriceFee - totalShipFee;
+        // 부가세 후 순수익
         let afterNetProfit = exNetProfit - surtax;
         
         // 마진율 계산
         let marginRate = totalRevenue > 0 ? ((afterNetProfit / totalRevenue) * 100).toFixed(2) : 0;
 
-        let totalExpense = totalPriceFee + totalShipFee + surtax + etc;
+        // 지출비용 (상품 수수료, 배송수수료, 부가세, 기타비용)
+        let totalExpense = (totalPriceFee + totalShipFee + surtax + etc).toFixed(2);
+
+        let expenseText = "상품수수료:"+totalPriceFee+", 배송비수수료:"+totalShipFee+", 부가세:"+surtax+", 기타:"+etc;
+
+        
         // 결과 반영
-        if(netProfit>=0){
+        if(afterNetProfit>=0){
             row.find('.profit').addClass("plus");
             row.find('.profit').removeClass("minus");
         }else{
@@ -447,10 +487,13 @@
             row.find('.totalExpense').addClass("plus");
             row.find('.totalExpense').removeClass("minus");
         }
-        row.find('.profit').val(netProfit.toFixed(2));  // 소수점 2자리까지 표시
+        row.find('.profit').val(afterNetProfit.toFixed(2));  // 소수점 2자리까지 표시
         row.find('.marginRate').val(marginRate);
         row.find('.totalExpense').val(totalExpense);
         row.find('.surtax').val(surtax);
+
+        $(".tooltip-icon").show();
+        row.find('.tooltip-text').text(expenseText);
     }
 
     function parseNumber(value) {
@@ -528,6 +571,12 @@
                 console.log(error);
             }
         });
+    });
+
+    $(".tooltip-icon").hover(function(){
+        $(".tooltip-text").show();
+    },function(){
+        $(".tooltip-text").hide();
     });
 
     
