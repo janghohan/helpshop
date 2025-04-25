@@ -22,6 +22,15 @@
                 font-size: 14px;
             }
         }
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .rotate {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
         .search-options, .summary-cards, .filter-options {
             padding: 20px;
         }
@@ -175,11 +184,10 @@
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-primary" id="search-btn">조회하기</button>
+                                <button class="btn btn-primary" id="profit-btn">조회하기</button>
                             </div>
                         </div>
                     </div>
-
                     <!-- Summary Cards -->
                     <div class="summary-cards d-flex justify-content-between" id="marginCard">
                         <div class="card">
@@ -297,13 +305,15 @@
 
         });
 
-        $(".btn").click(function(){
+        $("#profit-btn").click(function(){  
+            $(".bi-arrow-clockwise").addClass('rotate');
             $.ajax({
                 url: './api/margin_api.php', // 데이터를 처리할 서버 URL
                 dataType:'json',
                 type: 'POST',
                 data: {'startDate' : startDate, 'endDate' : endDate, 'searchKeyword':""},
                 success: function(response) {
+                    $(".bi-arrow-clockwise").removeClass('rotate');
                     console.log(response);
                 },
                 error: function(xhr, status, error) {                  

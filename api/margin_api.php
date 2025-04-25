@@ -87,41 +87,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $shipping = 0;
         }
 
+        // 상품 수수료율
+        $feeRate = $orderRow['basic_fee'] + $orderRow['linked_fee'];
+        // 배송비 수수료율
+        $shipRate = $orderRow['ship_fee'];
+
+        // 총 상품 매출
+        $totalProductRevenue = $orderRow['price'] * $orderRow['quantity'];
+        //총 배송비 매출
+        $totalShipRevenue = $shipping;
+
+        // 총 매출(상품+배송비)
+        $totalRevenue = $totalProductRevenue + $totalShipRevenue;
+        // 총 매출 부가세
+        $totalRevenueSurtax = $totalRevenue - ($totalRevenue / 1.1);
         
-        $price = $orderRow['price'] * $orderRow['quantity'];
-        $basicFee = $orderRow['basic_fee'];
-        $linkedFee = $orderRow['linked_fee'];
-        $shipFee = $orderRow['ship_fee'];
-        $cost = $orderRow['cost'] * $orderRow['quantity'];
+        //총 상품 원가
+        $totalProductCost = $orderRow['cost'] * $orderRow['quantity'];
+        
 
         // 마진 계산
         $incomeTaxRate = 0.033; // 소득세 (3.3%)
         
         // 1. 상품가에 대한 수수료 계산 (기본 수수료 + 연동 수수료)
-        $totalProductFeeRate = ($basicFee + $linkedFee)/100; // 총 상품가 수수료율
-        $totalProductFees = $price * $totalProductFeeRate; // 상품가에 대한 총 수수료
+        $totalProductFeeRate = $feeRate/100; // 총 상품가 수수료율
+        $totalProductFees = $totalProductRevenue * $totalProductFeeRate; // 상품가에 대한 총 수수료
 
         // 2. 배송비에 대한 수수료 계산
-        $shippingFeeCommission = $shipping * (($shipFee)/100);
+        $shippingFeeCommission = $shipping * (($shipRate)/100);
 
         // 3. 총 수수료 계산
         $totalFees = $totalProductFees + $shippingFeeCommission;
 
         // 4. 매출에서 부가세 계산
-        $salesVat = ($price + $shipping) * $vatRate;
+        $salesVat = ($totalProductRevenue + $shipping) * $vatRate;
 
         // 5. 소득세 계산 (부가세 제외한 매출에서 소득세 적용)
-        $taxableIncome = ($price + $shipping) - $totalFees - $salesVat;
+        $taxableIncome = ($totalProductRevenue + $shipping) - $totalFees - $salesVat;
         $incomeTax = getIncomTax($taxableIncome);
 
         // 6. 최종 마진 계산
-        $netProfit = ($price + $shipping) - $cost - $totalFees - $salesVat - $incomeTax;
+        $netProfit = ($totalProductRevenue + $shipping) - $totalProductCost - $totalFees - $salesVat - $incomeTax;
 
 
         $id ++;
 
         // 최종 판매금액, 택배 금액, 마진
-        $totalPayment += $price; //매출
+        $totalPayment += $totalProductRevenue; //매출
         $totalShipping += $shipping;
         $totalProfit += $netProfit;
         $totalSaleVat += $salesVat;
