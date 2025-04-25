@@ -33,7 +33,8 @@
             font-size: 0.9rem;
             width: 30%;
         }
-        .summary-cards .card h5 {
+        .summary-cards .card h4 {
+            font-size: 18px;
             margin: 10px 0;
         }
         .summary-cards .card .value {
@@ -169,9 +170,12 @@
                 <div class="container mt-4">
                     <!-- Search Options -->
                     <div class="search-options">
-                        <div class="row justify-content-between ">
+                        <div class="row justify-content-start ">
                             <div class="col-md-4 mb-3">
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary" id="search-btn">조회하기</button>
                             </div>
                         </div>
                     </div>
@@ -179,7 +183,7 @@
                     <!-- Summary Cards -->
                     <div class="summary-cards d-flex justify-content-between" id="marginCard">
                         <div class="card">
-                            <h5>총 결제금액(상품)</h5>
+                            <h4>총 결제금액(상품)</h4>
                             <div class="value">
                                 <button class="btn btn-lg" data-v="totalPayment">
                                     <i class="bi bi-arrow-clockwise"></i>
@@ -187,7 +191,7 @@
                             </div>
                         </div>
                         <div class="card">
-                            <h5>총 결제금액(택배비)</h5>
+                            <h4>총 결제금액(택배비)</h4>
                             <div class="value">
                                 <button class="btn btn-lg" data-v="totalShipping">
                                     <i class="bi bi-arrow-clockwise"></i>
@@ -195,9 +199,9 @@
                             </div>
                         </div>
                         <div class="card">
-                            <h5>총 매입내역</h5>
+                            <h4>평균 객단가</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalPurchase">
+                                <button class="btn btn-lg" data-v="avePerPrice">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -205,7 +209,15 @@
                     </div>
                     <div class="summary-cards d-flex justify-content-between" id="marginCard">
                         <div class="card">
-                            <h5>총 마켓수수료</h5>
+                            <h4>총 매입내역</h4>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="totalPurchase">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h4>총 마켓수수료</h4>
                             <div class="value">
                                 <button class="btn btn-lg" data-v="totalCommission">
                                     <i class="bi bi-arrow-clockwise"></i>
@@ -213,7 +225,17 @@
                             </div>
                         </div>
                         <div class="card">
-                            <h5>총 세금금액(부가세+소득세)</h5>
+                            <h4>총 지출내역</h4>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="incomeRate">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-cards d-flex justify-content-between" id="marginCard">
+                     <div class="card">
+                            <h4>총 세금액(부가세+소득세)</h4>
                             <div class="value">
                                 <button class="btn btn-lg" data-v="totalDuty">
                                     <i class="bi bi-arrow-clockwise"></i>
@@ -221,27 +243,17 @@
                             </div>
                         </div>
                         <div class="card">
-                            <h5>총 예상순수익</h5>
+                            <h4>적용 소득률(%)</h4>
+                            <div class="value">
+                                <button class="btn btn-lg" data-v="incomeRate">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h4>총 예상순수익</h4>
                             <div class="value">
                                 <button class="btn btn-lg" data-v="totalProfit">
-                                    <i class="bi bi-arrow-clockwise"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="summary-cards d-flex justify-content-between" id="marginCard">
-                        <div class="card">
-                            <h5>적용 소득률(%)</h5>
-                            <div class="value">
-                                <button class="btn btn-lg" data-v="incomeRate">
-                                    <i class="bi bi-arrow-clockwise"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <h5>총 지출내역</h5>
-                            <div class="value">
-                                <button class="btn btn-lg" data-v="incomeRate">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -270,33 +282,20 @@
                 defaultDate: ["<?=$startDate?>","<?=$endDate?>"],
                 dateFormat: "Y-m-d",
                 mode: "range",
-                altInput: true,
+                allowInput: true,
                 theme: "material_blue",
                 locale: "ko",
                 onChange: function(selectedDates, dateStr, instance) {
-                    if(dateStr.includes('~')) changeRageText(dateStr);
-                    
-                }
-            });
+                    if (selectedDates.length > 0) {
+                        startDate = formatDateToYMD(selectedDates[0]);
+                        endDate = selectedDates[1] ? formatDateToYMD(selectedDates[1]) : startDate;
+                    }
 
-            flatpickr("#expenseFlatpickr", {
-                defaultDate: "today",
-                dateFormat: "Y-m-d",
-                theme: "material_blue",
-                locale: "ko",
+                }   
+                
             });
 
         });
-
-
-       
-
-        function changeRageText(dateRange){
-			const dates = dateRange.split(' ~ ');
-			startDate = dates[0];
-			endDate = dates[1];
-
-		}
 
         $(".btn").click(function(){
             $.ajax({

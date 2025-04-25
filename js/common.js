@@ -122,3 +122,11 @@ function basicFunctionSwal(text,confirmCallback){
 // basicFunctionSwal('주문이 등록되었습니다.',function() {
 //     location.reload();
 // });
+
+//날짜변환 
+function formatDateToYMD(date) {
+    const y = date.getFullYear();
+    const m = ('0' + (date.getMonth() + 1)).slice(-2);
+    const d = ('0' + date.getDate()).slice(-2);
+    return `${y}-${m}-${d}`;
+}

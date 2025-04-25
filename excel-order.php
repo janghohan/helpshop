@@ -73,7 +73,7 @@
 
         <!-- 송장 파일 등록 -->
         <div class="section">
-            <h2>송장 파일 등록</h2>
+            <h5>송장 파일 등록</h5>
             <form action="" method="post" id="deliver_to_file">
                 <input type="hidden" name="type" value="songjang">
                 <div class="border border-2 p-2 rounded mb-3">

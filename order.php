@@ -22,23 +22,9 @@
                 font-size: 14px;
             }
         }
-        .search-options, .summary-cards, .filter-options {
+        .search-options{
             padding: 20px;
-        }
-        .summary-cards .card {
-            border: none;
-            background: #f9f9f9;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 0.9rem;
-            width: 30%;
-        }
-        .summary-cards .card h5 {
-            margin: 10px 0;
-        }
-        .summary-cards .card .value {
-            font-size: 1.5rem;
-            font-weight: bold;
+            padding-left: 0;
         }
         .table-container {
             background: #ffffff;
