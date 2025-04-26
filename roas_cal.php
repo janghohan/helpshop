@@ -302,38 +302,51 @@
         let shipRate = 3.3;
     
         
+        // 총 상품 매출
+        let totalProductRevenue = sellingPrice * quantity;
+        // 총 배송비 매출
+        let totalShipRevenue = sellingShipping;
+
         // 총 매출
-        let totalRevenue = sellingPrice * quantity + sellingShipping;
+        let totalRevenue = totalProductRevenue + totalShipRevenue;
+        // 총 매출 부가세
+        let totalRevenueSurtax = totalRevenue - (totalRevenue / 1.1);
 
-        // 부가세 제외 순 매출
-        let pureRevenu = totalRevenue/1.1; 
-        
-        // 총 원가
-        let totalCost = cost * quantity + myShipping;
-        
-        // 상품 수수료 계산 (판매가의 % 적용)
-        let totalPriceFee = (totalRevenue * feeRate) / 100;
-        // 배송비 수수료 계산
-        let totalShipFee = ((sellingShipping+myShipping) * shipRate) / 100;
+        //총 상품 원가
+        let totalProductCost = cost * quantity;
+        //총 배송비 원가
+        let totalShipCost = myShipping;
 
-        // 총 부가세
-        let surtax = (totalRevenue-totalCost-etc) * 0.1;
+        //상품 매출 수수료
+        let totalPriceFee = (totalProductRevenue * feeRate) / 100;
+        //배송비 매출 수수료
+        let totalShipFee = (totalShipRevenue * shipRate) / 100;
+
+        //총 매입금액 (상품원가 + 지출배송비 + 기타비용) (vat 포함)
+        let totalPurchase = totalProductCost + totalShipCost + etc;
+
+        //총 매입 부가세 (총 매입 부가세 + 매출수수료의 부가세)
+        let totalPurchaseSurtax = (totalPurchase - (totalPurchase / 1.1)) + ((totalPriceFee+totalShipFee)*0.1);
+
+        
+        // 총 지출 부가세
+        let surtax = Math.round(totalRevenueSurtax - totalPurchaseSurtax);
         if($('input:checkbox[name="surtaxCheck"]').is(':checked')){
-            surtax = (sellingShipping-myShipping-etc) * 0.1;
+            surtax = (totalPurchase) * 0.1; //매입 부가세 공제 
         }
         
 
         // 총 지출(상품원가 + 배송비 + 판매수수료 + 택배비수수료 + 부자재비)
-        let totalExpense = totalCost + totalPriceFee + totalShipFee + etc;
+        let totalExpense = (totalProductCost + totalPriceFee + totalShipFee + surtax + etc).toFixed(2);
 
         // 최대 사용가능 광고비
-        let maxAdBudget = pureRevenu - totalExpense;
+        let maxAdBudget = totalProductRevenue - totalExpense;
 
         // 수익실현 최소 ROAS
-        let minRoas = (totalRevenue / maxAdBudget) * 100;
+        let minRoas = (totalProductRevenue / maxAdBudget) * 100;
         minRoas = Math.round(minRoas * 100) / 100;
 
-        console.log(totalRevenue, totalExpense, maxAdBudget, minRoas)
+        console.log(totalProductRevenue, totalExpense, maxAdBudget, minRoas)
         // 결과 반영
 
         row.find('.roas').val(minRoas);

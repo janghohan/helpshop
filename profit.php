@@ -193,7 +193,7 @@
                         <div class="card">
                             <h4>총 결제금액(상품)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalPayment">
+                                <button class="btn btn-lg" id="totalPayment">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -201,7 +201,7 @@
                         <div class="card">
                             <h4>총 결제금액(택배비)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalShipping">
+                                <button class="btn btn-lg" id="totalShipping">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -209,7 +209,7 @@
                         <div class="card">
                             <h4>평균 객단가</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="avePerPrice">
+                                <button class="btn btn-lg" id="avePerPrice">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -219,7 +219,7 @@
                         <div class="card">
                             <h4>총 매입내역</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalPurchase">
+                                <button class="btn btn-lg" id="totalCost">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -227,7 +227,7 @@
                         <div class="card">
                             <h4>총 마켓수수료</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalCommission">
+                                <button class="btn btn-lg" id="totalCommission">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -235,7 +235,7 @@
                         <div class="card">
                             <h4>총 지출내역</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="incomeRate">
+                                <button class="btn btn-lg" id="totalExpense">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -245,15 +245,15 @@
                      <div class="card">
                             <h4>총 세금액(부가세+소득세)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalDuty">
+                                <button class="btn btn-lg" id="totalTax">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="card">
-                            <h4>적용 소득률(%)</h4>
+                            <h4>마진율(%)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="incomeRate">
+                                <button class="btn btn-lg" id="marginRate">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -261,7 +261,7 @@
                         <div class="card">
                             <h4>총 예상순수익</h4>
                             <div class="value">
-                                <button class="btn btn-lg" data-v="totalProfit">
+                                <button class="btn btn-lg" id="totalProfit">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -306,6 +306,7 @@
         });
 
         $("#profit-btn").click(function(){  
+            $(".bi-arrow-clockwise").show();
             $(".bi-arrow-clockwise").addClass('rotate');
             $.ajax({
                 url: './api/margin_api.php', // 데이터를 처리할 서버 URL
@@ -313,8 +314,18 @@
                 type: 'POST',
                 data: {'startDate' : startDate, 'endDate' : endDate, 'searchKeyword':""},
                 success: function(response) {
-                    $(".bi-arrow-clockwise").removeClass('rotate');
                     console.log(response);
+                    $(".bi-arrow-clockwise").hide();
+                    $("#totalPayment").text(response.totalPayment);
+                    $("#totalShipping").text(response.totalShipping);
+                    $("#avePerPrice").text(response.avePerPrice);
+                    $("#totalCost").text(response.totalCost);
+                    $("#totalCommission").text(response.totalMarketFee);
+                    $("#totalExpense").text(response.totalPurchase);
+                    $("#totalTax").text(response.totalTax);
+                    $("#marginRate").text(response.totalMarginRate);
+                    $("#totalProfit").text(response.totalProfit);
+                    
                 },
                 error: function(xhr, status, error) {                  
                     // alert("관리자에게 문의해주세요.");
