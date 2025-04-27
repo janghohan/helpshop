@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="./css/market.css" data-n-g="">
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js' ></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script src="https://cdn.tiny.cloud/1/8oeic3nlxssyeu9vojq0ifeh9ixyd3lzad585dmfadmjsa1m/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script src='./js/common.js' ></script>
     <title>계산기</title>
     <style>
@@ -16,47 +16,6 @@
             font-size:14px;
         }
     </style>
-    <script>
-        tinymce.init({
-            selector: '#content',
-            plugins: 'image code',
-            toolbar: 'undo redo | link image | code',
-            images_upload_url: './api/upload_image.php',
-            automatic_uploads: true,
-            language: 'ko', // 한국어 설정
-        automatic_uploads: true,
-        images_upload_handler: function (blobInfo, success, failure) {
-            var xhr, formData;
-
-            xhr = new XMLHttpRequest();
-            xhr.withCredentials = false;
-            xhr.open('POST', './api/upload_image.php');
-
-            xhr.onload = function() {
-                var json;
-
-                if (xhr.status != 200) {
-                    failure('HTTP Error: ' + xhr.status);
-                    return;
-                }
-
-                json = JSON.parse(xhr.responseText);
-
-                if (!json || typeof json.location != 'string') {
-                    failure('Invalid JSON: ' + xhr.responseText);
-                    return;
-                }
-
-                success(json.location);
-            };
-
-            formData = new FormData();
-            formData.append('file', blobInfo.blob(), blobInfo.filename());
-
-            xhr.send(formData);
-        }
-        });
-    </script>
 </head>
 <body>
     <!-- 헤더 -->
@@ -72,17 +31,69 @@
     <div class="full-content">
         <div class="container">
             <div class="main-content">
-                <form action="save_post.php" method="POST">
-                    <textarea id="content" name="content" rows="15"></textarea>
+                <form id="postForm" method="POST" enctype="multipart/form-data" action="save_post.php">
+                    <input type="text" name="title" placeholder="제목" style="width:100%;padding:10px;margin-bottom:10px;">
+                    <textarea name="content" id="editor"></textarea>
                     <br>
                     <button type="submit">저장하기</button>
                 </form>
+
             </div>
         </div>
     </div>
 </body>
 <script>
-
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            ckfinder: {
+                uploadUrl: './api/upload_image.php' // 이미지 업로드할 서버 경로
+            },
+            language: 'ko'
+        })
+        .then(editor => {
+            // 커스텀 업로드 어댑터 등록
+            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                return new MyUploadAdapter(loader);
+            };
+        })
+        .catch(error => {
+            console.error(error);
+    });
     
+    class MyUploadAdapter {
+        constructor(loader) {
+            this.loader = loader;
+        }
+
+        upload() {
+            return this.loader.file
+                .then(file => new Promise((resolve, reject) => {
+                    const data = new FormData();
+                    data.append('upload', file);
+
+                    fetch('./api/upload_image.php', {
+                        method: 'POST',
+                        body: data
+                    })
+                    .then(response => response.json())
+                    .then(json => {
+                        console.log("서버에서 받은 JSON:", json); // ✅ 여기서 서버 응답 출력
+
+                        if (json.url) {
+                            resolve({ default: json.url });
+                        } else {
+                            reject('업로드 실패: ' + (json.error?.message || '알 수 없는 오류'));
+                        }
+                    })
+                    .catch(error => {
+                        reject('업로드 실패: ' + error.message);
+                    });
+                }));
+        }
+
+        abort() {
+            // 업로드 취소 기능
+        }
+    }
 </script>
 </html>
