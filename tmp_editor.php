@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script src='./js/common.js' ></script>
-    <title>계산기</title>
+    <title>에디터</title>
     <style>
         #fileList{
             font-size:14px;
@@ -31,9 +31,9 @@
     <div class="full-content">
         <div class="container">
             <div class="main-content">
-                <form id="postForm" method="POST" enctype="multipart/form-data" action="save_post.php">
+                <form id="postForm" method="POST" enctype="multipart/form-data" action="./api/save_guide.php">
                     <input type="text" name="title" placeholder="제목" style="width:100%;padding:10px;margin-bottom:10px;">
-                    <textarea name="content" id="editor"></textarea>
+                    <textarea name="contents" id="editor"></textarea>
                     <br>
                     <button type="submit">저장하기</button>
                 </form>

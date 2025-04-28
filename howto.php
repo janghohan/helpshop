@@ -29,22 +29,22 @@
     <?php 
     include './header.php';
     include './sidebar.html';
-    // include './dbConnect.php';
+    include './dbConnect.php';
 
     // $page = $_GET['page'] ?? 1;
     // $itemsPerPage =  $_GET['itemsPerPage'] ?? 5;
 
-    // $dbQuery = "SELECT * FROM board ORDER BY created_at DESC";
+    $dbQuery = "SELECT * FROM board WHERE type='guide' ORDER BY created_at DESC";
 
-    // $dbStmt = $conn->prepare($dbQuery);
-    // $dbStmt->execute();
-    // $result = $dbStmt->get_result();
+    $dbStmt = $conn->prepare($dbQuery);
+    $dbStmt->execute();
+    $result = $dbStmt->get_result();
 
-    // if ($result->num_rows > 0) {
-    //     while ($row = $result->fetch_assoc()) {
-    //         $listResult[] = $row;
-    //     }
-    // }
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $listResult[] = $row;
+        }
+    }
     // $totalItems = $result->num_rows;
     // $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
 
@@ -105,6 +105,19 @@
                             <a href="board_view.php" class="stretched-link"></a>
                         </div>
                     </div>
+
+                    <?php
+                    if ($result->num_rows > 0) {
+                        foreach($listResult as $listRow) {                    
+                    ?>
+                    <div class="card shadow-sm mb-3" v-for="post in posts">
+                        <div class="card-body">
+                            <h5 class="card-title mb-2"><?=htmlspecialchars($listRow['title'])?></h5>
+                            <a href="board_view.php?guide=<?=htmlspecialchars($listRow['ix'])?>" class="stretched-link"></a>
+                        </div>
+                    </div>
+
+                    <?php }}?>
 
                     <!-- 페이징 -->
                     <nav class="mt-4">

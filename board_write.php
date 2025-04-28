@@ -30,15 +30,15 @@
     <div class="full-content">
         <div class="container">
             <div class="main-content">
-                <form class="card shadow p-4 bg-white">
+                <form class="card shadow p-4 bg-white" method="post" action="./api/save_board_api.php">
                     <h5 class="mb-4">게시글 작성</h5>
                     <div class="mb-3">
                         <label for="title" class="form-label">제목</label>
-                        <input type="text" class="form-control" id="title">
+                        <input type="text" class="form-control" id="title" name="title">
                     </div>
                     <div class="mb-3">
                         <label for="content" class="form-label">내용</label>
-                        <textarea class="form-control" id="content" rows="5"></textarea>
+                        <textarea class="form-control" id="content" rows="5" name="content"></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="image" class="form-label">이미지 첨부</label>
@@ -47,10 +47,10 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">비밀번호</label>
-                        <input type="password" class="form-control" id="password">
+                        <input type="password" class="form-control" id="password" name="password">
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="isPrivate">
+                        <input type="checkbox" class="form-check-input" id="isPrivate" name="isPrivate">
                         <label class="form-check-label" for="isPrivate">비공개 글로 작성</label>
                     </div>
                     <button type="submit" class="btn btn-primary">등록</button>
