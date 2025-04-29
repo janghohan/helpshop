@@ -19,13 +19,6 @@
         input[type="number"].form-control::-webkit-outer-spin-button {
             -webkit-appearance: auto;
         }
-
-        .plus{
-            color:#0d6efd;
-        }
-        .minus{
-            color:#ff0000;
-        }
         .grey{
             background:#efefef;
         }

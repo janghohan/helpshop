@@ -96,3 +96,11 @@ input[type='number'] {
   font-weight: bold;
   margin-left: 20px;
 }
+
+
+.plus{
+  color:#0d6efd;
+}
+.minus{
+  color:#ff0000;
+}

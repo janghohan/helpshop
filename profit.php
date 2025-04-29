@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product.css">
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <title>주문 관리</title>
     <style>
@@ -32,7 +33,10 @@
             display: inline-block;
         }
         .search-options, .summary-cards, .filter-options {
-            padding: 20px;
+            padding: 10px;
+        }
+        .summary-cards button{
+            font-size:18px;
         }
         .summary-cards .card {
             border: none;
@@ -193,7 +197,7 @@
                         <div class="card">
                             <h4>총 결제금액(상품)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="totalPayment">
+                                <button class="btn btn-lg plus" id="totalPayment">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -201,7 +205,7 @@
                         <div class="card">
                             <h4>총 결제금액(택배비)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="totalShipping">
+                                <button class="btn btn-lg plus" id="totalShipping">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -209,7 +213,7 @@
                         <div class="card">
                             <h4>평균 객단가</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="avePerPrice">
+                                <button class="btn btn-lg plus" id="avePerPrice">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -219,7 +223,7 @@
                         <div class="card">
                             <h4>총 매입내역</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="totalCost">
+                                <button class="btn btn-lg minus" id="totalCost">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -227,7 +231,7 @@
                         <div class="card">
                             <h4>총 마켓수수료</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="totalCommission">
+                                <button class="btn btn-lg minus" id="totalCommission">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -235,7 +239,7 @@
                         <div class="card">
                             <h4>총 지출내역</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="totalExpense">
+                                <button class="btn btn-lg minus" id="totalExpense">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -245,7 +249,7 @@
                      <div class="card">
                             <h4>총 세금액(부가세+소득세)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="totalTax">
+                                <button class="btn btn-lg minus" id="totalTax">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -253,7 +257,7 @@
                         <div class="card">
                             <h4>마진율(%)</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="marginRate">
+                                <button class="btn btn-lg plus" id="marginRate">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -261,7 +265,7 @@
                         <div class="card">
                             <h4>총 예상순수익</h4>
                             <div class="value">
-                                <button class="btn btn-lg" id="totalProfit">
+                                <button class="btn btn-lg plus" id="totalProfit">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -269,6 +273,191 @@
                     </div>
                    
                 </div>
+            </div>
+            <div class="main-content">
+                <h2>마켓별 지표</h2>
+                <!-- 마켓별 수익 분석 테이블 -->
+                <div class="container my-5">
+                    <div class="table-responsive shadow rounded-4">
+                        <table class="table table-bordered table-hover align-middle text-center">
+                        <thead class="table-primary">
+                            <tr>
+                            <th>마켓명</th>
+                            <th>총매출</th>
+                            <th>수수료</th>
+                            <th>원가</th>
+                            <th class="text-success">순수익</th>
+                            <th>순이익률</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>네이버</td>
+                                <td>₩1,500,000</td>
+                                <td>₩150,000</td>
+                                <td>₩800,000</td>
+                                <td class="text-success fw-bold">₩550,000</td>
+                                <td>36.7%</td>
+                            </tr>
+                            <tr>
+                                <td>쿠팡</td>
+                                <td>₩1,200,000</td>
+                                <td>₩144,000</td>
+                                <td>₩700,000</td>
+                                <td class="text-success fw-bold">₩356,000</td>
+                                <td>29.7%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+            <div class="main-content">
+                <h2>매출 및 순수익</h2>
+                <div class="container my-5">
+                    <form class="row g-3 align-items-end mb-4" id="filterForm">
+                        <div class="col-md-3">
+                            <label class="form-label">시작일</label>
+                            <input type="date" class="form-control" id="startDate" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">종료일</label>
+                            <input type="date" class="form-control" id="endDate" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">보기 방식</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="viewType" id="daily" value="daily" checked>
+                                    <label class="form-check-label" for="daily">일별</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="viewType" id="monthly" value="monthly">
+                                    <label class="form-check-label" for="monthly">월별</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">그래프 보기</button>
+                        </div>
+                    </form>
+
+                    <canvas id="revenueChart" height="120"></canvas>
+                </div>
+
+                <script>
+                    const ctx = document.getElementById('revenueChart').getContext('2d');
+                    let revenueChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    type: 'bar',
+                                    label: '매출',
+                                    data: [],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                    borderRadius: 6,
+                                    maxBarThickness: 40,    // ✅ 너무 두껍지 않게 제한
+                                    minBarLength: 2
+                                },
+                                {
+                                    type: 'line',
+                                    label: '순수익',
+                                    data: [],
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                                    fill: false,
+                                    tension: 0.4
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                tooltip: { mode: 'index', intersect: false },
+                                legend: { position: 'top' },
+                            },
+                            scales: {
+                                x: { title: { display: true, text: '날짜 또는 월' } },
+                                y: { title: { display: true, text: '금액 (₩)' } }
+                            }
+                        }
+                    });
+
+                    // 폼 제출 시 차트 업데이트
+                    document.getElementById('filterForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        const start = new Date(document.getElementById('startDate').value);
+                        const end = new Date(document.getElementById('endDate').value);
+                        const viewType = document.querySelector('input[name="viewType"]:checked').value;
+
+                        // 유효성 검사: 일별은 31일 초과 금지
+                        if (viewType === 'daily') {
+                            const diffDays = (end - start) / (1000 * 60 * 60 * 24);
+                            if (diffDays > 30) {
+                                alert("일별 보기의 최대 기간은 31일입니다.");
+                                return;
+                            }
+                        }
+
+                        // 더미 데이터 생성 (서버에서 가져오는 부분 대체)
+                        const labels = [];
+                        const revenueData = [];
+                        const profitData = [];
+
+                        const formatter = new Intl.NumberFormat('ko-KR');
+
+                        if (viewType === 'daily') {
+                            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                                const dateStr = d.toISOString().split('T')[0];
+                                labels.push(dateStr);
+                                revenueData.push(Math.floor(Math.random() * 1000000) + 500000); // 매출
+                                profitData.push(Math.floor(Math.random() * 400000) + 100000);   // 순수익
+                            }
+                        } else {
+                            const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+                            const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+                            for (let m = new Date(startMonth); m <= endMonth; m.setMonth(m.getMonth() + 1)) {
+                                const monthStr = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`;
+                                labels.push(monthStr);
+                                revenueData.push(Math.floor(Math.random() * 30000000) + 10000000); // 월 매출
+                                profitData.push(Math.floor(Math.random() * 10000000) + 3000000);   // 월 순수익
+                            }
+                        }
+
+                        // 차트 업데이트
+                        revenueChart.data.labels = labels;
+                        revenueChart.data.datasets[0].data = revenueData;
+                        revenueChart.data.datasets[1].data = profitData;
+                        revenueChart.update();
+                    });
+
+                    function loadRevenueData(startDate, endDate, viewType = 'daily') {
+                        $.ajax({
+                            url: './api/get_revenue_data.php',
+                            method: 'GET',
+                            data: {
+                                start: startDate,
+                                end: endDate,
+                                view: viewType
+                            },
+                            dataType: 'json',
+                            success: function(response) {
+                                // Chart.js 그래프에 데이터 반영
+                                revenueChart.data.labels = response.labels;
+                                revenueChart.data.datasets[0].data = response.revenue; // 매출 (막대그래프)
+                                revenueChart.data.datasets[1].data = response.profit;  // 순수익 (선그래프)
+                                revenueChart.update();
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('데이터 로딩 실패:', error);
+                                alert('데이터를 불러오는 중 오류가 발생했습니다.');
+                            }
+                        });
+                    }
+                </script>
             </div>
         </div>
         
@@ -306,6 +495,7 @@
         });
 
         $("#profit-btn").click(function(){  
+            console.log(startDate,endDate);
             $(".bi-arrow-clockwise").show();
             $(".bi-arrow-clockwise").addClass('rotate');
             $.ajax({
@@ -335,7 +525,12 @@
         });
         
 
+        function formatDateToYMD(date) {
+            const y = date.getFullYear();
+            const m = ('0' + (date.getMonth() + 1)).slice(-2);
+            const d = ('0' + date.getDate()).slice(-2);
+            return `${y}-${m}-${d}`;
+        }
     </script>
 </body>
 </html>
-s
