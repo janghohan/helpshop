@@ -74,28 +74,6 @@
                     <div class="explain">
                         <span>* 필요한 기능을 요청하는 게시판입니다.</span>
                     </div>
-
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">상세 페이지 복사 기능</h5>
-                            <p class="card-text text-muted small">2025-04-23 | 작성자 | 공개</p>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">기능 요청합니다.</h5>
-                            <p class="card-text text-muted small">2025-04-23 | 작성자 | 공개</p>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">제목 예시</h5>
-                            <p class="card-text text-muted small">2025-04-23 | 작성자 | 공개</p>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
                     <?php
                     if ($result->num_rows > 0) {
                         foreach($listResult as $listRow) {                    

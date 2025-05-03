@@ -31,12 +31,17 @@
 
     if($guideIx==0 && $boardIx==0){
         echo "<script> alert('존재하지 않는 페이지입니다.'); location.href='./howto.php';</script>";
+    }else if(isset($_GET['guide'])){
+        $ix = $guideIx;
+    }else if(isset($_GET['board'])){
+        $ix = $boardIx;
     }
 
 
-    // 상품
+    // 가이드 or 게시판
+
     $guideStmt = $conn->prepare("SELECT * FROM board WHERE ix=?");
-    $guideStmt->bind_param("s",$guideIx);
+    $guideStmt->bind_param("s",$ix);
 
     if (!$guideStmt->execute()) {
         throw new Exception("Error executing list statement: " . $guideStmt->error); // *** 수정 ***

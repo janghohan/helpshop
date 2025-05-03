@@ -12,8 +12,8 @@ if($type=="create"){
     $linkedFee = $_POST['linkedFee'] ?? 0;
     $shipFee = $_POST['shipFee'] ?? 0;
 
-    $marketStmt = $conn->prepare("INSERT INTO market(user_ix,market_name,basic_fee,linked_fee,ship_fee,market_c_time) VALUES(?,?,?,?,?,?)");
-    $marketStmt->bind_param("ssssss",$userIx,$marketName,$basicFee,$linkedFee,$shipFee,$now);
+    $marketStmt = $conn->prepare("INSERT INTO market(user_ix,market_name,basic_fee,linked_fee,ship_fee) VALUES(?,?,?,?,?)");
+    $marketStmt->bind_param("sssss",$userIx,$marketName,$basicFee,$linkedFee,$shipFee);
     if($marketStmt->execute()){
         $data['status'] = "suc";
     }else{
@@ -38,6 +38,17 @@ if($type=="create"){
     
 
 }else if($type=="delete"){
+
+    $marketIx = $_POST['deleteIx'] ?? '';
+
+    $marketStmt = $conn->prepare("DELETE FROM market WHERE user_ix =? AND ix = ?");
+    $marketStmt->bind_param("ss",$userIx,$marketIx);
+    if($marketStmt->execute()){
+        $data['status'] = "suc";
+    }else{
+        $data['status'] = 'fail';
+        $data['msg'] = 'delete fail';
+    }
 
 }
 
