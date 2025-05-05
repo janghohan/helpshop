@@ -13,9 +13,6 @@
     
     <title>주문 관리</title>
     <style>
-        body {
-            background-color: #f9f9f9;
-        }
         @media (min-width: 1400px) {
             .container{
                 max-width: 98%;
@@ -424,20 +421,17 @@
                 defaultDate: ["<?=$startDate?>","<?=$endDate?>"],
                 dateFormat: "Y-m-d",
                 mode: "range",
-                altInput: true,
+                allowInput: true,
                 theme: "material_blue",
                 locale: "ko",
                 onChange: function(selectedDates, dateStr, instance) {
-                    if(dateStr.includes('~')) changeRageText(dateStr);
-                    
-                }
-            });
+                    if (selectedDates.length > 0) {
+                        startDate = formatDateToYMD(selectedDates[0]);
+                        endDate = selectedDates[1] ? formatDateToYMD(selectedDates[1]) : startDate;
+                    }
 
-            flatpickr("#expenseFlatpickr", {
-                defaultDate: "today",
-                dateFormat: "Y-m-d",
-                theme: "material_blue",
-                locale: "ko",
+                }   
+                
             });
 
         });
@@ -468,12 +462,6 @@
             searchQuanList();
         });
 
-        function changeRageText(dateRange){
-			const dates = dateRange.split(' ~ ');
-			startDate = dates[0];
-			endDate = dates[1];
-
-		}
 
         function searchQuanList(){
             if($('input:checkbox[name="everyday"]').is(':checked')){

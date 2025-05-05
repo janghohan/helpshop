@@ -12,10 +12,6 @@
     
     <title>주문 관리</title>
     <style>
-        body {
-            background-color: #f9f9f9;
-        }
-
         @media (min-width: 1400px) {
             .container{
                 max-width: 98%;

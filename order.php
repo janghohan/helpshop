@@ -13,9 +13,6 @@
     
     <title>주문 관리</title>
     <style>
-        body {
-            background-color: #f9f9f9;
-        }
         @media (min-width: 1400px) {
             .container{
                 max-width: 98%;
@@ -179,13 +176,21 @@
                 <div class="container mt-4">
                     <!-- Search Options -->
                     <div class="search-options">
-                        <div class="row justify-content-between ">
+                        <div class="d-flex justify-content-between mb-3">
                             <div class="col-md-4 mb-3">
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="d-flex justify-content-end mb-3">
+                                <!-- <a href="/order-history" class="btn btn-outline-secondary me-2">
+                                    <i class="bi bi-clock-history"></i> 업로드 기록
+                                </a> -->
+                                <div>
+                                    <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
+                                </div>
+                             </div>
+                            <!-- <div class="col-md-2 mb-3">
                                 <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
-                            </div>
+                            </div> -->
                             <!-- <div class="col-md-2 mb-3">
                                 <button class="btn btn-outline-secondary w-100">이번 주</button>
                             </div>
@@ -424,23 +429,21 @@
                 defaultDate: ["<?=$startDate?>","<?=$endDate?>"],
                 dateFormat: "Y-m-d",
                 mode: "range",
-                altInput: true,
+                allowInput: true,
                 theme: "material_blue",
                 locale: "ko",
                 onChange: function(selectedDates, dateStr, instance) {
-                    if(dateStr.includes('~')) changeRageText(dateStr);
-                    
-                }
-            });
+                    if (selectedDates.length > 0) {
+                        startDate = formatDateToYMD(selectedDates[0]);
+                        endDate = selectedDates[1] ? formatDateToYMD(selectedDates[1]) : startDate;
+                    }
 
-            flatpickr("#expenseFlatpickr", {
-                defaultDate: "today",
-                dateFormat: "Y-m-d",
-                theme: "material_blue",
-                locale: "ko",
+                }   
+                
             });
 
         });
+
         // 엑셀 등록 버튼 
         $("#excel-btn").click(function(){
             modalOpen("choiceModal");
@@ -467,13 +470,6 @@
         $("#search-btn").click(function(){
             searchOrderList();
         });
-
-        function changeRageText(dateRange){
-			const dates = dateRange.split(' ~ ');
-			startDate = dates[0];
-			endDate = dates[1];
-
-		}
 
         function searchOrderList(){
             if($("#search-input").val()==''){

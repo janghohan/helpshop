@@ -14,9 +14,6 @@
     
     <title>주문 관리</title>
     <style>
-        body {
-            background-color: #f9f9f9;
-        }
         @media (min-width: 1400px) {
             .container{
                 max-width: 98%;
@@ -290,7 +287,7 @@
                             <th>순이익률</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="market-data">
                             <tr>
                                 <td>네이버</td>
                                 <td>₩1,500,000</td>
@@ -346,45 +343,7 @@
                 </div>
 
                 <script>
-                    const ctx = document.getElementById('revenueChart').getContext('2d');
-                    let revenueChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: [],
-                            datasets: [
-                                {
-                                    type: 'bar',
-                                    label: '매출',
-                                    data: [],
-                                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                                    borderRadius: 6,
-                                    maxBarThickness: 40,    // ✅ 너무 두껍지 않게 제한
-                                    minBarLength: 2
-                                },
-                                {
-                                    type: 'line',
-                                    label: '순수익',
-                                    data: [],
-                                    borderColor: 'rgba(255, 99, 132, 1)',
-                                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                                    fill: false,
-                                    tension: 0.4
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                tooltip: { mode: 'index', intersect: false },
-                                legend: { position: 'top' },
-                            },
-                            scales: {
-                                x: { title: { display: true, text: '날짜 또는 월' } },
-                                y: { title: { display: true, text: '금액 (₩)' } }
-                            }
-                        }
-                    });
-
+                    
                     // 폼 제출 시 차트 업데이트
                     document.getElementById('filterForm').addEventListener('submit', function(e) {
                         e.preventDefault();
@@ -392,6 +351,7 @@
                         const start = new Date(document.getElementById('startDate').value);
                         const end = new Date(document.getElementById('endDate').value);
                         const viewType = document.querySelector('input[name="viewType"]:checked').value;
+
 
                         // 유효성 검사: 일별은 31일 초과 금지
                         if (viewType === 'daily') {
@@ -402,58 +362,104 @@
                             }
                         }
 
-                        // 더미 데이터 생성 (서버에서 가져오는 부분 대체)
-                        const labels = [];
-                        const revenueData = [];
-                        const profitData = [];
+                        loadRevenueData(formatDateToYMD(start), formatDateToYMD(end), viewType, 'revenueChart');
 
-                        const formatter = new Intl.NumberFormat('ko-KR');
+                        // // 더미 데이터 생성 (서버에서 가져오는 부분 대체)
+                        // const labels = [];
+                        // const revenueData = [];
+                        // const profitData = [];
 
-                        if (viewType === 'daily') {
-                            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-                                const dateStr = d.toISOString().split('T')[0];
-                                labels.push(dateStr);
-                                revenueData.push(Math.floor(Math.random() * 1000000) + 500000); // 매출
-                                profitData.push(Math.floor(Math.random() * 400000) + 100000);   // 순수익
-                            }
-                        } else {
-                            const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
-                            const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
-                            for (let m = new Date(startMonth); m <= endMonth; m.setMonth(m.getMonth() + 1)) {
-                                const monthStr = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`;
-                                labels.push(monthStr);
-                                revenueData.push(Math.floor(Math.random() * 30000000) + 10000000); // 월 매출
-                                profitData.push(Math.floor(Math.random() * 10000000) + 3000000);   // 월 순수익
-                            }
-                        }
+                        // const formatter = new Intl.NumberFormat('ko-KR');
 
-                        // 차트 업데이트
-                        revenueChart.data.labels = labels;
-                        revenueChart.data.datasets[0].data = revenueData;
-                        revenueChart.data.datasets[1].data = profitData;
-                        revenueChart.update();
+
+
+                        // if (viewType === 'daily') {
+                        //     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                        //         const dateStr = d.toISOString().split('T')[0];
+                        //         console.log("dateStr",dateStr);
+                        //         labels.push(dateStr);
+                        //         revenueData.push(Math.floor(Math.random() * 1000000) + 500000); // 매출
+                        //         profitData.push(Math.floor(Math.random() * 400000) + 100000);   // 순수익
+                        //     }
+                        // } else {
+                        //     const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+                        //     const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+                        //     for (let m = new Date(startMonth); m <= endMonth; m.setMonth(m.getMonth() + 1)) {
+                        //         const monthStr = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`;
+                        //         console.log("monthStr",monthStr);
+                        //         labels.push(monthStr);
+                        //         revenueData.push(Math.floor(Math.random() * 30000000) + 10000000); // 월 매출
+                        //         profitData.push(Math.floor(Math.random() * 10000000) + 3000000);   // 월 순수익
+                        //     }
+                        // }
+
+                        // // 차트 업데이트
+                        // revenueChart.data.labels = labels;
+                        // revenueChart.data.datasets[0].data = revenueData;
+                        // revenueChart.data.datasets[1].data = profitData;
+                        // revenueChart.update();
                     });
 
-                    function loadRevenueData(startDate, endDate, viewType = 'daily') {
+                    function loadRevenueData(startDate, endDate, viewType, targetCanvasId) {
                         $.ajax({
-                            url: './api/get_revenue_data.php',
-                            method: 'GET',
-                            data: {
-                                start: startDate,
-                                end: endDate,
-                                view: viewType
-                            },
+                            url: './api/margin_api.php',
+                            type: 'POST',
                             dataType: 'json',
-                            success: function(response) {
-                                // Chart.js 그래프에 데이터 반영
-                                revenueChart.data.labels = response.labels;
-                                revenueChart.data.datasets[0].data = response.revenue; // 매출 (막대그래프)
-                                revenueChart.data.datasets[1].data = response.profit;  // 순수익 (선그래프)
-                                revenueChart.update();
+                            data: {
+                                'startDate': startDate,
+                                'endDate': endDate,
+                                'viewType': viewType,
+                                'type':'graph'
                             },
-                            error: function(xhr, status, error) {
-                                console.error('데이터 로딩 실패:', error);
-                                alert('데이터를 불러오는 중 오류가 발생했습니다.');
+                            success: function (res) {
+                                const labels = res.map(row => row.period);
+                                const revenues = res.map(row => row.total_revenue);
+                                const profits = res.map(row => row.total_profit);
+
+                                const ctx = document.getElementById(targetCanvasId).getContext('2d');
+
+                                if (window.revenueChartInstance) {
+                                    window.revenueChartInstance.destroy();
+                                }
+
+                                window.revenueChartInstance = new Chart(ctx, {
+                                    type: 'bar',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [
+                                            {
+                                                label: '매출',
+                                                data: revenues,
+                                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                                yAxisID: 'y',
+                                            },
+                                            {
+                                                label: '순수익',
+                                                data: profits,
+                                                type: 'bar',
+                                                borderColor: 'rgba(255, 99, 132, 1)',
+                                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                                yAxisID: 'y',
+                                            }
+                                        ]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        scales: {
+                                            x: {
+                                                ticks: {
+                                                    autoSkip: false
+                                                }
+                                            },
+                                            y: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    }
+                                });
+                            },
+                            error: function () {
+                                alert('데이터를 불러오는 데 실패했습니다.');
                             }
                         });
                     }
@@ -502,7 +508,7 @@
                 url: './api/margin_api.php', // 데이터를 처리할 서버 URL
                 dataType:'json',
                 type: 'POST',
-                data: {'startDate' : startDate, 'endDate' : endDate, 'searchKeyword':""},
+                data: {'type' : 'basic', 'startDate' : startDate, 'endDate' : endDate, 'searchKeyword':""},
                 success: function(response) {
                     console.log(response);
                     $(".bi-arrow-clockwise").hide();
@@ -515,6 +521,15 @@
                     $("#totalTax").text(response.totalTax);
                     $("#marginRate").text(response.totalMarginRate);
                     $("#totalProfit").text(response.totalProfit);
+
+                    // console.log(response.marketResult.);
+                    if (response.marketResult.length > 0) {
+                        $("#market-data").html("");
+                        response.marketResult.forEach(item => {
+                            $("#market-data").append('<tr><td>'+item.market+'</td><td>'+number_format(item.totalProductRevenue)+'</td><td>'+number_format(item.totalPriceFee)+'</td><td>'+number_format(item.totalProductCost)+'</td><td class="text-success fw-bold">'+number_format(item.totalProfit)+'</td><td>'+item.totalMarginRate+'%</td></tr>');
+                            console.log(item.market);
+                        });
+                    } 
                     
                 },
                 error: function(xhr, status, error) {                  
@@ -523,14 +538,7 @@
                 }
             });
         });
-        
 
-        function formatDateToYMD(date) {
-            const y = date.getFullYear();
-            const m = ('0' + (date.getMonth() + 1)).slice(-2);
-            const d = ('0' + date.getDate()).slice(-2);
-            return `${y}-${m}-${d}`;
-        }
     </script>
 </body>
 </html>

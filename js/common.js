@@ -12,6 +12,24 @@ $(document).on('keyup','.localeNumber',function(){
     }
 })
 
+// 숫자찍기 함수
+function number_format(number, decimals = 0, dec_point = '.', thousands_sep = ',') {
+    if (isNaN(number) || number == null) return '0';
+
+    number = parseFloat(number).toFixed(decimals);
+
+    let parts = number.split('.');
+    let integer = parts[0];
+    let decimal = parts[1] ? dec_point + parts[1] : '';
+
+    let rgx = /(\d+)(\d{3})/;
+    while (rgx.test(integer)) {
+        integer = integer.replace(rgx, '$1' + thousands_sep + '$2');
+    }
+
+    return integer + decimal;
+}
+
 $(document).ready(function () {
     // 특정 input 요소에 포커스를 자동으로 설정
     $('#search-input').focus();
