@@ -289,20 +289,12 @@
                         </thead>
                         <tbody id="market-data">
                             <tr>
-                                <td>네이버</td>
-                                <td>₩1,500,000</td>
-                                <td>₩150,000</td>
-                                <td>₩800,000</td>
-                                <td class="text-success fw-bold">₩550,000</td>
-                                <td>36.7%</td>
-                            </tr>
-                            <tr>
-                                <td>쿠팡</td>
-                                <td>₩1,200,000</td>
-                                <td>₩144,000</td>
-                                <td>₩700,000</td>
-                                <td class="text-success fw-bold">₩356,000</td>
-                                <td>29.7%</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="text-success fw-bold">-</td>
+                                <td>-</td>
                             </tr>
                         </tbody>
                     </table>

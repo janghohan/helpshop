@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
     <link rel="stylesheet" type="text/css" href="./css/product.css">
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     
     <title>지출 내역</title>
     <style>
@@ -156,16 +157,23 @@
                     <!-- Order Table -->
                     <div class="table-container" style="caret-color: transparent;">
                         <table class="table">
+                            <colgroup>
+                                <col style="width: 30%;">
+                                <col style="width: 20%;">
+                                <col style="width: 30%;">
+                                <col style="width: 20%;">
+                                <col style="width: 10%;">
+                            </colgroup>
                             <thead>
-                            <tr>
-                                <th>
-                                    <input type="checkbox" class="form-checkbox">
-                                </th>
-                                <th>지출타입</th>
-                                <th>금액</th>
-                                <th>메모</th>
-                                <th>날짜</th>
-                            </tr>
+                                <tr>
+                                    <th>지출타입</th>
+                                    <th>금액</th>
+                                    <th>메모</th>
+                                    <th>날짜</th>
+                                    <th class="text-center">
+                                        -
+                                    </th>
+                                </tr>
                             </thead>
                             <tbody id="expense-list">
                             <!-- Order rows will be added dynamically -->
@@ -187,13 +195,17 @@
 
                                     ?>        
                                     <tr style="background-color: <?= $backgroundColor ?>;">
-                                        <td>
-                                            <input type="checkbox" class="form-check-input" name="expenseCheck[]" value="<?=htmlspecialchars($expenseRow['expense_ix'])?>">
-                                        </td>
                                         <td><?=htmlspecialchars($expenseRow['expense_type'])?></td>
                                         <td><?=htmlspecialchars(number_format($expenseRow['expense_price']))."원"?></td>
                                         <td><?=htmlspecialchars($expenseRow['expense_memo'])?></td>
-                                        <td><?=htmlspecialchars($expenseRow['expense_date'])?></td>                                     
+                                        <td><?=htmlspecialchars($expenseRow['expense_date'])?></td>
+                                        <td>
+                                            <button class="btn btn-light expense-del" data-ix="<?=htmlspecialchars($expenseRow['expense_ix'])?>">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"></path>
+                                                </svg>
+                                            </button>
+                                        </td>                           
                                     </tr>
                                     
                                 <?php
@@ -220,6 +232,7 @@
                 <div class="modal-body">
                     <form action="./api/expense_api.php" id="expenseForm" method="post" enctype="multipart/form-data">
                         <input type="text" class="form-control mb-3" name="expenseDate" id="expenseFlatpickr" placeholder="MM/DD/YYYY">
+                        <input type="hidden" name="type" value="create">
                         <select name="expenseType" class="form-control" id="">
                             <option value="광고비">광고비</option>
                             <option value="자재비">자재비</option>
@@ -240,7 +253,6 @@
         </div>
 
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
@@ -268,6 +280,18 @@
                     }
 
                 }   
+                
+            });
+
+        });
+
+        $(document).ready(function() {
+            flatpickr("#expenseFlatpickr", {
+                defaultDate: "today",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                theme: "material_blue",
+                locale: "ko"
                 
             });
 
@@ -318,7 +342,7 @@
                             allowOutsideClick:false,
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                
+                                $("#expenseForm input").val("");
                             }else{
                                 modalClose('expenseModal');
                             }
@@ -333,7 +357,34 @@
             });
         }
 
+        $(".expense-del").click(function(){
+            expenseIx = $(this).attr('data-ix');
+            btn = $(this);
+            swalConfirm("복구가 불가능합니다. 삭제하시겠습니까?", function(){
+                expenseDelete(expenseIx,btn)
+            },function(){});
+        });
+
+        function expenseDelete(expenseIx,btn){
+            $.ajax({
+                url: './api/expense_api.php', // 데이터를 처리할 서버 URL
+                type: 'POST',
+                data: {'type':'delete', 'expenseIx':expenseIx },
+                success: function(response) { 
+                    console.log(response);
+                    if(response.status=='success'){
+                        $(btn).parent().parent().remove();
+                        toast();
+                    }
+
+                },
+                error: function(xhr, status, error) {                  
+                    // alert("관리자에게 문의해주세요.");
+                    console.log(error);
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
-s

@@ -71,3 +71,7 @@ h3 {
 .flex-item-3 {
     flex: 1 /* 10% */
 }
+
+.main-content h2{
+    margin-left: 0;
+}

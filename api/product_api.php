@@ -135,184 +135,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                 if(isset($dataA)){
-                    $groupedProducts = [];
-                    $previousProductName = null; // 이전 이름을 저장
-
-                    $duplicationNameArray = [];
                     foreach ($dataA as $indexA => $rowA) {
-                        if($indexA<=3){
-                            continue;
-                        }
-                        
-                        $account = $rowA[0];
-                        $category = $rowA[1];
-                        $name = $rowA[2];
-                        $option = $rowA[3];
-                        $optionValue = $rowA[4];
-                        $price = $rowA[5];
-                        $cost = $rowA[6];
-                        $quantity = $rowA[7];
-            
-                        $emptyValue = "";
-            
-                        $currentProductName = $name;
-                        if ($currentProductName !== $previousProductName) {
-
-                            //account 중복값 무시 삽입
-                            $accountStmt = $conn->prepare("INSERT IGNORE INTO account(user_ix,name) VALUES(?,?)");
-                            $accountStmt->bind_param("ss",$userIx,$account);
-                            $accountStmt->execute();
-
-                            // account ix select
-                            $accountIx = $conn->query("SELECT ix FROM account WHERE user_ix='$userIx' AND name='$account'")->fetch_assoc()['ix'];
-
-                            //category 중복값 무시 삽입
-                            $categoryStmt = $conn->prepare("INSERT IGNORE INTO category(user_ix,name) VALUES(?,?)");
-                            $categoryStmt->bind_param("ss",$userIx,$category);
-                            $categoryStmt->execute();
-
-                            // category ix select
-                            $cateIx = $conn->query("SELECT ix FROM category WHERE user_ix='$userIx' AND name='$category'")->fetch_assoc()['ix'];
-
-
-                            // 상품명이 바뀐다.
-                            $productStmt = $conn->prepare("INSERT IGNORE INTO product(user_ix,account_ix,category_ix,name,memo) VALUES(?,?,?,?,?)");
-                            if (!$productStmt) {
-                                throw new Exception("Error preparing product statement: " . $conn->error); // *** 수정 ***
-                            }
-                            $productStmt->bind_param("sssss",$userIx,$accountIx,$cateIx,$name,$emptyValue);
-                            if (!$productStmt->execute()) {
-                                throw new Exception("Error executing product statement: " . $productStmt->error); // *** 수정 ***
-                            }
-                        
-                            if ($productStmt->affected_rows === 0) {
-                                $duplicationNameArray[] = $name;
-                                // throw new Exception("중복된 주문으로 인해 삽입되지 않았습니다.");
-                            }else{
-                                $productIx = $productStmt->insert_id;
-
-                                if (!isset($groupedProducts[$name])) {
-                                    $groupedProducts[$name] = [
-                                        'product_ix' => $productIx,
-                                    ];
-                                }
-                            }
-                            
-                        }
-            
-                        $previousProductName = $currentProductName; // 현재 주문번호를 이전 주문번호로 갱신          
-                    }
-            
-            
-                    $previousProductName = null; // 이전 이름을 저장
-                    foreach($dataA as $indexA => $rowA){
                         if($indexA<=2){
                             continue;
                         }
-                        // 중복된 상품은 패스
-                        if (in_array($rowA[2], $duplicationNameArray)) {
+                        
+                        $account = $rowA[0]; //거래처
+                        $category = $rowA[1]; //카테고리
+                        $name = $rowA[2];
+                        $optionValue = $rowA[3];
+                        $cost = $rowA[4];
+                        $quantity = $rowA[5];
+                        $alarmQuantity = $rowA[6];
+
+                        if($name=="" || $cost=="") {
                             continue;
                         }
 
-                        $name = $rowA[2];
-                        $option = $rowA[3];
-                        $optionValue = $rowA[4];
-                        $price = $rowA[5];
-                        $cost = $rowA[6];
-                        $quantity = $rowA[7];
-                        $trackQuantity = $rowA[8];
-                        $productIx = $groupedProducts[$name]['product_ix']; //미리 저장한 product table의 ix
-                              
-                        $currentProductName = $name;
+                        //거래처, 카테고리 빈칸시 기타
+                        if($account==""){
+                            $account = "기타";
+                        }
+                        if($category==""){
+                            $category = "기타";
+                        }
+                        if($quantity=="") {
+                            $quantity = 0;
+                        }
+                        if($alarmQuantity==""){
+                            $alarmQuantity = 0;
+                        }
+                        
+                        $productName = $name." ".$optionValue;
 
-                        
-                        if ($currentProductName !== $previousProductName) {
-                            // 상품명이 바뀐다.
-                            
-                            // 구별옵션 갯수만큼 배열 확보
-                            $eachOptionArray = explode(",",str_replace(" ", "", $option)); //배열에 넣었다. ex) ['색상','크기']
-                            foreach($eachOptionArray as $i => $op){
-                                $valueArray[$i] = []; //옵션명에 맞게 옵션값을 담는 배열을 생성
-                            }
-                        }
-            
-                        $eachOptionValue = explode(',' , $optionValue); //ex) ['레드','90mm']
-                        foreach($eachOptionValue as $index => $eachValue){
-                            $eachValue = str_replace(" ", "", $eachValue);
-                            if(!in_array($eachValue,$valueArray[$index])){ //색상에 해당하는 배열안에 '레드'라는 값이 없으면 
-                                $insertOp = $eachOptionArray[$index]; //색상
-                                $insertOptionValue = $eachValue; //레드
-            
-                                $optionStmt = $conn->prepare("INSERT INTO product_option(product_ix,name,value) VALUES(?,?,?)");
-                                if (!$optionStmt) {
-                                    throw new Exception("Error preparing option statement: " . $conn->error); // *** 수정 ***
-                                }
-                                $optionStmt->bind_param("sss",$productIx,$insertOp,$insertOptionValue);
-                                if (!$optionStmt->execute()) {
-                                    throw new Exception("Error executing option statement: " . $optionStmt->error); // *** 수정 ***
-                                }
-            
-                                array_push($valueArray[$index],$eachValue);
-                            }
-                        }
-            
-            
-                        $previousProductName = $currentProductName; // 현재 상품명을 이전 상품명으로 갱신
-            
-            
-                        $combiStmt = $conn->prepare("INSERT INTO product_option_combination(product_ix,combination_key,cost_price,stock,track_stock) VALUES(?,?,?,?,?)");
-                        if (!$combiStmt) {
-                            throw new Exception("Error preparing combination statement: " . $conn->error); // *** 수정 ***
-                        }
-                        $combiStmt -> bind_param("sssss",$productIx,$optionValue,$cost,$quantity,$trackQuantity);
-                        if (!$combiStmt->execute()) {
-                            throw new Exception("Error executing combination statement: " . $combiStmt->error); // *** 수정 ***
-                        }
-            
-                        $combiIx = $combiStmt->insert_id;
-            
-            
-                        
-                        // product_option_market_price 데이터
+                        //account 중복값 무시 삽입
+                        $accountStmt = $conn->prepare("INSERT IGNORE INTO account(user_ix,name) VALUES(?,?)");
+                        $accountStmt->bind_param("ss",$userIx,$account);
+                        $accountStmt->execute();
 
-                        foreach($marketResult as $market){
-                            $marketPriceStmt = $conn->prepare("INSERT INTO product_option_market_price(product_option_comb_ix,market_ix,price) VALUES(?,?,?)");
-                            if (!$marketPriceStmt) {
-                                throw new Exception("Error preparing market statement: " . $conn->error); // *** 수정 ***
-                            }
-                            $marketPriceStmt->bind_param("sss",$combiIx,$market['ix'],$price);
-                            if (!$marketPriceStmt->execute()) {
-                                throw new Exception("Error executing market statement: " . $marketPriceStmt->error); // *** 수정 ***
-                            }
-                            // echo "Market ID $marketIx: $sellingPrice<br>";
-                    
-                            $conn->commit();
+                        // account ix select
+                        $accountIx = $conn->query("SELECT ix FROM account WHERE user_ix='$userIx' AND name='$account'")->fetch_assoc()['ix'];
+
+                        //category 중복값 무시 삽입
+                        $categoryStmt = $conn->prepare("INSERT IGNORE INTO category(user_ix,name) VALUES(?,?)");
+                        $categoryStmt->bind_param("ss",$userIx,$category);
+                        $categoryStmt->execute();
+
+                        // category ix select
+                        $cateIx = $conn->query("SELECT ix FROM category WHERE user_ix='$userIx' AND name='$category'")->fetch_assoc()['ix'];
+
+
+
+                        $productStmt = $conn->prepare("INSERT IGNORE INTO matching_name(user_ix,category_ix,account_ix,matching_name,cost,stock,alarm_stock) VALUES(?,?,?,?,?,?,?)");
+                        $productStmt->bind_param("sssssss",$userIx,$cateIx,$accountIx,$productName,$cost,$quantity,$alarmQuantity);
+                        if (!$productStmt->execute()) {
+                            throw new Exception("Error executing product statement: " . $productStmt->error); // *** 수정 ***
                         }
-                        
-                        $endTime = date("Y-m-d H:i:s");
+
                     }
-                    
-                    // $listStmt = $conn->prepare("SELECT poc.ix as combIx, pomp.ix as mpIx, 
-                    // m.market_name, p.name, poc.combination_key, poc.cost_price, poc.stock, pomp.price FROM product p 
-                    // JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=? 
-                    // JOIN product_option_market_price pomp ON poc.ix = pomp.product_option_comb_ix 
-                    // JOIN market m ON m.ix = pomp.market_ix AND p.create_at >= ? AND p.create_at <= ?");
-                    // if (!$listStmt) {
-                    //     throw new Exception("Error preparing list statement: " . $conn->error); // *** 수정 ***
-                    // }
-                    // $listStmt->bind_param("sss",$userIx,$startTime,$endTime);
-                    // if (!$listStmt->execute()) {
-                    //     throw new Exception("Error executing list statement: " . $listStmt->error); // *** 수정 ***
-                    // }
-
-                    // $result = $listStmt->get_result();
-
-                    // if ($result->num_rows > 0) {
-                    //     while ($row = $result->fetch_assoc()) {
-                    //         $listResult[] = $row;
-                    //     }
-                    // }
-                    
+            
+            
                     ob_clean();
                     echo json_encode(['status' => 'success', 'message' => 'Excel data processed successfully', 'startTime'=>$startTime,'endTime'=>$endTime],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE); // *** 수정 ***
                 } else {
@@ -332,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $productIx = $_POST['productIx'] ?? '';
 
         $productDelStmt = $conn->prepare("DELETE FROM product WHERE user_ix=? AND ix=?");
-        $productDelStmt->bind_param("ss",$userIx,$producIx);
+        $productDelStmt->bind_param("ss",$userIx,$productIx);
         if($productDelStmt->execute()){
             echo json_encode(['status' => 'success', 'message' => 'product delete successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         }else{

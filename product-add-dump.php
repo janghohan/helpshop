@@ -91,11 +91,7 @@
         $startTime = isset($_POST['startTime']) ? $_POST['startTime'] : date("Y-m-d");
         $endTime = isset($_POST['endTime']) ? $_POST['endTime'] : date("Y-m-d");
        
-        $listStmt = $conn->prepare("SELECT poc.ix as combIx, pomp.ix as mpIx, 
-        m.market_name, p.name, poc.combination_key, poc.cost_price, poc.stock, poc.track_stock, pomp.price, c.name as category_name, a.name as account_name FROM product p 
-        JOIN product_option_combination poc ON p.ix = poc.product_ix AND p.user_ix=? 
-        JOIN product_option_market_price pomp ON poc.ix = pomp.product_option_comb_ix 
-        JOIN market m ON m.ix = pomp.market_ix JOIN account a ON a.ix = p.account_ix JOIN category c ON c.ix = p.category_ix AND p.create_at >= ? AND p.create_at <= ?");
+        $listStmt = $conn->prepare("SELECT c.name as categoryName, a.name as accountName, mn.matching_name,mn.cost,mn.stock,mn.alarm_stock FROM matching_name mn JOIN account a ON mn.account_ix = a.ix JOIN category c ON c.ix = mn.category_ix WHERE mn.user_ix=? AND mn.created_at>=? AND mn.created_at<=?");
         if (!$listStmt) {
             throw new Exception("Error preparing list statement: " . $conn->error); // *** 수정 ***
         }
@@ -133,7 +129,7 @@
                     <div class="row justify-content-end ">
                         <div class="col-md-6 mb-3">
                             <button class="btn btn-primary w-100">
-                                <a href="./제품 등록 양식.xlsx" class="text-white">엑셀 양식 받기</a>
+                                <a href="./제품등록양식.xlsx" class="text-white">엑셀 양식 받기</a>
                             </button>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -148,12 +144,9 @@
                     <table class="table">
                         <thead>
                         <tr>
-                            <th>판매처</th>
                             <th>거래처</th>
                             <th>카테고리</th>
                             <th>제품이름</th>
-                            <th>옵션값</th>
-                            <th>판매가</th>
                             <th>원가</th>
                             <th>재고수량</th>
                             <th>알림재고</th>
@@ -169,38 +162,17 @@
                                 if(isset($listResult)){
                                     foreach ($listResult as $index => $row) {
 
-                                        $combIx = $row['combIx'];
-                                        $mpIx = $row['mpIx'];
-                                        $account = $row['account_name'];
-                                        $category = $row['category_name'];
-                                        $market_name = $row['market_name'];
-                                        $name = $row['name'];
-                                        $combination_key = $row['combination_key'];
-                                        $cost = $row['cost_price'];
-                                        $stock = $row['stock'];
-                                        $track_stock = $row['track_stock'];
-                                        $price = $row['price'];
-
-                                        $currentProductName = $name;
-                                        if ($currentProductName !== $previousProductName) {
-                                            // 상품명이 바뀐다.
-                                            $toggle = !$toggle;
-                                        }
-                                        $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
-                                        $previousProductName = $currentProductName; // 현재 주문번호를 이전 주문번호로 갱신
+                                    
 
 
                                 ?>        
                                 <tr style="background-color: <?= $backgroundColor ?>;">
-                                    <td><?=htmlspecialchars($market_name)?></td>
-                                    <td><?=htmlspecialchars($account)?></td>
-                                    <td><?=htmlspecialchars($category)?></td>
-                                    <td><?=htmlspecialchars($name)?></td>
-                                    <td><?=htmlspecialchars($combination_key)?></td>
-                                    <td><?=htmlspecialchars(number_format($price))."원"?></td>
-                                    <td><?=htmlspecialchars(number_format($cost))."원"?></td>
-                                    <td><?=htmlspecialchars(number_format($stock))?></td>
-                                    <td><?=htmlspecialchars(number_format($track_stock))?></td>
+                                    <td><?=htmlspecialchars($row['accountName'])?></td>
+                                    <td><?=htmlspecialchars($row['categoryName'])?></td>
+                                    <td><?=htmlspecialchars($row['matching_name'])?></td>
+                                    <td><?=htmlspecialchars(number_format($row['cost']))."원"?></td>
+                                    <td><?=htmlspecialchars(number_format($row['stock']))?></td>
+                                    <td><?=htmlspecialchars(number_format($row['alarm_stock']))?></td>
                                     <!-- <td>
                                         <button class="btn btn-light option-edit me-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
@@ -266,7 +238,7 @@
             </div>
         </div>
 
-        <form action="./product-add-dump.php" id="listForm" method="post" style="display:none;">
+        <form action="./product-add-dump.php" id="listForm" method="POST" style="display:none;">
             <input type="hidden" name="startTime">
             <input type="hidden" name="endTime">
         </form>
