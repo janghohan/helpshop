@@ -2,7 +2,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>회원가입 | 셀러툴 - 쇼핑몰 통합관리</title>
+    <title>회원가입 | 헬프샵 - 쇼핑몰 통합관리</title>
     <link rel="canonical" href="https://www.sellertool.io">
     <meta name="description" content="마진율 계산기 부터 재고관리 까지 오픈마켓 통합 관리 솔루션 셀러툴!">
     <meta name="keywords" content="셀러툴, 마진율 계산기, 엑셀 변환기, 스마트스토어, 내 상품 순위, 온라인 커머스, 3PL, WMS, 선입선출, 주문관리">
@@ -14,6 +14,10 @@
     <meta property="og:locale" content="ko_KR">
 
     <link rel="stylesheet" href="./css/signup.css" data-n-g=""><noscript data-n-css=""></noscript>
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <style>
+        .error { color: red; font-size: 0.9em; }
+    </style>
 </head>
 
 <body>
@@ -39,8 +43,10 @@
                             <div class="input-label" style="display: flex; align-items: center;">
                                 <div style="margin-right: 10px;">아이디</div><span class="valid-label ">형식 체크</span>
                             </div>
-                            <input type="text" class="input-item" name="userid" placeholder="5-20자의 영문 소문자, 숫자와 특수기호(_),(.)만 사용 가능합니다." required="" value="">
+                            <input type="text" class="input-item" name="userid" value="">
+                            <span class="error" id="id_error">dsf</span>
                         </div>
+                        
                         <div class="form_InputBox">
                             <div class="input-label">
                                 <div style="margin-right: 10px;">패스워드</div>
@@ -140,5 +146,32 @@
         </div>
     </div>
 </body>
+<script>
+    let idCheckTimeout;
+    let isIdChecked = false;
+
+    $('#user_id').on('input', function () {
+    clearTimeout(idCheckTimeout);
+    const userId = $(this).val().trim();
+
+    if (userId.length < 2) {
+        $('#id_error').text('아이디는 최소 2자 이상 입력하세요.');
+        isIdChecked = false;
+        return;
+    }
+
+    idCheckTimeout = setTimeout(() => {
+        $.post('./api/check_user_id.php', { user_id: userId }, function (res) {
+        if (res.exists) {
+            $('#id_error').text('이미 사용 중인 아이디입니다.');
+            isIdChecked = false;
+        } else {
+            $('#id_error').text('사용 가능한 아이디입니다.');
+            isIdChecked = true;
+        }
+        }, 'json');
+    }, 300); // 0.3초 지연 후 요청
+    });
+</script>
 
 </html>
