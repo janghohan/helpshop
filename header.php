@@ -1,11 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_ix'])) {
-    // header('Location: login.php'); // 로그인 페이지로 리디렉션
-    // exit;
-    $user_ix = '1';
-}
+$userIx = $_SESSION['user_ix'] ?? '1';
 
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
@@ -23,6 +19,9 @@ if (!isset($_SESSION['user_ix'])) {
         margin-left: 250px; /* 사이드바 넓이 */
         border-bottom: 1px solid #E2E5EA;
         transition: margin-left 0.3s;
+    }
+    .header.collapsed{
+        margin-left: 0;
     }
     .header .menu {
         display: flex;

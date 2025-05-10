@@ -92,7 +92,18 @@ if($type=="idCheck"){
         }else{
             $insertStmt = $conn->prepare("INSERT INTO user(id,pwd,name,contact) VALUES(?,?,?,?)");
             $insertStmt->bind_param("ssss",$user_id,$hashedPassword,$nickname,$contact);
-            if($checkStmt->execute()){
+            if($insertStmt->execute()){
+                $val = "기타";
+                $userIx = $insertStmt->insert_id;
+
+                $cateStmt = $conn->prepare("INSERT INTO category(user_ix,name) VALUES(?,?)");
+                $cateStmt->bind_param("ss",$userIx,$val);
+                $cateStmt->execute();
+
+                $accountStmt = $conn->prepare("INSERT INTO account(user_ix,name) VALUES(?,?)");
+                $accountStmt->bind_param("ss",$userIx,$val);
+                $accountStmt->execute();
+
                 $status = true;
                 $msg = "signup ok";
             }else{
@@ -107,6 +118,7 @@ if($type=="idCheck"){
     }
 
     $data['status'] = $status; 
+    $data['msg'] = $msg;
     echo json_encode($data, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
 }
 

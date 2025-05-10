@@ -13,8 +13,9 @@
       <meta property="og:url" content="https://www.sellertool.io">
       <meta property="og:locale" content="ko_KR">
       <meta name="naver-site-verification" content="5abe3c64078f2d1754ecfd2de8327d7e31542d4c">
-      <title>로그인 | 셀러툴 - 쇼핑몰 통합관리</title>
+      <title>로그인 | 헬프샵 - 쇼핑몰 기본관리</title>
       <link rel="stylesheet" type="text/css" href="./css/login.css" data-n-g="">
+      <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
 
    </head>
    <body style="">
@@ -32,9 +33,9 @@
                </div>
                <div class="FormField__Wrapper">
                   <div style="margin-top: 40px; text-align: center; font-weight: 600; font-size: 18px;">로그인</div>
-                  <form class="FormField__FormGroup">
+                  <form class="FormField__FormGroup" method="post" id="loginForm">
                      <div class="FormField__InputBox">
-                        <input type="text" class="input-item" name="username" placeholder="아이디" required="" value="">
+                        <input type="text" class="input-item" name="user_id" placeholder="아이디" required="" value="">
                      </div>
                      <div class="FormField__InputBox" style="margin-top: 20px;">
                         <input type="password" class="input-item" name="password" placeholder="패스워드" required="" value="">
@@ -49,11 +50,34 @@
                      </button>
                   </form>
                   <div style="text-align: center; font-size: 13px; color: rgb(128, 128, 128); margin-top: 40px; margin-bottom: 80px;">회원이 아니신가요? 
-                     <span href="/signup/" style="text-decoration: underline; cursor: pointer;">회원가입</span>
+                     <a href="./signup.php" style="text-decoration: underline; cursor: pointer;">회원가입</a>
                   </div>
                </div>
             </div>
          </div>
       </div>
-      </body>
+   </body>
+   <script>
+      $('#loginForm').on('submit', function (e) {
+         e.preventDefault();
+         $.ajax({
+               url: './api/login_api.php', // 데이터를 처리할 서버 URL
+               type: 'POST',
+               dataType: 'json',
+               data: $(this).serialize(),
+               success: function(response) { 
+                  console.log(response);
+                  if(response.status){
+                     location.href = './dashboard.php';
+                  }else if(!response.status){
+                     alert(response.msg);
+                  }        
+               },
+               error: function(xhr, status, error) {                  
+                  // alert("관리자에게 문의해주세요.");
+                  console.log(error);
+               }
+         });
+      });
+   </script>
 </html>

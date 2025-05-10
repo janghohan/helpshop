@@ -9,16 +9,16 @@ use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 �
 use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
 header('Content-Type: application/json');
 
+$userIx = $_SESSION['user_ix'] ?? '1';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
     // JSON 문자열로 받은 데이터를 파싱
 
-    $type = isset($_POST['type']) ? $_POST['type'] : ''; // option-edit 구별 타입입
+    $type =  $_POST['type'] ?? ''; // option-edit 구별 타입입
 
     //옵션삭제 
     if($type=='opDel'){
-        $combIx = isset($_POST['combIx']) ? $_POST['combIx'] : '';
-        $mPriceIx = isset($_POST['mPriceIx']) ? $_POST['mPriceIx'] : '';
+        $combIx = $_POST['combIx'] ?? '';
+        $mPriceIx = $_POST['mPriceIx'] ?? '';
         
         $totalCount = $conn->query("SELECT COUNT(*) as c FROM product_option_market_price WHERE product_option_comb_ix='$combIx'")->fetch_assoc()['c'];
     
@@ -42,12 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     //옵션 수정
     }else if($type=='opEdit'){
-        $combIx = isset($_POST['combIx']) ? $_POST['combIx'] : '';
-        $mPriceIx = isset($_POST['mPriceIx']) ? $_POST['mPriceIx'] : '';
-        $optionValue = isset($_POST['optionValue']) ? $_POST['optionValue'] : '';
-        $optionPrice = isset($_POST['optionPrice']) ? $_POST['optionPrice'] : '';
-        $optionCost = isset($_POST['optionCost']) ? $_POST['optionCost'] : '';
-        $optionStock = isset($_POST['optionStock']) ? $_POST['optionStock'] : '';
+        $combIx = $_POST['combIx'] ?? '';
+        $mPriceIx = $_POST['mPriceIx'] ?? '';
+        $optionValue = $_POST['optionValue'] ?? '';
+        $optionPrice = $_POST['optionPrice'] ?? '';
+        $optionCost = $_POST['optionCost'] ?? '';
+        $optionStock = $_POST['optionStock'] ?? '';
 
         $optionPrice = (Int)str_replace(",","",$optionPrice);
         $optionCost = (Int)str_replace(",","",$optionCost);

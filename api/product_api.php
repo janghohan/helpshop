@@ -8,9 +8,8 @@ require_once __DIR__ . '/SimpleXLSXGen.php'; // 실제 경로 확인
 use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
 use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
 header('Content-Type: application/json');
-
+$userIx = $_SESSION['user_ix'] ?? '1';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
     // JSON 문자열로 받은 데이터를 파싱
     $formCombination = isset($_POST['formCombination']) ? json_decode($_POST['formCombination'], true) : [];
     $accountIx = $_POST['accountIx'] ?? '';

@@ -4,8 +4,8 @@ include '../dbConnect.php';
 
 try {
     // POST 데이터 수신
-    $title = isset($_POST['title']) ? trim($_POST['title']) : '';
-    $contents = isset($_POST['contents']) ? trim($_POST['contents']) : '';
+    $title = trim($_POST['title']) ?? '';
+    $contents = trim($_POST['contents']) ?? '';
 
     // 유효성 검사
     if (empty($title) || empty($contents)) {

@@ -27,8 +27,8 @@
     include './header.php';
     include './sidebar.html';
     include './dbConnect.php';
-     
-     ?>
+
+    ?>
 
     <div class="full-content">
         <!-- 메인 컨테이너 -->
@@ -41,7 +41,7 @@
                 <select name="accountIx" id="accountIx">
                     <?php
                     $accountResult = [];
-                    $query = "SELECT * FROM account WHERE user_ix='$user_ix'";
+                    $query = "SELECT * FROM account WHERE user_ix='$userIx'";
                     $result = $conn->query($query);
             
                     if ($result->num_rows > 0) {
@@ -65,7 +65,7 @@
                 <select class="category" name="categoryIx" id="categoryIx">
                 <?php
                     $categoryResult = [];
-                    $query = "SELECT * FROM category WHERE user_ix='$user_ix'";
+                    $query = "SELECT * FROM category WHERE user_ix='$userIx'";
                     $result = $conn->query($query);
             
                     if ($result->num_rows > 0) {

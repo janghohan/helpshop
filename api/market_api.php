@@ -1,7 +1,7 @@
 <?php
 include ("../dbConnect.php");
 
-$type = isset($_POST['type']) ? $_POST['type'] : '';
+$type = $_POST['type'] ?? '';
 $now = date('Y-m-d H:i:s');
 $userIx = $_SESSION['user_ix'] ?? '1';
 

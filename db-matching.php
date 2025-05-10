@@ -105,7 +105,6 @@
     include './sidebar.html';
     include './dbConnect.php';
     
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
     $searchKeyword = $_GET['searchKeyword'] ?? '';
 
     $page = $_GET['page'] ?? 1;

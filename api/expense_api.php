@@ -2,7 +2,7 @@
 session_start();
 include '../dbConnect.php';
 header('Content-Type: application/json');
-$userIx = isset($_SESSION['user_ix']) ? : '1';
+$userIx = $_SESSION['user_ix'] ?? '1';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 

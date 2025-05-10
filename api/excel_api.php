@@ -12,7 +12,7 @@ use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수
 
 
 // mysqli_query($conn,$tmpOrdersSql);
-$userIx = isset($_SESSION['user_ix']) ? : '1';
+$userIx = $_SESSION['user_ix'] ?? '1';
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

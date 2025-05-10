@@ -5,7 +5,7 @@ include '../dbConnect.php';
 require_once __DIR__ . '/SimpleXLSX.php'; // 실제 경로 확인
 require_once __DIR__ . '/SimpleXLSXGen.php'; // 실제 경로 확인
 
-$userIx = isset($_SESSION['user_ix']) ? : '1';
+$userIx = $_SESSION['user_ix'] ?? '1';
 $type = $_POST['type'] ?? '';
 if($type=='create'){
     $cost = changeTextToIntForMoney($_POST['cost'] ?? 0);

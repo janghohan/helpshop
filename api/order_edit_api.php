@@ -3,11 +3,11 @@ session_start();
 include '../dbConnect.php';
 
 header('Content-Type: application/json');
+$userIx = $_SESSION['user_ix'] ?? '1';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
     // JSON 문자열로 받은 데이터를 파싱
-    $type = isset($_POST['type']) ? $_POST['type'] : '';
-    $orderList = isset($_POST['checkList']) ? $_POST['checkList'] : '';
+    $type = $_POST['type'] ?? '';
+    $orderList = $_POST['checkList'] ?? '';
 
     if($type=='orderCancel'){
 

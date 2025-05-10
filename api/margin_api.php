@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ob_start();
 
     $type = $_POST['type'] ?? 'basic';
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
+    $userIx = $_SESSION['user_ix'] ?? '1';
     if($type=='basic'){
 
         $startDate = isset($_POST['startDate']) ? $_POST['startDate'] : date("Y-m-d");

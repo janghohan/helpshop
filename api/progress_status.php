@@ -9,12 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if($type=='orderList'){
         // 진행률 반환
-        $progress = isset($_SESSION['orderDumpProgress']) ? $_SESSION['orderDumpProgress'] : 0;
+        $progress = $_SESSION['orderDumpProgress'] ?? 0;
         echo json_encode(['progress' => $progress],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         exit();
     }else if($type=='dbMatching'){
         // 진행률 반환
-        $progress = isset($_SESSION['matchingProgress']) ? $_SESSION['matchingProgress'] : 0;
+        $progress = $_SESSION['matchingProgress'] ?? 0;
         echo json_encode(['progress' => $progress],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         exit();
     }

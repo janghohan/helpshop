@@ -383,7 +383,7 @@
         const nickname = $(this).val().trim();
 
         if (nickname.length < 2) {
-            $('#id_error').text('닉네임은 최소 2자 이상 입력하세요.');
+            $('#nick_error').text('닉네임은 최소 2자 이상 입력하세요.');
             isNickChecked = false;
             return;
         }
@@ -488,15 +488,6 @@
             return;
         }
 
-        $.post('./api/register.php', $(this).serialize(), function (res) {
-            if (res.success) {
-                alert('회원가입이 완료되었습니다.');
-                location.href = '/login.html';
-                } else {
-                alert('회원가입 실패: ' + res.message);
-                }
-            }, 'json');
-
         $.ajax({
             url: './api/signup_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
@@ -506,7 +497,7 @@
                 if(response.status){
                     alert('회원가입이 완료되었습니다.');
                     location.href = './login.php';
-                }else if(response.status == "none"){
+                }else if(!response.status){
                     alert(response.msg);
                 }        
             },

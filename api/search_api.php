@@ -3,10 +3,10 @@ session_start();
 include '../dbConnect.php';
 header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
+    $userIx = $_SESSION['user_ix'] ?? '1';
     // JSON 문자열로 받은 데이터를 파싱
-    $searchType = isset($_POST['searchType']) ? $_POST['searchType'] : '';
-    $searchKeyword = isset($_POST['searchKeyword']) ? $_POST['searchKeyword'] : '';
+    $searchType = $_POST['searchType'] ?? '';
+    $searchKeyword = $_POST['searchKeyword'] ?? '';
 
     if($searchType=='product'){
         $searchTerm = $conn->real_escape_string($searchKeyword); // 사용자 입력값

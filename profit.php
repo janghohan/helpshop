@@ -82,7 +82,6 @@
     include './sidebar.html';
     include './dbConnect.php';
     
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
     $today = date("Y-m-d");
 
     $startDate = isset($_POST['start']) ? $_POST['start'] : date("Y-m-d");

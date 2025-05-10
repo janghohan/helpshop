@@ -19,7 +19,6 @@
     include './sidebar.html';
     include './dbConnect.php';
 
-    $userIx = $_SESSION['user_ix'] ?? '1';
     $page = $_GET['page'] ?? 1;
     $itemsPerPage =  $_GET['itemsPerPage'] ?? 20;
 

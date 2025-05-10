@@ -5,7 +5,7 @@ include '../dbConnect.php';
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
+    $userIx = $_SESSION['user_ix'] ?? '1';
     $type = $_POST['type'] ?? '';
 
     if($type=='create'){

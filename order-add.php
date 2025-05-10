@@ -84,7 +84,7 @@
                         <?php
                         $searchResult = [];
                         
-                        $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                        $query = "SELECT * FROM market WHERE user_ix='$userIx'";
                         $result = $conn->query($query);
                 
                         if ($result->num_rows > 0) {
