@@ -148,3 +148,7 @@ function formatDateToYMD(date) {
     const d = ('0' + date.getDate()).slice(-2);
     return `${y}-${m}-${d}`;
 }
+
+function isValidPhone(phone) {
+    return /^01[016789]-?\d{3,4}-?\d{4}$/.test(phone);
+}

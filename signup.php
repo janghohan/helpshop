@@ -13,13 +13,18 @@
     <meta property="og:url" content="https://www.sellertool.io">
     <meta property="og:locale" content="ko_KR">
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" data-n-g="">
-
-    <link rel="stylesheet" href="./css/signup.css" data-n-g=""><noscript data-n-css=""></noscript>
+    <link rel="stylesheet" type="text/css" href="./css/common.css" data-n-g="">
+    <link rel="stylesheet" type="text/css" href="./css/signup.css" data-n-g=""><noscript data-n-css=""></noscript>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <script src="./js/common.js"></script>
     <style>
-        .error { color: red; font-size: 0.9em; }
+        .error { 
+            color: red;
+            font-size: 13px;
+            display: inline-block;
+            padding-top: 3px;
+        }
     </style>
 </head>
 
@@ -41,53 +46,59 @@
                             <div class="title">회원가입</div>
                         </div>
                     </div>
-                    <form class="form_FormGroup" id="signupForm" >
+                    <form class="form_FormGroup" id="registerForm" >
+                        <input type="hidden" name="type" value="signup">
                         <div class="form_InputBox">
                             <div class="input-label" style="display: flex; align-items: center;">
                                 <div style="margin-right: 10px;">아이디</div>
                             </div>
-                            <input type="text" class="input-item" name="user_id" value="" id="user_id">
+                            <input type="text" class="input-item" name="user_id" value="" id="user_id" required>
                             <span class="error" id="id_error"></span>
                         </div>
                         
                         <div class="form_InputBox">
                             <div class="input-label">
                                 <div style="margin-right: 10px;">패스워드</div>
-                                <div><span class="valid-label ">형식 체크</span></div>
                             </div>
                             <input type="password" class="input-item" name="password" id="password" placeholder="영문, 숫자, 특수문자 혼합 8-50자" minlength="8" maxlength="50" required="" value="">
                         </div>
                         <div class="form_InputBox">
                             <div class="input-label">
                                 <div style="margin-right: 10px;">패스워드 확인</div>
-                                <div><span class="valid-label ">패스워드 확인</span></div>
                             </div>
                             <input type="password" class="input-item" name="passwordChecker" id="passwordChecker" minlength="8" maxlength="50" required="" value="">
+                            <span class="error" id="pw_error"></span>
                         </div>
                         <div class="form_InputBox">
                             <div class="input-label">
                                 <div style="margin-right: 10px;">닉네임</div>
                             </div>
-                            <input type="text" class="input-item" name="nickname" id="nickname" placeholder="2자 이상 15자 이하로 입력해 주세요." minlength="2" maxlength="15" required="" value="">
+                            <input type="text" class="input-item" name="nickname" id="nickname" placeholder="2자 이상 15자 이하로 입력해 주세요." minlength="2" maxlength="15" required="" >
                             <span class="error" id="nick_error"></span>
                         </div>
                         <div class="form_InputBox">
                             <div class="input-label">
                                 <div style="margin-right: 10px;">휴대전화</div>
-                                <div><span class="valid-label ">형식 체크</span></div>
                             </div>
                             <div style="display: flex; align-items: center;">
-                                <input type="text" class="input-item" name="phoneNumber" placeholder="ex)01012341234" maxlength="11" required="" value="">
-                                <button type="button" class="validation-button" disabled="">인증번호 발송
+                                <input type="text" class="input-item" name="contact" id="contact" placeholder="ex)01012341234" maxlength="11" required="" value="">
+                                <button type="button" class="validation-button" id="sendCodeBtn">인증번호 발송
                                     <div color="#e0e0e0" scale="2" class="Ripple_Container"></div>
                                 </button>
+                            </div>
+                            <span id="phoneMsg" class="error"></span>
+                        </div>
+                        <div class="form_InputBox" id="verificationArea" style="display:none;">
+                            <div class="d-flex">
+                                <input type="text" class="input-item" id="verifyCode" placeholder="인증번호 입력" />
+                                <button type="button" class="validation-button" id="checkCodeBtn">인증번호 확인</button>
                             </div>
                         </div>
 
                         <div class="consent_InputBox">
                             <div class="custom_CheckBox">
                                 <label style="display: flex; align-items: center;">
-                                    <input type="checkbox" class="CustomCheckboxV2__HiddenCheckbox-sc-17cmlwd-2 gommtu">
+                                    <input type="checkbox" name="totalTermYn" id="totalTermYn" class="CustomCheckboxV2__HiddenCheckbox-sc-17cmlwd-2 gommtu">
                                     <div class="CustomCheckboxV2__StyledCheckbox-sc-17cmlwd-3 ekwHHr checkbox-el">
                                         <span style="box-sizing: border-box; display: block; overflow: hidden; width: initial; height: initial; background: none; opacity: 1; border: 0px; margin: 0px; padding: 0px; position: relative;">
                                             <span style="box-sizing: border-box; display: block; width: initial; height: initial; background: none; opacity: 1; border: 0px; margin: 0px; padding: 100% 0px 0px;"></span>
@@ -102,7 +113,7 @@
                         <div class="consent_InputBox">
                             <div class="custom_CheckBox d-flex">
                                 <label style="display: flex; align-items: center;">
-                                    <input name="serviceTermsYn" type="checkbox" class="CustomCheckboxV2__HiddenCheckbox-sc-17cmlwd-2 gommtu">
+                                    <input name="serviceTermsYn" type="checkbox" class="CustomCheckboxV2__HiddenCheckbox-sc-17cmlwd-2 termChk">
                                     <div class="CustomCheckboxV2__StyledCheckbox-sc-17cmlwd-3 ekwHHr checkbox-el">
                                         <span style="box-sizing: border-box; display: block; overflow: hidden; width: initial; height: initial; background: none; opacity: 1; border: 0px; margin: 0px; padding: 0px; position: relative;">
                                             <span style="box-sizing: border-box; display: block; width: initial; height: initial; background: none; opacity: 1; border: 0px; margin: 0px; padding: 100% 0px 0px;"></span>
@@ -125,7 +136,7 @@
                         <div class="consent_InputBox">
                             <div class="custom_CheckBox d-flex">
                                 <label style="display: flex; align-items: center;">
-                                    <input name="privacyPolicyYn" type="checkbox" class="CustomCheckboxV2__HiddenCheckbox-sc-17cmlwd-2 gommtu">
+                                    <input name="privacyPolicyYn" type="checkbox" class="CustomCheckboxV2__HiddenCheckbox-sc-17cmlwd-2 termChk">
                                     <div class="CustomCheckboxV2__StyledCheckbox-sc-17cmlwd-3 ekwHHr checkbox-el">
                                         <span style="box-sizing: border-box; display: block; overflow: hidden; width: initial; height: initial; background: none; opacity: 1; border: 0px; margin: 0px; padding: 0px; position: relative;">
                                             <span style="box-sizing: border-box; display: block; width: initial; height: initial; background: none; opacity: 1; border: 0px; margin: 0px; padding: 100% 0px 0px;"></span>
@@ -313,7 +324,24 @@
 </body>
 <script>
     let idCheckTimeout;
+    let nicknameCheckTimeout;
     let isIdChecked = false;
+    let isNickChecked = false;
+    let isContactChecked = false;
+    let isTermsChecked = false;
+
+    $(document).ready(function () {
+    // 전체 동의 체크 시 하위 항목 체크/해제
+        $('#totalTermYn').on('change', function () {
+            $('.termChk').prop('checked', this.checked);
+        });
+
+        // 개별 체크박스 변경 시 전체 동의 상태 변경
+        $('.termChk').on('change', function () {
+            const allChecked = $('.termChk').length === $('.termChk:checked').length;
+            $('#totalTermYn').prop('checked', allChecked);
+        });
+    });
 
     $('#user_id').on('input', function () {
         clearTimeout(idCheckTimeout);
@@ -334,8 +362,10 @@
                 success: function(response) { 
                     if(response.status=='exist'){
                         $('#id_error').text('이미 사용 중인 아이디입니다.');
+                        $('#id_error').removeClass('plus');
                         isIdChecked = false;
                     }else if(response.status == "none"){
+                        $('#id_error').addClass('plus');
                         $('#id_error').text('사용 가능한 아이디입니다.');
                         isIdChecked = true;
                     }        
@@ -349,16 +379,16 @@
     });
 
     $('#nickname').on('input', function () {
-        clearTimeout(idCheckTimeout);
+        clearTimeout(nicknameCheckTimeout);
         const nickname = $(this).val().trim();
 
         if (nickname.length < 2) {
             $('#id_error').text('닉네임은 최소 2자 이상 입력하세요.');
-            isIdChecked = false;
+            isNickChecked = false;
             return;
         }
 
-        idCheckTimeout = setTimeout(() => {
+        nicknameCheckTimeout = setTimeout(() => {
             $.ajax({
                 url: './api/signup_api.php', // 데이터를 처리할 서버 URL
                 type: 'POST',
@@ -366,11 +396,13 @@
                 data: {nickname: nickname, type :'nickCheck'},
                 success: function(response) { 
                     if(response.status=='exist'){
+                        $('#nick_error').removeClass('plus');
                         $('#nick_error').text('이미 사용 중인 닉네임입니다.');
-                        isIdChecked = false;
+                        isNickChecked = false;
                     }else if(response.status == "none"){
+                        $('#nick_error').addClass('plus');
                         $('#nick_error').text('사용 가능한 닉네임입니다.');
-                        isIdChecked = true;
+                        isNickChecked = true;
                     }        
                 },
                 error: function(xhr, status, error) {                  
@@ -379,6 +411,110 @@
                 }
             });
         }, 300); // 0.3초 지연 후 요청
+    });
+
+
+    $('#sendCodeBtn').on('click', function () {
+        const phone = $('#contact').val().replace(/-/g, '');
+
+        if (!isValidPhone(phone)) {
+            $('#phoneMsg').text('올바른 휴대폰 번호를 입력하세요.');
+            return;
+        }
+
+        $.ajax({
+            url: './api/signup_api.php',
+            type: 'POST',
+            data: { type:'sendCode',phone: phone },
+            success: function (response) {
+                const res = JSON.parse(response);
+                if (res.success) {
+                    $('#verificationArea').show();
+                    $('#phoneMsg').text('인증번호가 발송되었습니다.');
+                } else {
+                    $('#phoneMsg').text(res.message || '인증번호 전송 실패');
+                }
+            }
+        });
+    });
+
+    $('#checkCodeBtn').on('click', function () {
+        const phone = $('#contact').val().replace(/-/g, '');
+        const code = $('#verifyCode').val();
+
+        $.ajax({
+            url: './api/signup_api.php',
+            type: 'POST',
+            data: { 'type':'checkCode', phone: phone, code: code },
+            success: function (response) {
+                const res = JSON.parse(response);
+                if (res.success) {
+                    $('#phoneMsg').addClass('plus');
+                    $('#phoneMsg').text('인증 완료!');
+                    isContactChecked = true;
+                } else {
+                    $('#phoneMsg').text('인증 실패. 코드를 다시 확인하세요.');
+                }
+            }
+        });
+    });
+
+    
+    $('#registerForm').on('submit', function (e) {
+        e.preventDefault();
+        const password = $('#password').val();
+        const confirmPassword = $('#passwordChecker').val();
+        const agreed = $('#totalTermYn').is(':checked');
+
+        $('#pw_error, #agree_error').text('');
+
+        if (password !== confirmPassword) {
+            $('#pw_error').text('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        if (!isIdChecked || !isNickChecked) {
+            alert('아이디와 닉네임 중복 확인을 완료해주세요.');
+            return;
+        }
+
+        if(!isContactChecked){
+            alert('휴대폰 인증을 완료해주세요.');
+            return;
+        }
+
+        if (!agreed) {
+            alert('약관에 동의하셔야 가입이 가능합니다.');
+            return;
+        }
+
+        $.post('./api/register.php', $(this).serialize(), function (res) {
+            if (res.success) {
+                alert('회원가입이 완료되었습니다.');
+                location.href = '/login.html';
+                } else {
+                alert('회원가입 실패: ' + res.message);
+                }
+            }, 'json');
+
+        $.ajax({
+            url: './api/signup_api.php', // 데이터를 처리할 서버 URL
+            type: 'POST',
+            dataType: 'json',
+            data: $(this).serialize(),
+            success: function(response) { 
+                if(response.status){
+                    alert('회원가입이 완료되었습니다.');
+                    location.href = './login.php';
+                }else if(response.status == "none"){
+                    alert(response.msg);
+                }        
+            },
+            error: function(xhr, status, error) {                  
+                // alert("관리자에게 문의해주세요.");
+                console.log(error);
+            }
+        });
     });
 </script>
 

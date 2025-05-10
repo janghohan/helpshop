@@ -10,9 +10,6 @@ if (!isset($_SESSION['user_ix'])) {
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
 <style>
-    html, body {
-      font-family: 'Inter', 'Noto Sans KR', sans-serif;
-    }
     
     /* 헤더 */
     .header {

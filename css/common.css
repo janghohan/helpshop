@@ -1,4 +1,7 @@
 /* Chrome, Safari, Edge, Opera */
+html, body {
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+}
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -99,8 +102,8 @@ input[type='number'] {
 
 
 .plus{
-  color:#0d6efd;
+  color:#0d6efd !important;
 }
 .minus{
-  color:#ff0000;
+  color:#ff0000 !important;
 }
