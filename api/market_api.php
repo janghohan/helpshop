@@ -1,4 +1,5 @@
 <?php
+session_start();
 include ("../dbConnect.php");
 
 $type = $_POST['type'] ?? '';

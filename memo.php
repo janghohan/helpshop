@@ -69,7 +69,11 @@
                         <span class="visually-hidden">unread messages</span>
                     </span>
                 </button>
-                <?php } } ?>
+                <?php } }else{ ?>
+                    <span id="emptyMemo">* 메모를 등록해주세요.</span>  
+                <?php }?>
+
+
                 <div id="myToast" class="toast text-bg-primary position-fixed top-50 start-50 translate-middle border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="500">
                     <div class="d-flex">
                         <div class="toast-body">
@@ -131,7 +135,8 @@
                 data: {'type':'create', 'memoTitle':$("#memo-input").val()},
                 success: function(response) { 
                     if(response.status=='success'){
-                        $(".category-list").append('<button type="button" class="btn btn-secondary position-relative me-3">'+$("#memo-input").val()+'<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger memo-del" data-ix="'+response.ix+'">X<span class="visually-hidden">unread messages</span></span></button>');
+                        $("#emptyMemo").hide();
+                        $(".category-list").append('<button type="button" class="btn btn-secondary position-relative me-3 memo-title" data-ix="'+response.ix+'">'+$("#memo-input").val()+'<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger memo-del" data-ix="'+response.ix+'">X<span class="visually-hidden">unread messages</span></span></button>');
                     }
 
                 },

@@ -23,11 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $orderPrices = $_POST['orderPrice'] ?? '';
         $orderQuantitys = $_POST['orderQuantity'] ?? 1;
         $shipPrice = $_POST['shipPrice'] ?? 0;
-        $orderNumber = $_POST['orderNumber'] ?? '';
 
         $totalShipping = $shipPrice;
         $totalPrice = 0;
         $globalOrderNumber = generateOrderNumber($userIx);
+
+        $orderNumber = $_POST['orderNumber'] ?? $globalOrderNumber;
+        // 빈 문자열일 경우 처리
+        if($orderNumber=="") $orderNumber = $globalOrderNumber;
 
         //총 상품금액 구하기
         foreach ($orderNames as $index => $orderName){
@@ -40,6 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if(!$orderStmt->execute()){
             $response['status'] = 'fail';
             $response['msg'] = 'order Stmt Fail';
+
+            echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+
+            
         }
         
 
@@ -56,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if(!$orderDetailStmt->execute()){
                 $response['status'] = 'fail';
                 $response['msg'] = 'orderDetail Stmt Fail';
+
+                // echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
             }else{
                 $detailIx = $orderDetailStmt->insert_id;
 
@@ -84,6 +93,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 //matching_name에 값이 있는경우
                 if ($matchingStmt->affected_rows === 0) {
+                    $stockStmt = $conn->prepare("UPDATE matching_name SET stock = stock - ? WHERE matching_name = ? AND user_ix=?");
+                    $stockStmt->bind_param("sss", $orderQuantitys[$index], $orderName,$userIx);
+                    if ($stockStmt->execute()) {
+                        $status = true;
+                        $msg = "재고 차감 성공";
+                    } else {
+                        $status = true;
+                        $msg = "재고 차감 실패";
+                    }
+
                     
                 }else{
                     $nameIx = $matchingStmt->insert_id;
@@ -356,6 +375,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $orderDetailStmt = $conn->prepare("INSERT INTO order_details(orders_ix,name,cost,quantity,price) VALUES(?,?,?,?,?)");
                     $orderDetailStmt->bind_param("ssiii",$orderIxMap[$orderNumber],$orderName,$zeroCost,$orderQuantity,$orderPrice);
                     $orderDetailStmt->execute();
+
+
+                    // $stockStmt = $conn->prepare("UPDATE matching_name SET stock = stock -? WHERE ix = ( SELECT mn.ix FROM db_match db
+                    //     JOIN matching_name mn ON db.matching_ix = mn.ix WHERE db.name_of_excel = ? AND db.user_ix = ?
+                    //     LIMIT 1
+                    // )");
+                    // $stockStmt->bind_param("sss", $orderQuantity, $orderName,$userIx);
+                    // if ($stockStmt->execute()) {
+                    //     $status = true;
+                    //     $msg = "재고 차감 성공";
+                    // } else {
+                    //     $status = true;
+                    //     $msg = "재고 차감 실패";
+                    // }
                     
                     $currentDetail++;
                     $_SESSION['orderDumpProgress'] = 70 + intval((30 * $currentDetail) / $totalDetails);

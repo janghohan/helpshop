@@ -51,7 +51,7 @@ $userIx = $_SESSION['user_ix'] ?? '1';
         position: fixed;
         right: 5px;
         color: #000;
-        background-color: #f9f9f9;
+        background-color: #fffffe;
         border-radius: 5px;
         border-top-left-radius: 0;
         border-top-right-radius: 0;
@@ -87,6 +87,11 @@ $userIx = $_SESSION['user_ix'] ?? '1';
 </div>
 
 <div class="info_pop">
+    <div>
+        <a href="./mypage.php">
+            <p>내 정보</p>
+        </a>
+    </div>
     <div>
         <a href="./market.php">
             <p>마켓 관리</p>

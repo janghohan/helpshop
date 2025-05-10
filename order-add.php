@@ -289,12 +289,18 @@
                     
                     $("input[name='shipPrice']").val($("#ship-swal-input").val());
                     $("input[name='orderNumber']").val($("#orderNumber-swal-input").val());
+
+                    if( $("input[name='shipPrice']").val()==""){
+                        basicSwal("배송비를 등록해주세요.",true);
+                        return false;
+                    }
                     $.ajax({
                         url: './api/order_api.php', // 데이터를 처리할 서버 URL
                         type: 'POST',
                         dataType : 'json',
                         data: $("#order-form").serialize(),
                         success: function(response) { 
+                            console.log(response);
                             if(response.status=='success'){
                                 basicFunctionSwal('주문이 등록되었습니다.',function() {
                                     location.reload();

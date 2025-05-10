@@ -92,17 +92,19 @@
                         while ($row = $result->fetch_assoc()) {
                             $searchResult[] = $row;
                         }
-                    }
+                    
 
                     foreach($searchResult as $marketRow){
                     ?>
                     <button type="button" class="btn btn-outline-secondary me-2 marketBtn" data-basic="<?=htmlspecialchars($marketRow['basic_fee'])?>" data-link="<?=htmlspecialchars($marketRow['linked_fee'])?>" data-ship="<?=htmlspecialchars($marketRow['ship_fee'])?>"><?=htmlspecialchars($marketRow['market_name'])?></button>
-                    <?php }?>
+                    <?php } }else{?>
+                        <span>* 마켓 등록 후 이용해주세요.</span>
+                        <?php } ?>
                 </div>
                 <div class="product-list">
                     <div class="d-flex">
                         <div class="flex-grow-1 justify-content-between" id="cal-box" style="max-width:1200px;">
-                            <span class="text-info" style="font-size:12px;">네이버</span>
+                            <span class="text-info" style="font-size:12px;"></span>
                             
                             <div class="row g-4 calRow">
                                 <!-- 왼쪽 섹션: 입력 필드 -->

@@ -11,6 +11,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src='./js/common.js' ></script>
     <title>내정보 페이지</title>
+    <style>
+        .card{
+            position: static;
+        }
+    </style>
 </head>
 <body>
     <!-- 헤더 -->
@@ -23,26 +28,26 @@
 
     <!-- 메인 컨테이너 -->
     <div class="full-content">
-        <div class="container">
-            <!-- 메인 콘텐츠 -->
+        <div class="main-content">
             <h4 class="mb-3 fw-bold">마켓 등록</h4>
             <button class="btn btn-primary mb-4" type="button" data-bs-toggle="modal" data-bs-target="#martketModal">+ 새로운 마켓 등록</button>
-
-
+        </div>
+        <div class="container">
+            <!-- 메인 콘텐츠 -->
             <div class="card p-4">
                 <h5 class="fw-bold mb-4">내 마켓</h5>
 
                 <?php
                     $searchResult = [];
                     
-                    $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                    $query = "SELECT * FROM market WHERE user_ix='$userIx'";
                     $result = $conn->query($query);
             
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
                             $searchResult[] = $row;
                         }
-                    }
+                    
 
                     foreach($searchResult as $marketRow){
                 ?>
@@ -77,7 +82,9 @@
                     </div>
                 </div>
 
-                <?php }?>
+                <?php } }else{?>
+                    <span>* 마켓을 등록해주세요.</span>  
+                <?php } ?>
 
             </div>
             <div class="modal fade" id="martketModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
