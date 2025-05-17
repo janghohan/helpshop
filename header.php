@@ -1,7 +1,15 @@
 <?php
 session_start();
+include './dbConnect.php';
 
 $userIx = $_SESSION['user_ix'] ?? '1';
+
+$alarmStmt = $conn->prepare("SELECT * FROM stock_alarm sa JOIN matching_name mn ON mn.ix = sa.matching_ix WHERE mn.user_ix = ? AND sa.is_resolved=0");
+$alarmStmt->bind_param("s",$userIx);
+$alarmStmt->execute();
+
+$alarmResult = $alarmStmt->get_result();
+
 
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
@@ -65,6 +73,7 @@ $userIx = $_SESSION['user_ix'] ?? '1';
         display: flex;
         height: 42px;
     }
+
 </style>
 
 <!-- 헤더 -->
@@ -72,10 +81,17 @@ $userIx = $_SESSION['user_ix'] ?? '1';
     <div class="menu">
     </div>
     <div>
-        <button>
+        <button class="position-relative" onclick="location.href='./alarm-list.php'">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
                 <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
             </svg>
+            <?php
+            if ($alarmResult->num_rows > 0) {
+            ?>
+            <span class="position-absolute translate-middle p-1 bg-danger border border-light rounded-circle">
+                <span class="visually-hidden">New alerts</span>
+            </span>
+            <?php }?>
         </button>
         <button id="infoBtn">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
@@ -102,11 +118,11 @@ $userIx = $_SESSION['user_ix'] ?? '1';
             <p>거래처 관리</p>
         </a>
     </div>
-    <div>
+    <!-- <div>
         <a href="./ordering.php">
             <p>발주 관리</p>
         </a>
-    </div>
+    </div> -->
     <div>
         <a href="./memo.php">
             <p>메모</p>

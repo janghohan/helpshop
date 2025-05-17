@@ -22,8 +22,8 @@
     include './sidebar.html';
     include './dbConnect.php';
      
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
-    $productIx = isset($_GET['ix']) ? $_GET['ix'] : '';
+    $userIx = $_SESSION['user_ix'] ?? '1';
+    $productIx = $_GET['ix'] ?? '';
 
     // 상품
     $productStmt = $conn->prepare("SELECT * FROM matching_name WHERE ix=? AND user_ix=?");
@@ -151,7 +151,7 @@
                         <option value="0">선택안함</option>
                         <?php
                         $accountResult = [];
-                        $query = "SELECT * FROM account WHERE user_ix='$user_ix'";
+                        $query = "SELECT * FROM account WHERE user_ix='$userIx'";
                         $result = $conn->query($query);
                 
                         if ($result->num_rows > 0) {
@@ -176,7 +176,7 @@
                     <option value="0">선택안함</option>
                     <?php
                         $categoryResult = [];
-                        $query = "SELECT * FROM category WHERE user_ix='$user_ix'";
+                        $query = "SELECT * FROM category WHERE user_ix='$userIx'";
                         $result = $conn->query($query);
                 
                         if ($result->num_rows > 0) {
@@ -375,7 +375,7 @@
                         <div class="modal-body">
                             <?php
                             $marketResult = [];
-                            $query = "SELECT * FROM market WHERE user_ix='$user_ix'";
+                            $query = "SELECT * FROM market WHERE user_ix='$userIx'";
                             $result = $conn->query($query);
                     
                             if ($result->num_rows > 0) {
@@ -507,8 +507,10 @@
             data: {'type':'productEdit','productName':productName, 'accountIx':accountIx, 'categoryIx':categoryIx, 'productIx':"<?=$productIx?>", 'cost':cost, 'stock':stock},
             success: function(response) {
                 console.log(response.status);
-                if(response.status=='success'){
+                if(response.status){
                     modalOpen("completeModal");
+                }else{
+                    alert(response.msg);
                 }
             },
             error: function(xhr, status, error) {

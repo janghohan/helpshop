@@ -61,7 +61,7 @@
     use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
     use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
     
-    $userIx = isset($_SESSION['user_ix']) ? : '1';
+    $userIx = $_SESSION['user_ix'] ?? '1';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -69,7 +69,7 @@
         $fileType = $_POST['fileType'] ?? '';
 
         //네이버 파일인지 쿠팡파일인지 확인
-        $marketQuery = "SELECT market_name FROM market WHERE user_ix='$user_ix' AND ix='$orderMarketIx'";
+        $marketQuery = "SELECT market_name FROM market WHERE user_ix='$userIx' AND ix='$orderMarketIx'";
         $result = $conn->query($marketQuery);
         $row = $result->fetch_assoc();
         $marketName = $row['market_name'];
@@ -147,7 +147,7 @@
                     </div>
                 </div>
                 <p>확인용으로 보여지는 리스트입니다. 
-                    <br>최종 주문으로 등록하시려면 왼쪽 상단 "주문등록" 버튼을 눌러주세요.
+                    <br>최종 주문으로 등록하시려면 오른쪽 상단 "주문등록" 버튼을 눌러주세요.
                     <br>취소한 주문의 경우 엑셀에서 삭제 후 등록하거나, 최종 주문등록 후 삭제할 수 있습니다.
                 </p>
                 <div class="container mt-4">
@@ -212,7 +212,7 @@
                                             if($fileType=='realtime'){
                                                 $orderNumber = $rowA[2];
                                                 $orderDate = $rowA[9];
-                                                $orderName = $rowA[12];
+                                                $orderName = $rowA[10].",".$rowA[11];
                                                 $orderQuantity = $rowA[22];
                                                 $orderPrice = $rowA[23];
                                                 $orderShipping = $rowA[20];

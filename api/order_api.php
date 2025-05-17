@@ -98,6 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($stockStmt->execute()) {
                         $status = true;
                         $msg = "재고 차감 성공";
+
+                        //알람 재고 체크
+                        stockCheck();
                     } else {
                         $status = true;
                         $msg = "재고 차감 실패";
@@ -192,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if($fileType=='realtime'){
                         $orderNumber = $rowA[2];
                         $orderDate = $rowA[9];
-                        $orderName = $rowA[12];
+                        $orderName = $rowA[10].",".$rowA[11];
                         $orderQuantity = $rowA[22];
                         $orderPrice = $rowA[18]; //수량 * 낱개금액
                         $orderShipping = $rowA[20];
@@ -376,19 +379,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $orderDetailStmt->bind_param("ssiii",$orderIxMap[$orderNumber],$orderName,$zeroCost,$orderQuantity,$orderPrice);
                     $orderDetailStmt->execute();
 
+                    //실시간 주문에 대해서만 재고 체크
+                    if($fileType=='realtime'){
+                        $stockStmt = $conn->prepare("UPDATE matching_name SET stock = stock -? WHERE ix = ( SELECT mn.ix FROM db_match db
+                            JOIN matching_name mn ON db.matching_ix = mn.ix WHERE db.name_of_excel = ? AND db.user_ix = ?
+                            LIMIT 1
+                        )");
+                        $stockStmt->bind_param("sss", $orderQuantity, $orderName,$userIx);
+                        if ($stockStmt->execute()) {
+                            $status = true;
+                            $msg = "재고 차감 성공";
 
-                    // $stockStmt = $conn->prepare("UPDATE matching_name SET stock = stock -? WHERE ix = ( SELECT mn.ix FROM db_match db
-                    //     JOIN matching_name mn ON db.matching_ix = mn.ix WHERE db.name_of_excel = ? AND db.user_ix = ?
-                    //     LIMIT 1
-                    // )");
-                    // $stockStmt->bind_param("sss", $orderQuantity, $orderName,$userIx);
-                    // if ($stockStmt->execute()) {
-                    //     $status = true;
-                    //     $msg = "재고 차감 성공";
-                    // } else {
-                    //     $status = true;
-                    //     $msg = "재고 차감 실패";
-                    // }
+                            //알람 재고 체크
+                            stockCheck();
+                        } else {
+                            $status = true;
+                            $msg = "재고 차감 실패";
+                        }
+                    }
                     
                     $currentDetail++;
                     $_SESSION['orderDumpProgress'] = 70 + intval((30 * $currentDetail) / $totalDetails);
@@ -569,7 +577,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $orderDetailStmt = $conn->prepare("INSERT INTO order_details(orders_ix,name,cost,quantity,price) VALUES(?,?,?,?,?)");
                     $orderDetailStmt->bind_param("ssiii",$orderIxMap[$orderNumber],$eachOrderName,$zeroCost,$data['order_quantity'][$index],$data['order_price'][$index]);
                     $orderDetailStmt->execute();
-
+                    
                     $currentDetail++;
                     $_SESSION['orderDumpProgress'] = 30 + intval((70 * $currentDetail) / $totalDetails);
 
@@ -595,6 +603,50 @@ function generateOrderNumber($userId) {
 
 function changeTextToIntForMoney($moneyText) {
     return (Int)str_replace(",", "", $moneyText);
+
+}
+
+function stockCheck(){
+    global $conn;
+    global $userIx;
+    // 1. 알림이 필요한 상품 조회
+    $sql = "
+        SELECT mn.ix AS matching_ix
+        FROM matching_name mn
+        WHERE mn.stock < mn.alarm_stock
+        AND NOT EXISTS (
+            SELECT 1 FROM stock_alarm sa
+            WHERE sa.matching_ix = mn.ix
+                AND sa.is_resolved = 0
+        )
+    ";
+
+    $alarmStmt = $conn->prepare("SELECT mn.ix AS matching_ix FROM matching_name mn WHERE mn.user_ix=? AND mn.stock < mn.alarm_stock 
+    AND NOT EXISTS(SELECT * FROM stock_alarm sa WHERE sa.matching_ix = mn.ix AND sa.is_resolved=0)");
+    $alarmStmt->bind_param("s",$userIx);
+    $alarmStmt->execute();
+
+    $result = $alarmStmt->get_result();
+
+    // 2. 알림 생성
+    $insert_sql = "
+        INSERT INTO stock_alarm (matching_ix, alarm_type, created_at, is_resolved)
+        VALUES (?, 'stock', NOW(), 0)
+    ";
+    $insertStmt = $conn->prepare("INSERT INTO stock_alarm (matching_ix, alarm_type, created_at)
+        VALUES (?, 'stock', NOW())");
+
+    $count = 0;
+    while ($row = $result->fetch_assoc()) {
+        $matching_ix = $row['matching_ix'];
+
+        $insertStmt->bind_param("i",  $matching_ix);
+        $insertStmt->execute();
+        $count++;
+    }
+
+    $alarmStmt->close();
+    $insertStmt->close();
 
 }
 

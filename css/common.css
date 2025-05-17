@@ -17,6 +17,10 @@ a:hover{
   color: #000;
 }
 
+.card{
+  position: unset;
+}
+
 @keyframes spin {
   0% {
       transform: rotate(0deg);

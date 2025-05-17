@@ -82,17 +82,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $productStmt = $conn->prepare("UPDATE matching_name SET matching_name=?, account_ix=?, category_ix=?, cost =?, stock=? WHERE ix=? AND user_ix=?");
         $productStmt->bind_param("sssssss",$productName,$accountIx,$categoryIx,$productCost,$productStock,$productIx,$userIx);
         if(!$productStmt->execute()){
-            throw new Exception("Error executing productUpdateStmt statement: " . $productStmt->error); // *** 수정 ***
+            $response['status'] = false;
+            $response['msg'] = '상품 수정 실패';
+        }else{
+
+            $response['status'] = true;
+            $response['msg'] = '상품 수정 완료';
+
+            $chkStmt = $conn->prepare("SELECT * FROM matching_name WHERE ix = ? AND user_ix = ?");
+            $chkStmt->bind_param("ss",$productIx,$userIx);
+            $chkStmt->execute();
+
+            $chkResult = $chkStmt->get_result();
+
+            if ($chkResult->num_rows > 0) {
+                while ($chkRow = $chkResult->fetch_assoc()) {
+                    $editStock = $chkRow['stock'];
+                    $alarmStock = $chkRow['alarm_stock'];
+                }
+
+                if($editStock>=$alarmStock){
+                    $updateStmt = $conn->prepare("UPDATE stock_alarm SET is_resolved=1 WHERE matching_ix = ?");
+                    $updateStmt->bind_param("s",$productIx);
+                    if(!$updateStmt->execute()){
+                        $response['msg'] = "알람 재고 수정 실패";
+                    }
+                }
+
+                $chkStmt -> close();
+            }
         }
 
-        echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        echo json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     
     }else if($type=='matchingEdit'){
         $matchingIx = $_POST['matchingIx'] ?? '';
         $value = $_POST['value'] ?? '';
         $editCol = $_POST['editCol'] ?? '';
 
-        $allowedColumns = ['cost', 'stock', 'category_ix', 'account_ix']; // 수정 가능한 컬럼들 추가
+        $allowedColumns = ['cost', 'stock', 'category_ix', 'account_ix','alarm_stock']; // 수정 가능한 컬럼들 추가
         $value = str_replace(",","",$value);
 
         // 2️⃣ 컬럼명 검증

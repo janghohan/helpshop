@@ -117,12 +117,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataB);
             $day = date("m-d");
-            $newFileName = 'excelFile/useFile/'.date("Ymd")."/".'택배사등록파일(네이버)_'.$userIx.'_'.$day.'.xlsx';
-            $xlsx->saveAs($newFileName);
+            $fileLocation = 'excelFile/useFile/'.date("Ymd")."/".'택배사등록파일(네이버)_'.$userIx.'_'.$day.'.xlsx';
+            $fileName = "택배사등록파일(네이버)_".$day.".xlsx";
+            $xlsx->saveAs($fileLocation);
 
             $processedFiles[] = [
-                'name' => $newFileName,
-                'url' => 'api/'.$newFileName
+                'name' => $fileName,
+                'url' => 'api/'.$fileLocation
             ];
 
             // 결과 링크 출력
@@ -188,12 +189,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataB);
             $day = date("m-d");
-            $newFileName = 'excelFile/useFile/'.date("Ymd").'/택배사등록파일(쿠팡)_'.$userIx.'_'.$day.'.xlsx';
-            $xlsx->saveAs($newFileName);
+            $fileLocation = 'excelFile/useFile/'.date("Ymd").'/택배사등록파일(쿠팡)_'.$userIx.'_'.$day.'.xlsx';
+            $fileName = "택배사등록파일(쿠팡)_".$day.".xlsx";
+            $xlsx->saveAs($fileLocation);
 
             $processedFiles[] = [
-                'name' => $newFileName,
-                'url' => 'api/'.$newFileName
+                'name' => $fileName,
+                'url' => 'api/'.$fileLocation
             ];
 
             // 결과 링크 출력
@@ -240,12 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // 새로운 엑셀 파일 생성 및 저장
         $xlsx = SimpleXLSXGen::fromArray($newData);
         $day = date("m-d");
-        $filename = "excelFile/useFile/".date("Ymd").'/주문파일(합본)'.$userIx.'_'.$day.'.xlsx';
-        $xlsx->saveAs($filename);
+        $fileLocation = "excelFile/useFile/".date("Ymd").'/주문파일(합본)'.$userIx.'_'.$day.'.xlsx';
+        $fileName = "주문파일(합본)_".$day.".xlsx";
+        $xlsx->saveAs($fileLocation);
 
         $processedFiles[] = [
-            'name' => $filename,
-            'url' => 'api/'.$filename,
+            'name' => $fileName,
+            'url' => 'api/'.$fileLocation,
         ];
 
         echo json_encode($processedFiles);
@@ -316,14 +319,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataA);
             $day = date("m-d_His");
-            $newFileName = "excelFile/useFile/".date("Ymd").'/송장등록(네이버)_'.$day.'_'.$userIx.'.xlsx';
-            $xlsx->saveAs($newFileName);
+            $fileLocation = "excelFile/useFile/".date("Ymd").'/송장등록(네이버)_'.$day.'_'.$userIx.'.xlsx';
+            $fileName = "송장등록(네이버)_".$day.".xlsx";
+            $xlsx->saveAs($fileLocation);
             
-            exec("python change_excel.py $newFileName", $output, $return_var);
+            exec("python change_excel.py $fileLocation", $output, $return_var);
 
             $processedFiles[] = [
-                'name' => $newFileName,
-                'url' => 'api/'.$newFileName,
+                'name' => $fileName,
+                'url' => 'api/'.$fileLocation,
             ];
 
         }
@@ -374,12 +378,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // SimpleXLSXGen을 사용하여 업데이트된 A 데이터를 엑셀 파일로 저장
             $xlsx = SimpleXLSXGen::fromArray($dataA);
             $day = date("m-d_His");
-            $newFileName = "excelFile/useFile/".date("Ymd").'/송장등록(쿠팡)_'.$day.'_'.$userIx.'.xlsx';
-            $xlsx->saveAs($newFileName);
+            $fileLocation = "excelFile/useFile/".date("Ymd").'/송장등록(쿠팡)_'.$day.'_'.$userIx.'.xlsx';
+            $fileName = "송장등록(쿠팡)_".$day.".xlsx";
+            $xlsx->saveAs($fileLocation);
 
             $processedFiles[] = [
-                'name' => $newFileName,
-                'url' => 'api/'.$newFileName,
+                'name' => $fileName,
+                'url' => 'api/'.$fileLocation,
             ];        
         }
 

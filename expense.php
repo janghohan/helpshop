@@ -64,7 +64,7 @@
     $searchParams = [];
 
     //검색 영역에 값이 들어오면
-    if(isset($_GET['searchKeyword'])){
+    if(isset($_GET['searchType'])){
         $searchType = $_GET['searchType'];
 
         if ($searchType === '') {

@@ -399,7 +399,7 @@
     });
     
     // 입력값 변경 시 계산 실행
-    $(document).on('input', '.cost, .quantity, .price, .marginRate', function() {
+    $(document).on('input', '.cost, .quantity, .price, .myship, .ship, .etc, .fee', function() {
         let row = $(this).closest('.calRow');
         calculateRow(row);
     });

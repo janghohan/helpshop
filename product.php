@@ -68,7 +68,7 @@
     $totalItems = $totalResult->num_rows;
     $totalPages = ceil($totalItems / $itemsPerPage); //전체페이지
 
-    $listStmt = $conn->prepare("SELECT mn.ix AS mnIx, mn.matching_name AS productName, a.name AS acName, c.name AS cateName, mn.stock, mn.cost FROM matching_name mn 
+    $listStmt = $conn->prepare("SELECT mn.ix AS mnIx, mn.matching_name AS productName, a.name AS acName, c.name AS cateName, mn.stock, mn.alarm_stock, mn.cost FROM matching_name mn 
     JOIN account a ON a.ix = mn.account_ix JOIN category c ON c.ix = mn.category_ix WHERE $whereClause LIMIT ? OFFSET ?");
 
     $params[] = $limit;
@@ -187,11 +187,12 @@
                 <div class="table-container table-responsive">
                     <table class="table table-hover">
                         <colgroup>
-                            <col style="width: 50%;"> <!-- 첫 번째 열은 30% -->
+                            <col style="width: 47%;"> <!-- 첫 번째 열은 30% -->
                             <col style="width: 10%;"> <!-- 두 번째 열은 50% -->
                             <col style="width: 15%;"> <!-- 세 번째 열은 20% -->
                             <col style="width: 10%;"> <!-- 세 번째 열은 20% -->
-                            <col style="width: 10%;"> <!-- 세 번째 열은 20% -->
+                            <col style="width: 5%;"> <!-- 세 번째 열은 20% -->
+                            <col style="width: 8%;"> <!-- 세 번째 열은 20% -->
                             <col style="width: 5%;"> <!-- 세 번째 열은 20% -->
                         </colgroup>
                         <thead class=" table-light">
@@ -201,7 +202,7 @@
                                 <th>카테고리</th>
                                 <th>원가</th>
                                 <th>재고</th>
-                                <!-- <th>생성일</th> -->
+                                <th class="text-center">알림재고</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -218,6 +219,7 @@
                                     $account_name = $row['acName'];
                                     $product_name = $row['productName'];
                                     $total_stock = $row['stock'];
+                                    $alarm_stock = $row['alarm_stock'];
                                     $cost = $row['cost'];
                                     // $create_at = $row['create_at'];
                                                                    
@@ -243,6 +245,7 @@
                                 <td class="caTd" data-t="category_ix" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars($cate_name)?></td>
                                 <td class="editTd" data-t="cost" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars(number_format($cost))?></td>
                                 <td class="editTd" data-t="stock" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars($total_stock)?></td>
+                                <td class="editTd text-center" data-t="alarm_stock" data-ix="<?=htmlspecialchars($product_ix)?>"><?=htmlspecialchars($alarm_stock)?></td>
                                 <!-- <td><?=htmlspecialchars($create_at)?></td> -->
                                 <td>
                                     <button class="btn btn-light product-del" data-ix="<?=htmlspecialchars($product_ix)?>">
