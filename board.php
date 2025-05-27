@@ -22,6 +22,9 @@
         .card h5{
             font-size:18px;
         }
+        .postCard{
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -83,11 +86,10 @@
                                 $secret = "비공개";
                             }
                     ?>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
+                    <div class="card shadow-sm mb-3 postCard" v-for="post in posts" data-v="<?=htmlspecialchars($listRow['ix'])?>">
                         <div class="card-body">
                             <h5 class="card-title mb-2"><?=htmlspecialchars($listRow['title'])?></h5>
                             <p class="card-text text-muted small"><?=htmlspecialchars($listRow['created_at'])?> | <?=htmlspecialchars($listRow['author_name'])?> | <?=$secret?></p>
-                            <a href="board_view.php?board=<?=htmlspecialchars($listRow['ix'])?>" class="stretched-link"></a>
                         </div>
                     </div>
                     <?php } }?>
@@ -123,6 +125,8 @@
     </div>
 </body>
 <script>
-    
+    $(".postCard").click(function(){
+        location.href='./board_view.php?board='+$(this).attr('data-v');
+    });
 </script>
 </html>

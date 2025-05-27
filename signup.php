@@ -78,6 +78,13 @@
                         </div>
                         <div class="form_InputBox">
                             <div class="input-label">
+                                <div style="margin-right: 10px;">제품 카테고리</div>
+                            </div>
+                            <input type="text" class="input-item" name="nickname" id="nickname" placeholder="2자 이상 15자 이하로 입력해 주세요." minlength="2" maxlength="15" required="" >
+                            <span class="error" id="nick_error"></span>
+                        </div>
+                        <div class="form_InputBox">
+                            <div class="input-label">
                                 <div style="margin-right: 10px;">휴대전화</div>
                             </div>
                             <div style="display: flex; align-items: center;">

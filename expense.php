@@ -56,8 +56,8 @@
     
     $today = date("Y-m-d");
 
-    $startDate = isset($_POST['start']) ? $_POST['start'] : date("Y-m-d");
-    $endDate = isset($_POST['end']) ? $_POST['end'] : date("Y-m-d");
+    $startDate = $_POST['start'] ?? date("Y-m-d");
+    $endDate = $_POST['end'] ?? date("Y-m-d");
 
     $orderResult = [];
     $orderTypeSearchKeyworSql = "";
@@ -74,6 +74,7 @@
         }
     }
 
+    $expenseResult = [];
     if (isset($_GET['start']) && isset($_GET['end'])) {
         $startDate = $_GET['start'];
         $endDate = $_GET['end'];
@@ -96,7 +97,7 @@
     }else{
 
         $expenseQuery = "
-            SELECT * FROM expense ep JOIN user u ON ep.user_ix = u.ix WHERE u.ix = ? AND ep.expense_date = ?
+            SELECT ep.expense_type, ep.expense_price, ep.expense_memo, ep.expense_date, ep.ix as expense_ix FROM expense ep JOIN user u ON ep.user_ix = u.ix WHERE u.ix = ? AND ep.expense_date = ?
             $orderTypeSearchKeyworSql";
         $expenseStmt = $conn->prepare($expenseQuery);
         $expenseStmt->bind_param("ss",$userIx, $today);
@@ -193,7 +194,7 @@
 
 
                                     ?>        
-                                    <tr style="background-color: <?= $backgroundColor ?>;">
+                                    <tr style="background-color: <?= $backgroundColor ?>; vertical-align:middle;">
                                         <td><?=htmlspecialchars($expenseRow['expense_type'])?></td>
                                         <td><?=htmlspecialchars(number_format($expenseRow['expense_price']))."원"?></td>
                                         <td><?=htmlspecialchars($expenseRow['expense_memo'])?></td>

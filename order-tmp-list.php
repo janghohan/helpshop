@@ -69,10 +69,11 @@
         $fileType = $_POST['fileType'] ?? '';
 
         //네이버 파일인지 쿠팡파일인지 확인
-        $marketQuery = "SELECT market_name FROM market WHERE user_ix='$userIx' AND ix='$orderMarketIx'";
+        $marketQuery = "SELECT market_name,market_icon FROM market WHERE user_ix='$userIx' AND ix='$orderMarketIx'";
         $result = $conn->query($marketQuery);
         $row = $result->fetch_assoc();
         $marketName = $row['market_name'];
+        $marketIcon = $row['market_icon'];
 
         
         if (isset($_FILES['orderExcelFile'])) {
@@ -180,6 +181,9 @@
 
                                         if($marketName=='네이버'){
                                             if($fileType=='realtime'){
+                                                if($indexA===1){
+                                                    continue;
+                                                }
                                                 $orderNumber = $rowA[1];
                                                 $orderDate = $rowA[17];
                                                 $orderName = $rowA[19]." / ".$rowA[23];
@@ -233,7 +237,7 @@
                                     
                                     ?>
                                         <tr style="background-color: <?= $backgroundColor ?>;">
-                                            <td><?=htmlspecialchars($marketName)?></td>
+                                            <td><img src="./img/icon/<?=htmlspecialchars($marketIcon)?>" alt="" style="width:20px;"></td>
                                             <td><?=htmlspecialchars($orderDate)?></td>
                                             <td><?=htmlspecialchars($orderNumber)?></td>
                                             <td><?=htmlspecialchars($orderName)?></td>
@@ -354,7 +358,7 @@
                                             }
                                 ?>
                                     <tr style="background-color: <?= $backgroundColor ?>;">
-                                        <td><?=htmlspecialchars($marketName)?></td>
+                                        <td><img src="./img/icon/<?=htmlspecialchars($marketIcon)?>" alt="" style="width:20px;"></td>
                                         <td><?=htmlspecialchars($data['order_date'])?></td>
                                         <td><?=htmlspecialchars($data['order_number'])?></td>
                                         <td><?=htmlspecialchars($eachOrderName)?></td>
@@ -453,7 +457,7 @@
 
         //엑셀 등록 버튼
         $("#excel-btn").click(function(){
-            modalOpen("excelModal");
+            location.href='./order.php';
         });
 
         // 엑셀 모달에서 등록버튼

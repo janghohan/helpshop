@@ -60,8 +60,16 @@ for ($i = 0; $i < count($files['name']); $i++) {
 }
 
 // 결과 저장
-$outputFile = 'merged_result.xlsx';
+$outputFile = '쿠팡 주문파일(합본).xlsx';
 $writer = new Xlsx($resultSpreadsheet);
 $writer->save($outputFile);
 
-echo "<p>중복 없이 병합 완료: <a href='$outputFile' download>결과 다운로드</a></p>";
+// echo "<p>중복 없이 병합 완료: <a href='$outputFile' download>결과 다운로드</a></p>";
+
+// 자동 다운로드 처리
+header('Content-Description: File Transfer');
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
+header('Content-Length: ' . filesize($outputFile));
+readfile($outputFile);
+exit;

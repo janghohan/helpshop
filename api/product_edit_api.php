@@ -76,11 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $productIx = $_POST['productIx'] ?? '';
         $productCost =  $_POST['cost'] ?? 0;
         $productStock = $_POST['stock'] ?? 0;
+        $alarmStock = $_POST['alarmStock'] ?? 0;
         $updateTime = date("Y-m-d H:i:s");
 
         //옵션값, 원가, 재고 수정
-        $productStmt = $conn->prepare("UPDATE matching_name SET matching_name=?, account_ix=?, category_ix=?, cost =?, stock=? WHERE ix=? AND user_ix=?");
-        $productStmt->bind_param("sssssss",$productName,$accountIx,$categoryIx,$productCost,$productStock,$productIx,$userIx);
+        $productStmt = $conn->prepare("UPDATE matching_name SET matching_name=?, account_ix=?, category_ix=?, cost =?, stock=?, alarm_stock=? WHERE ix=? AND user_ix=?");
+        $productStmt->bind_param("ssssssss",$productName,$accountIx,$categoryIx,$productCost,$productStock,$alarmStock,$productIx,$userIx);
         if(!$productStmt->execute()){
             $response['status'] = false;
             $response['msg'] = '상품 수정 실패';

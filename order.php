@@ -183,8 +183,9 @@
                                 <!-- <a href="/order-history" class="btn btn-outline-secondary me-2">
                                     <i class="bi bi-clock-history"></i> 업로드 기록
                                 </a> -->
-                                <div>
+                                <div class="d-grid">
                                     <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
+                                    <span style="cursor:pointer; font-size: 14px; text-align: right;color: #0069d9;" id="merge-btn"><a>쿠팡파일 병합하기</a></span>
                                 </div>
                              </div>
                             <!-- <div class="col-md-2 mb-3">
@@ -321,7 +322,7 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="d-flex justify-content-evenly">
-                            <button class="btn btn-info choice-btn" id="realtimeBtn">실시간 주문</button>
+                            <button class="btn btn-primary choice-btn" id="realtimeBtn">실시간 주문</button>
                             <button class="btn btn-warning choice-btn" id="exBtn">이전 주문</button>
                         </div>
                     </div>
@@ -405,6 +406,20 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
                     <button type="button" class="btn btn-primary" onclick="exTmpExcel()">등록</button>
                 </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="mergeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body p-4">
+                        <p>병합할 파일을 전부 선택해주세요. 파일은 바로 다운로드됩니다.</p>
+                        <form action="./api/merge_excel_api.php" class="d-flex justify-content-between" method="post" enctype="multipart/form-data">
+                            <input type="file" name="excel_files[]" multiple>
+                            <button class="btn btn-primary" type="submit">병합하기</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -535,6 +550,11 @@
 
             
         }
+
+        // 엑셀 등록 버튼 
+        $("#merge-btn").click(function(){
+            modalOpen("mergeModal");
+        });
         
     </script>
 </body>

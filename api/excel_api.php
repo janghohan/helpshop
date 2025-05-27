@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $phone = $rowA[47]; // A 파일의 전화번호 컬럼 값
                 $code = $rowA[52]; // A 파일의 우편번호 컬럼 값
                 $address = $rowA[49]; // A 파일의 주소 값
-                $memo = $rowA[53]; // A 파일의 배송메세지 컬럼 값
+                $memo = $rowA[54]; // A 파일의 배송메세지 컬럼 값
 
 
                 $dataB[$indexA] = []; //초기화

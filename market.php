@@ -47,15 +47,25 @@
                         while ($row = $result->fetch_assoc()) {
                             $searchResult[] = $row;
                         }
-                    
+                        
 
                     foreach($searchResult as $marketRow){
-                ?>
+                        if($marketRow['market_name']=='네이버'){
+                            $img = "naver.png";
+                        }else if($marketRow['market_name']=='쿠팡'){
+                            $img = "coupang.png";
+                        }else if($marketRow['market_name']=='쿠팡 로켓그로스'){
+                            $img = "rocket.png";
+                        }
+                    ?>
                 <!-- 마켓 반복 -->
                 <div class="mb-4 border rounded p-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <input type="hidden" name="market_ix" value="<?=htmlspecialchars($marketRow['ix'])?>">
-                        <h6 class="mb-0 fw-semibold"><?=htmlspecialchars($marketRow['market_name'])?></h6>
+                        <div class="d-flex justify-start gap-1">
+                            <input type="hidden" name="market_ix" value="<?=htmlspecialchars($marketRow['ix'])?>">
+                            <img src="./img/icon/<?=htmlspecialchars($img)?>" alt="" style="width:20px;">
+                            <h6 class="mb-0 fw-semibold"><?=htmlspecialchars($marketRow['market_name'])?></h6>
+                        </div>
                         <div>
                             <button class="btn btn-sm btn-outline-secondary me-2 market-edit">
                                 <i class="bi bi-pencil-fill"></i>

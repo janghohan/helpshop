@@ -41,6 +41,7 @@
             $accountIx = $productRow['account_ix'];
             $categoryIx = $productRow['category_ix'];
             $stock = $productRow['stock'];
+            $alarmStock = $productRow['alarm_stock'];
             $cost = $productRow['cost'];
         }
         $productStmt -> close();
@@ -209,6 +210,10 @@
                             <div class="field">
                                 <label>상품수량</label>
                                 <input type="text" placeholder="상품수량" class="localeNumber"  maxlength="100" name="productStock" value="<?=htmlspecialchars($stock)?>">
+                            </div>
+                            <div class="field">
+                                <label>알림재고</label>
+                                <input type="text" placeholder="상품수량" class="localeNumber"  maxlength="100" name="alarmStock" value="<?=htmlspecialchars($alarmStock)?>">
                             </div>
                             <!-- <div class="field">
                                 <label>상품별 메모</label>
@@ -493,6 +498,7 @@
         const categoryIx = $("select[name='categoryIx']").val();
         const cost = $("input[name='productCost']").val();
         const stock = $("input[name='productStock']").val();
+        const alarmStock = $("input[name='alarmStock']").val();
 
         if(productName==""){
             basicSwal("상품명을 입력해주세요.",true);
@@ -504,7 +510,7 @@
         $.ajax({
             url: './api/product_edit_api.php', // 데이터를 처리할 서버 URL
             type: 'POST',
-            data: {'type':'productEdit','productName':productName, 'accountIx':accountIx, 'categoryIx':categoryIx, 'productIx':"<?=$productIx?>", 'cost':cost, 'stock':stock},
+            data: {'type':'productEdit','productName':productName, 'accountIx':accountIx, 'categoryIx':categoryIx, 'productIx':"<?=$productIx?>", 'cost':cost, 'stock':stock, 'alarmStock':alarmStock},
             success: function(response) {
                 console.log(response.status);
                 if(response.status){

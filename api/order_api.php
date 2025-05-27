@@ -266,8 +266,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $globalOrderNumber = generateOrderNumber($userIx).$orderIndex;
     
                     // orders 테이블
-                    $orderStmt = $conn->prepare("INSERT IGNORE INTO orders(global_order_number,order_number,order_date,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?)");
-                    $orderStmt->bind_param("sssssss", $globalOrderNumber,$orderNumber,$data['order_date'],$orderMarketIx,$userIx,$data['total_payment'],$data['total_shipping']);
+                    $orderStmt = $conn->prepare("INSERT IGNORE INTO orders(global_order_number,order_number,order_date,order_time,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?,?)");
+                    $orderStmt->bind_param("ssssssss", $globalOrderNumber,$orderNumber,$data['order_date'],$data['order_date'],$orderMarketIx,$userIx,$data['total_payment'],$data['total_shipping']);
                     $orderStmt->execute();
                     
                     $ordersIx = $orderStmt->insert_id;
@@ -530,8 +530,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $globalOrderNumber = generateOrderNumber($userIx).$orderIndex;
     
                     // orders 테이블
-                    $orderStmt = $conn->prepare("INSERT IGNORE INTO orders(global_order_number,order_number,order_date,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?)");
-                    $orderStmt->bind_param("sssssss", $globalOrderNumber,$orderNumber,$data['order_date'],$orderMarketIx,$userIx,$data['total_payment'],$data['total_shipping']);
+                    $orderStmt = $conn->prepare("INSERT IGNORE INTO orders(global_order_number,order_number,order_date,order_time,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?,?)");
+                    $orderStmt->bind_param("ssssssss", $globalOrderNumber,$orderNumber,$data['order_date'],$data['order_date'],$orderMarketIx,$userIx,$data['total_payment'],$data['total_shipping']);
                     $orderStmt->execute();
                     
                     $ordersIx = $orderStmt->insert_id;

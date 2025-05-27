@@ -22,6 +22,9 @@
         .card h5{
             font-size:18px;
         }
+        .postCard{
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -75,45 +78,13 @@
                         <span>* 원활한 서비스 사용을 위해 한번 정독해주시기 바랍니다.</span>
                     </div>
 
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">마진 계산기 / ROAS 계산기</h5>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">상품관리</h5>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">주문관리</h5>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">손익관리</h5>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">택배관리</h5>
-                            <a href="board_view.php" class="stretched-link"></a>
-                        </div>
-                    </div>
-
                     <?php
                     if ($result->num_rows > 0) {
                         foreach($listResult as $listRow) {                    
                     ?>
-                    <div class="card shadow-sm mb-3" v-for="post in posts">
+                    <div class="card shadow-sm mb-3 postCard" v-for="post in posts" data-v="<?=htmlspecialchars($listRow['ix'])?>">
                         <div class="card-body">
                             <h5 class="card-title mb-2"><?=htmlspecialchars($listRow['title'])?></h5>
-                            <a href="board_view.php?guide=<?=htmlspecialchars($listRow['ix'])?>" class="stretched-link"></a>
                         </div>
                     </div>
 
@@ -150,6 +121,8 @@
     </div>
 </body>
 <script>
-    
+    $(".postCard").click(function(){
+        location.href='./board_view.php?guide='+$(this).attr('data-v');
+    });
 </script>
 </html>

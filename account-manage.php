@@ -15,27 +15,26 @@
     <?php 
     include './header.php';
     include './sidebar.html';
-
     include './dbConnect.php';
 
 
 
     //기본값 설정
-    $account = ['ix'=> '', 'user_ix'=> $user_ix, 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
+    $account = ['ix'=> '', 'user_ix'=> $userIx, 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
     $message = '';
 
     // 수정 모드: GET 요청에 id가 있을 경우 해당 상품 정보 불러오기
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ix'])) {
         $ix = $conn->real_escape_string($_GET['ix']);
         $stmt = $conn->prepare("SELECT * FROM account WHERE user_ix = ? AND ix = ?");
-        $stmt->bind_param("ss", $user_ix, $ix);
+        $stmt->bind_param("ss", $userIx, $ix);
         $stmt->execute();
         $result = $stmt->get_result();
         $account = $result->fetch_assoc();
 
         if (!$account) {
             $message = "상품을 찾을 수 없습니다.";
-            $account = ['ix'=> '', 'user_ix'=> $user_ix, 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
+            $account = ['ix'=> '', 'user_ix'=> $userIx, 'name'=> '', 'account_manager'=>'', 'manager_contact'=> '', 'contact'=> '', 'site'=> '','address'=>'', 'account_number'=>'', 'memo'=>''];
         }
         $stmt->close();
     }
@@ -65,7 +64,7 @@
                 $address,
                 $account_number,
                 $memo,
-                $user_ix,
+                $userIx,
                 $ix,
 
             );
@@ -77,7 +76,7 @@
             $stmt = $conn->prepare("INSERT INTO account (user_ix,name,account_manager,manager_contact,contact,site,address,account_number,memo) VALUES (?,?,?,?,?,?,?,?,?)");
             $stmt->bind_param(
                 "sssssssss", 
-                $user_ix, 
+                $userIx, 
                 $name, 
                 $account_manager, 
                 $manager_contact, 
@@ -129,7 +128,7 @@
                     <h2 class="col-md-10"><?= $account['ix'] ? '거래처 수정' : '거래처 생성' ?></h2>
                 </div>
                 <div class="account-info">
-                    <form id="accountForm" action="" method="post">
+                    <form id="accountForm" action="./account-manage.php" method="post">
                         <?php if ($account['ix']): ?>
                             <input type="hidden" name="ix" value="<?= htmlspecialchars($account['ix']) ?>" />
                         <?php endif; ?>
