@@ -68,7 +68,7 @@
                success: function(response) { 
                   console.log(response);
                   if(response.status){
-                     location.href = './dashboard.php';
+                     location.href = './';
                   }else if(!response.status){
                      alert(response.msg);
                   }        

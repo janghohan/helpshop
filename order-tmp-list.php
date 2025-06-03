@@ -156,15 +156,15 @@
                     <div class="table-container">
                         <table class="table">
                             <thead>
-                            <tr>
-                                <th>판매처</th>
-                                <th>주문일시</th>
-                                <th>주문번호</th>
-                                <th>주문제품</th>
-                                <th>수량</th>
-                                <th>주문금액</th>
-                                <th>택배비</th>
-                            </tr>
+                                <tr>
+                                    <th>판매처</th>
+                                    <th>주문일시</th>
+                                    <th>주문번호</th>
+                                    <th>주문제품</th>
+                                    <th>수량</th>
+                                    <th>주문금액</th>
+                                    <th>택배비</th>
+                                </tr>
                             </thead>
                             <tbody id="order-list">
                             <!-- Order rows will be added dynamically -->

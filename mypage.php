@@ -19,13 +19,23 @@
     include './sidebar.html';
     include './dbConnect.php';
 
-    $infoStmt = $conn->prepare("SELECT * FROM user WHERE ix = ?");
+    if(!$is_login){
+        echo "<script>alert('이용할 수 없는 페이지입니다.'); location.href='./';</script>";
+    }
+
+    $infoStmt = $conn->prepare("SELECT * FROM user u LEFT JOIN user_subscriptions us ON u.ix = us.user_ix WHERE u.ix = ?");
     $infoStmt->bind_param("s",$userIx);
     $infoStmt->execute();
 
     $infoResult = $infoStmt->get_result();
     if ($infoResult->num_rows > 0) {
         $infoRow = $infoResult->fetch_assoc(); // 결과에서 한 행을 가져옴
+    }
+
+    if($infoRow['is_trial']==1){
+        $plan = "체험형(만료일 : ".$infoRow['ends_at'].")";
+    }else if($infoRow['status']=='active'){
+        $plan = "일반형(만료일 : ".$infoRow['ends_at'].")";
     }
     ?>
 
@@ -53,6 +63,10 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold text-muted">가입일</label>
                             <div class="form-control-plaintext fs-6"><?=htmlspecialchars($infoRow['create_at'])?></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-muted">사용플랜</label>
+                            <div class="form-control-plaintext fs-6"><?=htmlspecialchars($plan)?></div>
                         </div>
                     </div>
 

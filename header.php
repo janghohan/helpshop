@@ -2,13 +2,18 @@
 session_start();
 include './dbConnect.php';
 
-$userIx = $_SESSION['user_ix'] ?? '1';
+$is_login = $_SESSION['is_login'] ?? false;
 
-$alarmStmt = $conn->prepare("SELECT * FROM stock_alarm sa JOIN matching_name mn ON mn.ix = sa.matching_ix WHERE mn.user_ix = ? AND sa.is_resolved=0");
-$alarmStmt->bind_param("s",$userIx);
-$alarmStmt->execute();
+if($is_login){
+    $userIx = $_SESSION['user_ix'] ?? '1';
 
-$alarmResult = $alarmStmt->get_result();
+    $alarmStmt = $conn->prepare("SELECT * FROM stock_alarm sa JOIN matching_name mn ON mn.ix = sa.matching_ix WHERE mn.user_ix = ? AND sa.is_resolved=0");
+    $alarmStmt->bind_param("s",$userIx);
+    $alarmStmt->execute();
+
+    $alarmResult = $alarmStmt->get_result();
+}
+
 
 
 ?>
@@ -80,6 +85,9 @@ $alarmResult = $alarmStmt->get_result();
 <div class="header">
     <div class="menu">
     </div>
+    <?php
+    if($is_login){
+    ?>
     <div>
         <button class="position-relative" onclick="location.href='./alarm-list.php'">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
@@ -100,6 +108,13 @@ $alarmResult = $alarmStmt->get_result();
             </svg>
         </button>
     </div>
+    <?php }else{?>
+    <div>
+        <button onclick="location.href='./login.php'">
+            로그인
+        </button>
+    </div>
+    <?php }?>
 </div>
 
 <div class="info_pop">

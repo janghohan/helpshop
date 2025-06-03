@@ -12,8 +12,45 @@
     <script src='./js/common.js' ></script>
     <title>내정보 페이지</title>
     <style>
+    body {
+        background-color: #f9f9f9;
+        color: #333;
+    }
+    .hero {
+      background-color: #2f3b7e;
+      color: #fff;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+    .hero p {
+      font-size: 1.2rem;
+    }
+    .btn-primary {
+      background-color: #2f3b7e;
+      border-color: #2f3b7e;
+    }
+    .feature-icon {
+      font-size: 2rem;
+      color: #2f3b7e;
+    }
+    .pricing-card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .cta {
+      background-color: #eef0fa;
+      padding: 40px 20px;
+      text-align: center;
+    }
 
-    .plan-header {
+    /* .plan-header {
       margin-bottom: 20px;
       font-size: 18px;
       color: #333;
@@ -86,7 +123,7 @@
     .highlight {
       color: #2f3b7e;
       font-weight: bold;
-    }
+    } */
     </style>
 </head>
 <body>
@@ -101,8 +138,72 @@
 
     <!-- 메인 컨테이너 -->
     <div class="full-content">
-        <div class="container mt-5">
-            <div class="plan-header">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="container">
+                <h1>5일 무료 체험 제공</h1>
+                <p>간편한 택배처리, 지금 무료로 시작해보세요.</p>
+                <a href="./signup.php" class="btn btn-light mt-3">무료 체험 시작하기</a>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="py-5">
+                <div class="container">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="feature-icon mb-2">🧮</div>
+                        <p>마진율, ROAS 계산기</p>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-icon mb-2">🛒</div>
+                        <p>상품 재고 관리</p>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-icon mb-2">📊</div>
+                        <p>손익 관리</p>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-icon mb-2">🚚</div>
+                        <p>마켓 → 택배 자동 등록</p>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <!-- Pricing Plan -->
+            <section id="pricing" class="py-5">
+                <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                    <div class="pricing-card text-center">
+                        <h3>스마트 플랜</h3>
+                        <p class="fs-4 fw-bold">월 9,800원</p>
+                        <p class="text-muted">5일 무료 체험 포함</p>
+                        <ul class="list-unstyled mb-4">
+                            <li>✅ 마진율, ROAS 계산기</li>
+                            <li>✅ 상품등록 무제한</li>
+                            <li>✅ 주문등록 무제한</li>
+                            <li>✅ 부족 재고 알림</li>
+                            <li>✅ 원스톱 송장입력</li>
+                            <li>✅ 순익 및 지출관리</li>
+                        </ul>
+                        <a href="./signup.php" class="btn btn-primary">지금 가입하기</a>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <!-- Final CTA -->
+            <section class="cta">
+                <div class="container">
+                <h4>5일 무료 체험을 지금 시작해보세요!</h4>
+                <a href="./signup.php" class="btn btn-primary mt-3">무료 체험 시작</a>
+                </div>
+            </section>
+            <!-- <div class="plan-header">
             현재 요금제: <strong>Trial</strong> (연동 쇼핑몰: 0개, 30일 주문수: 0건)
             </div>
 
@@ -237,7 +338,7 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </div> -->
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

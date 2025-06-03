@@ -21,6 +21,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         }
         echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+    }else if($type=='orderRestore'){
+        foreach($orderList as $orderIx){
+
+            $updateCancelStmt = $conn->prepare("UPDATE order_details SET status='completed' WHERE ix=?");
+            $updateCancelStmt->bind_param("s", $orderIx);
+            if(!$updateCancelStmt->execute()){
+                throw new Exception("Error executing orderRestore statement: " . $updateCancelStmt->error); // *** 수정 ***
+            }
+
+        }
+        echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     }
 
     // echo json_encode(['status1'=>$type, 'status' => $orderList, 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);

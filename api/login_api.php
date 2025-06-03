@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['user_id'] = $user_id;
             $_SESSION['nickname'] = $name;
             $_SESSION['user_ix'] = $ix;
+            $_SESSION['is_login'] = true;
 
             $status = true;
             $msg = "login ok";

@@ -104,6 +104,13 @@ if($type=="idCheck"){
                 $accountStmt->bind_param("ss",$userIx,$val);
                 $accountStmt->execute();
 
+                $trialStart = date('Y-m-d H:i:s');
+                // 5일 후 날짜
+                $trialEnd = date($trialStart, strtotime('+5 days'));
+                $trialStmt = $conn->prepare("INSERT INTO user_subscriptions(user_ix,plan_ix,started_at,ends_at,is_trial,status) VALUES(?,1,?,?,1,'trial')");
+                $trialStmt->bind_param("sss",$userIx,$trialStart,$trialEnd);
+                $trialStmt->execute();
+
                 $status = true;
                 $msg = "signup ok";
             }else{

@@ -1,131 +1,3 @@
-<!-- <style>
-    /* 사이드바 스타일 */
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        background-color: #2c3e50;
-        color: white;
-        position: fixed;
-        top: 0;
-        left: 0;
-        transition: width 0.3s;
-        overflow: hidden;
-        padding: 15px;
-    }
-
-    .sidebar.collapsed {
-        width: 60px;
-    }
-
-    .sidebar .sidebar-toggle {
-        text-align: right;
-        padding: 10px;
-    }
-
-    .sidebar.collapsed #toggle-sidebar{
-        transform: rotate(180deg);
-    }
-
-    #toggle-sidebar{
-        overflow: hidden;
-        display: inline-block;
-        width: 22px;
-        height: 22px;
-        font-size: 1px;
-        line-height: 0;
-        color: transparent;
-        white-space: nowrap;
-        text-indent: 150%;
-        background: url('./img/icon/ico_toggle.svg') no-repeat center;
-        box-shadow: none;   
-        border: 0;
-    }
-
-    .sidebar ul li:hover {
-        /* background-color: #f0f0f0;
-        border-radius: 5px; */
-    }
-    .sidebar ul li.active {
-        background-color: #007bff;
-        color: white;
-        font-weight: bold;
-    }
-
-    /* .sidebar ul li:hover a{
-        color: #f;
-    } */
-
-    .sidebar .menu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-    }
-    
-    .sidebar .menu li {
-        padding: 8px;
-        font-size: 14px;
-        color: #666;
-        cursor: pointer;
-    }
-
-    .sidebar .menu li a {
-        color: white;
-        text-decoration: none;
-        display: block;
-    }
-
-    .sidebar .sub-flex{
-        display: flex;
-        justify-content: space-between;
-    }
-
-    /* 사이드바 서브 */
-    /* 하위 메뉴 숨김 */
-    .submenu {
-        display: none;
-        list-style: none;
-        padding-left: 20px;
-        margin: 0;
-    }
-
-    /* 하위 메뉴 항목 스타일 */
-    .submenu li {
-        padding: 5px 0;
-    }
-
-
-    /* 서브메뉴 토글 버튼 스타일 */
-    .submenu-toggle {
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-        margin-left: 10px;
-        font-size: 14px;
-    }
-
-    .submenu-toggle.collapsed::after {
-        content: "▶"; /* 닫힌 상태 */
-    }
-
-    .submenu-toggle::after {
-        content: "▼"; /* 열린 상태 */
-    }
-
-    /* 헤더 스타일 */
-
-    .sidebar.collapsed ~ .header {
-        margin-left: 60px;
-    }
-
-
-</style> -->
 
 <style>
     .sidebar {
@@ -263,56 +135,50 @@
       <button id="toggleSidebar" style="border: 0px;">☰</button>
     </div>
     <ul class="menu">
-      <li>
-        <a href="index.php" class="menu-link">Home</a>
-      </li>
-      <!-- <li>
-        <a href="#" class="menu-link has-submenu">키워드관리</a>
-        <ul class="submenu">
-          <li><a href="a.php">키워드 리스트</a></li>
-          <li><a href="b.php">상품리스트</a></li>
-        </ul>
-      </li> -->
-      <li>
-        <a href="#" class="menu-link has-submenu">계산기</a>
-        <ul class="submenu">
-          <li><a href="margin_cal.php">마진율 계산기</a></li>
-          <li><a href="roas_cal.php">End Roas 계산기</a></li>
-        </ul>
-      </li>
-      <li>
-        <a href="#" class="menu-link has-submenu">상품관리</a>
-        <ul class="submenu">
-        <li><a href="category.php">카테고리</a></li>
-          <li><a href="product-create.php">단일 상품등록</a></li>
-          <li><a href="product-add-dump.php">대량 상품등록</a></li>
-          <li><a href="product.php">상품리스트</a></li>
-        </ul>
-      </li>
-      <li>
-        <a href="#" class="menu-link has-submenu">주문관리</a>
-        <ul class="submenu">
-          <li><a href="order-add.php">단건 주문등록</a></li>
-          <li><a href="order.php">주문리스트</a></li>
-          <li><a href="quan-product.php">상품별 주문량</a></li>
-          <li><a href="db-matching.php">DB매칭</a></li>
-        </ul>
-      </li>
-      <li>
-        <a href="#" class="menu-link has-submenu">손익관리</a>
-        <ul class="submenu">
-          <li><a href="profit.php">손익현황</a></li>
-          <li><a href="expense.php">지출내역</a></li>
-        </ul>
-      </li>
-      <li>
-        <a href="excel-order.php" class="menu-link">택배관리</a>
-      </li>
-      <li>
+        <li>
+            <a href="index.php" class="menu-link">Home</a>
+        </li>
+        <li class="onlyUser">
+            <a href="#" class="menu-link has-submenu">계산기</a>
+            <ul class="submenu">
+            <li><a href="margin_cal.php">마진율 계산기</a></li>
+            <li><a href="roas_cal.php">End Roas 계산기</a></li>
+            </ul>
+        </li>
+        <li class="onlyUser">
+            <a href="#" class="menu-link has-submenu">상품관리</a>
+            <ul class="submenu">
+            <li><a href="category.php">카테고리</a></li>
+            <li><a href="product-create.php">단일 상품등록</a></li>
+            <li><a href="product-add-dump.php">대량 상품등록</a></li>
+            <li><a href="product.php">상품리스트</a></li>
+            </ul>
+        </li>
+        <li class="onlyUser">
+            <a href="#" class="menu-link has-submenu">주문관리</a>
+            <ul class="submenu">
+            <li><a href="order-add.php">단건 주문등록</a></li>
+            <li><a href="order.php">주문리스트</a></li>
+            <li><a href="quan-product.php">상품별 주문량</a></li>
+            <li><a href="db-matching.php">DB매칭</a></li>
+            </ul>
+        </li>
+        <li class="onlyUser">
+            <a href="#" class="menu-link has-submenu">손익관리</a>
+            <ul class="submenu">
+            <li><a href="profit.php">손익현황</a></li>
+            <li><a href="expense.php">지출내역</a></li>
+            </ul>
+        </li>
+        <li class="onlyUser">
+                <a href="excel-order.php" class="menu-link">택배관리</a>
+        </li>
+        <li>
         <a href="#" class="menu-link has-submenu">고객센터</a>
         <ul class="submenu">
-          <li><a href="howto.php">사용방법</a></li>
-          <li><a href="board.php">요청하기</a></li>
+            <li><a href="howto.php">사용방법</a></li>
+            <li><a href="board.php">요청하기</a></li>
+            <li><a href="plan.php">요금제 안내</a></li>
         </ul>
       </li>
     </ul>

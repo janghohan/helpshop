@@ -91,7 +91,7 @@
         }
 
         $orderQuery = "
-            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, m.market_icon, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
@@ -106,14 +106,14 @@
 
     }else{     
         $orderQuery = "
-            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
+            SELECT o.order_date, o.global_order_number, o.order_number, m.market_name, m.market_icon, od.ix as detailIx, od.name, od.quantity, od.price, o.total_payment, o.total_shipping,
             od.cost, m.basic_fee, m.linked_fee, m.ship_fee
             FROM orders o
             JOIN order_details od ON o.ix = od.orders_ix
             JOIN market m ON m.ix = o.market_ix
             WHERE o.user_ix = ? 
             AND o.order_date >= ?
-            AND o.order_date <= ? AND od.status='completed' LIMIT ? OFFSET ?
+            AND o.order_date <= ? AND od.status='completed' ORDER BY o.order_time DESC LIMIT ? OFFSET ?
         ";
         $orderStmt = $conn->prepare($orderQuery);
         $orderStmt->bind_param("sssss",$userIx,$startDate,$endDate,$itemsPerPage,$startIndex);
@@ -180,12 +180,11 @@
                                 <input type="text" class="form-control" id="flatpickr" placeholder="MM/DD/YYYY" value="<?=date("Y-m-d")?>">
                             </div>
                             <div class="d-flex justify-content-end mb-3">
-                                <!-- <a href="/order-history" class="btn btn-outline-secondary me-2">
-                                    <i class="bi bi-clock-history"></i> 업로드 기록
-                                </a> -->
-                                <div class="d-grid">
+                                <a href="./order-history.php" class="btn btn-outline-secondary me-2">
+                                    <i class="bi bi-clock-history"></i>업로드 기록</a>
+                                <div class="d-grid position-relative">
                                     <button class="btn btn-primary w-100" id="excel-btn">주문 엑셀 등록</button>
-                                    <span style="cursor:pointer; font-size: 14px; text-align: right;color: #0069d9;" id="merge-btn"><a>쿠팡파일 병합하기</a></span>
+                                    <span class="position-absolute" style="cursor:pointer; font-size: 14px; text-align: right;color: #0069d9; right: 0; bottom: -23px;" id="merge-btn"><a>쿠팡파일 병합하기</a></span>
                                 </div>
                              </div>
                             <!-- <div class="col-md-2 mb-3">
@@ -222,6 +221,9 @@
                     <!-- Order Table -->
                     <button class="btn btn-sm btn-outline-primary dropdown-toggle mt-5 mb-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         선택한 상품 일괄적용
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary mt-5 mb-3" type="button" onclick="location.href='./order-cancel.php'">
+                        취소내역
                     </button>
                     <div class="table-container" style="caret-color: transparent;">
                         <div class="dropdown float-end mb-3">
@@ -271,7 +273,9 @@
                                         <td>
                                             <input type="checkbox" class="form-check-input" name="orderCheck[]" value="<?=htmlspecialchars($orderRow['detailIx'])?>">
                                         </td>
-                                        <td><?=htmlspecialchars($orderRow['market_name'])?></td>
+                                        <td>
+                                            <img style="width:20px;" src="./img/icon/<?=htmlspecialchars($orderRow['market_icon'])?>" alt="아이콘">
+                                        </td>
                                         <td><?=htmlspecialchars($orderRow['order_date'])?></td>
                                         <td><?=htmlspecialchars($orderRow['order_number'])?></td>
                                         <td><?=htmlspecialchars($orderRow['name'])?></td>
@@ -503,7 +507,7 @@
             Swal.fire({
                 html: `
                     <div style="font-size: 16px; text-align: left;">
-                        <strong>취소후 복구가 불가능합니다. 취소하시겠습니까? </strong><br><br>
+                        <strong>주문을 취소하시겠습니까? </strong><br><br>
                         
                     </div>
                 `,

@@ -40,6 +40,9 @@ a:hover{
   color: #fff !important;
   background-color: #007bff !important;
 }
+.font-primary{
+  color: #2f3b7e;
+}
 
 /* page 색상 */
 .page-link, .page-link:hover {
