@@ -201,7 +201,6 @@
                             <div class="field">
                                 <label>상품명</label>
                                 <input type="text" placeholder="상품명" maxlength="100" name="productName" value="<?=htmlspecialchars($productName)?>">
-                                <div class="char-count">0 / 100</div>
                             </div>
                             <div class="field">
                                 <label>상품원가</label>
@@ -506,6 +505,7 @@
             return false;
         }
 
+        console.log('productName',productName);
 
         $.ajax({
             url: './api/product_edit_api.php', // 데이터를 처리할 서버 URL

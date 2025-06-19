@@ -32,6 +32,9 @@ if($is_login){
         margin-left: 250px; /* 사이드바 넓이 */
         border-bottom: 1px solid #E2E5EA;
         transition: margin-left 0.3s;
+        position: sticky;
+        top: 0;
+        background-color: #fff;
     }
     .header.collapsed{
         margin-left: 0;

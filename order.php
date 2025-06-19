@@ -48,12 +48,16 @@
 
         /* 초이스 모달 */
         .choice-btn{
-            width: 45%;
             height: 100px;
-            color: #fff;
+            width: 200px;
             font-size: 18px;
             font-weight: bold;
         }
+        .choice-btn img{
+            border-radius: 5px;
+            margin-bottom: 3px;
+        }
+        
 
     </style>
 </head>
@@ -333,6 +337,28 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="choiceModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-evenly">
+                            <button class="btn choice-btn" id="naverBtn">
+                                <img src="./img/icon/naver1.png" alt="" style="width: 100px;">
+                                <p class="mb-0">네이버</p>
+                            </button>
+                            <button class="btn choice-btn" id="coupangBtn">
+                                <img src="./img/icon/coupang1.png" alt="" style="width: 100px;">
+                                <p class="mb-0">쿠팡</p>
+                            </button>
+                            <button class="btn choice-btn" id="rocketBtn">
+                                <img src="./img/icon/rocket1.png" alt="" style="width: 100px;">
+                                <p class="mb-0">로켓그로스</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="modal fade" id="realTimeExcelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -418,8 +444,19 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body p-4">
-                        <p>병합할 파일을 전부 선택해주세요. 파일은 바로 다운로드됩니다.</p>
+                        <p class="mb-0" style="color:#ff0000;">병합할 파일을 전부 선택해주세요.</p>
+                        <p style="color:#ff0000;">병합된 파일은 바로 다운로드됩니다.</p>
+                        <h6>쿠팡 이전 매출 파일(정산현황)</h6>
                         <form action="./api/merge_excel_api.php" class="d-flex justify-content-between" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="type" value="coupang">
+                            <input type="file" name="excel_files[]" multiple>
+                            <button class="btn btn-primary" type="submit">병합하기</button>
+                        </form>
+                    </div>
+                    <div class="modal-body p-4">
+                        <h6>로켓 그로스 파일(입출고/배송비 리포트)</h6>
+                        <form action="./api/merge_excel_api.php" class="d-flex justify-content-between" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="type" value="growthShip">
                             <input type="file" name="excel_files[]" multiple>
                             <button class="btn btn-primary" type="submit">병합하기</button>
                         </form>

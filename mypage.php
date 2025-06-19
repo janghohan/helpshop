@@ -11,6 +11,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src='./js/common.js' ></script>
     <title>내정보 페이지</title>
+    <style>
+        #pay-history{
+            border: 1px solid #2f3b7e;
+            padding: 2px 10px;
+            border-radius: 30px;
+            background: #2f3b7e;
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
     <!-- 헤더 -->
@@ -66,7 +75,9 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold text-muted">사용플랜</label>
-                            <div class="form-control-plaintext fs-6"><?=htmlspecialchars($plan)?></div>
+                            <div class="form-control-plaintext fs-6"><?=htmlspecialchars($plan)?>
+                                <a href="./pay-history.php" id="pay-history">결제내역</a>
+                            </div>
                         </div>
                     </div>
 

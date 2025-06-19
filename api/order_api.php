@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 엑셀 파일 읽기
         if ($xlsxA = SimpleXLSX::parse("../".$orderExcelFile)) {
-            $dataA = $xlsxA->rows();
+            $dataA = $xlsxA->rows(0);
         } else {
             echo "Error reading Excel A: " . SimpleXLSX::parseError();
             exit;
@@ -584,6 +584,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         
+        }else if($marketName=='로켓그로스'){
+            $dataB = $xlsxA->rows(1); //로켓그로스 배송비 내역
+            $maxRows = max(count($dataA), count($dataB)); // 둘 중 더 많은 행 수만큼 반복
+            $totalOrders = $maxRows;
+            $currentOrder = 0;
+            $duplicateOrders = []; //중복된 주문번호는 체크하는 배열
+            $response['status'] = 'success';
+            $datePrices = []; // 지출비용 날짜=>총합
+            for ($i = 0; $i < $maxRows; $i++) {
+                if($dataA[$i][0]!='주정산' || $dataA[$i][17]<0){
+                    $currentOrder ++;
+                    continue;
+                }     
+
+                $orderNumber = $dataA[$i][6]; //주문번호
+                
+                $currentOrderNumber = $orderNumber;
+
+                //settlement dashboard(24-07 이전 주문 엑셀)에서는 optionId가 -1값이다.
+
+                $orderDate = $dataA[$i][8];
+                $orderQuantity = $dataA[$i][17];
+                $orderPrice = $dataA[$i][14];
+                $orderName = $dataA[$i][12].",".$dataA[$i][13];
+                $etc = $dataA[$i][22];
+                $orderShip = $dataB[$i][23];
+                $totalPayment = $orderPrice * $orderQuantity;
+
+                $globalOrderNumber = generateOrderNumber($userIx).$currentOrder;
+
+                // orders 테이블
+                $orderStmt = $conn->prepare("INSERT IGNORE INTO orders(global_order_number,order_number,order_date,order_time,market_ix,user_ix,total_payment,total_shipping) VALUES(?,?,?,?,?,?,?,?)");
+                $orderStmt->bind_param("ssssssss", $globalOrderNumber,$orderNumber,$orderDate,$orderDate,$orderMarketIx,$userIx,$totalPayment,$orderShip);
+                if(!$orderStmt->execute()){
+                    $response['status'] = 'fail';
+                    $response['msg'] = 'order upload fail';
+                }
+                
+                $ordersIx = $orderStmt->insert_id;
+                if ($orderStmt->affected_rows === 0) {
+                    $duplicateOrders[] = $orderNumber;
+                    // throw new Exception("중복된 주문으로 인해 삽입되지 않았습니다.");
+                }else{
+
+                    //날짜별 입출고비를 지출비용으로 등록
+                    if (!isset($datePrices[$orderDate])) {
+                        $datePrices[$orderDate] = 0;
+                    }
+                    $datePrices[$orderDate] += $etc;
+
+                    $orderDetailStmt = $conn->prepare("INSERT INTO order_details(orders_ix,name,cost,quantity,price) VALUES(?,?,0,?,?)");
+                    $orderDetailStmt->bind_param("ssii",$ordersIx,$orderName,$orderQuantity,$orderPrice);
+                    if(!$orderDetailStmt->execute()){
+                        $response['status'] = 'fail';
+                        $response['msg'] = 'detail upload fail';
+                    }else{
+                        $currentOrder ++;
+                    }
+                }
+
+                if (in_array($orderNumber, $duplicateOrders)) {
+                    $currentOrder++;
+                    $_SESSION['orderDumpProgress'] = intval((100 * $currentOrder) / $totalOrders);
+                    continue;
+                }
+                
+                // $expenseStmt = $conn->prepare("INSERT INTO expense(user_ix,expense_type,expense_price,expense_memo")
+
+                $conn->commit(); // 성공 시 커밋
+
+                $ordersResult = $orderStmt->get_result();
+                $_SESSION['orderDumpProgress'] = intval((100 * $currentOrder) / $totalOrders);
+                
+    
+            }
+
+            //지출비용 등록
+            foreach ($datePrices as $date => $totalPrice) {
+                $expenseStmt = $conn->prepare("INSERT INTO expense(user_ix,expense_type,expense_price,expense_memo,expense_date) VALUES(?,'로켓그로스',?,'입출고비',?)");
+                $expenseStmt->bind_param("sss",$userIx,$totalPrice,$date);
+                if(!$expenseStmt->execute()){
+                    $response['status'] = 'fail';
+                    $response['msg'] = "expense error";
+                }
+            }
+    
+            $conn->begin_transaction();   
+            $conn->close();
+    
+            echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         }
         
     }
@@ -633,14 +723,14 @@ function stockCheck(){
         INSERT INTO stock_alarm (matching_ix, alarm_type, created_at, is_resolved)
         VALUES (?, 'stock', NOW(), 0)
     ";
-    $insertStmt = $conn->prepare("INSERT INTO stock_alarm (matching_ix, alarm_type, created_at)
-        VALUES (?, 'stock', NOW())");
+    $insertStmt = $conn->prepare("INSERT INTO stock_alarm (user_ix,matching_ix, alarm_type, created_at)
+        VALUES (?,?, 'stock', NOW())");
 
     $count = 0;
     while ($row = $result->fetch_assoc()) {
         $matching_ix = $row['matching_ix'];
 
-        $insertStmt->bind_param("i",  $matching_ix);
+        $insertStmt->bind_param("ii",  $userIx,$matching_ix);
         $insertStmt->execute();
         $count++;
     }

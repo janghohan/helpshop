@@ -54,7 +54,7 @@
                             $img = "naver.png";
                         }else if($marketRow['market_name']=='쿠팡'){
                             $img = "coupang.png";
-                        }else if($marketRow['market_name']=='쿠팡 로켓그로스'){
+                        }else if($marketRow['market_name']=='로켓그로스'){
                             $img = "rocket.png";
                         }
                     ?>
@@ -111,7 +111,7 @@
                             <select name="marketName" id="marketName" class="form-control">
                                 <option value="네이버">네이버</option>
                                 <option value="쿠팡">쿠팡</option>
-                                <option value="쿠팡 로켓그로스">쿠팡 로켓그로스</option>
+                                <option value="로켓그로스">쿠팡 로켓그로스</option>
                             </select>
                             <p class="mt-4 mb-1 mb-n2">수수료 입력(숫자만 입력하세요)</p>
                             <div class="row">

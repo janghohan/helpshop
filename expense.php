@@ -138,6 +138,7 @@
                                     <option value="자재비">자재비</option>
                                     <option value="택배비">택배비</option>
                                     <option value="매입비용">매입비용</option>
+                                    <option value="로켓그로스">로켓그로스</option>
                                     <option value="기타">기타</option>
                                 </select>
                             </div>
@@ -156,6 +157,7 @@
 
                     <!-- Order Table -->
                     <div class="table-container" style="caret-color: transparent;">
+                        <h6 class="minus">총 지출비용 : <span id="total_expense">153,500</span>원</h6>
                         <table class="table">
                             <colgroup>
                                 <col style="width: 30%;">
@@ -180,10 +182,11 @@
                                 <?php
                                     $previousDate = null; // 이전 주문번호를 저장
                                     $toggle = true; // 색상을 변경하기 위한 토글 변수
-
+                                    $total_expense = 0;
                                     if(isset($expenseResult)){
                                         foreach($expenseResult as $expenseRow) {
-
+                                            
+                                            $total_expense += (int)$expenseRow['expense_price'];
                                             $currentDate = $expenseRow['expense_date'];
                                             if ($currentDate !== $previousDate) {
                                                 // 주문번호가 변경될 때마다 토글 값을 변경
@@ -209,7 +212,9 @@
                                     </tr>
                                     
                                 <?php
-                                    }}
+                                    }
+                                    $total_expense = number_format($total_expense);
+                                }
                                 ?>
                             </tbody>
                         </table>
@@ -238,6 +243,7 @@
                             <option value="자재비">자재비</option>
                             <option value="택배비">택배비</option>
                             <option value="매입비용">매입비용</option>
+                            <option value="로켓그로스">로켓그로스</option>
                             <option value="기타">기타</option>
                         </select>
                         <input type="text" name="expenseMemo" class="form-control mt-3"  placeholder="메모">                       
@@ -282,6 +288,8 @@
                 }   
                 
             });
+
+            $("#total_expense").text("<?=$total_expense?>");
 
         });
 
@@ -342,7 +350,8 @@
                             allowOutsideClick:false,
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                $("#expenseForm input").val("");
+                                $("input[name='expenseMemo']").val("");
+                                $("input[name='expensePrice']").val("");
                             }else{
                                 modalClose('expenseModal');
                             }

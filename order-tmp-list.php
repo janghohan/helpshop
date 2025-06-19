@@ -93,7 +93,6 @@
                 }
                 move_uploaded_file($_FILES['orderExcelFile']['tmp_name'], "./".$fileUploadPath);
                 $xlsxA = SimpleXLSX::parse($fileUploadPath);
-                $dataA = $xlsxA->rows();
             } else {
                 $pwd = "0000";
 
@@ -115,8 +114,7 @@
                 exec("python ./api/unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
 
                 $xlsxA = SimpleXLSX::parse($outputFile);
-                $dataA = $xlsxA->rows();
-
+    
                 $fileUploadPath = 'tmpUploads/'.date("Ymd")."/".$marketName.$userIx."orderExcel.xlsx" ;
             }
         }
@@ -156,15 +154,20 @@
                     <div class="table-container">
                         <table class="table">
                             <thead>
-                                <tr>
-                                    <th>판매처</th>
-                                    <th>주문일시</th>
-                                    <th>주문번호</th>
-                                    <th>주문제품</th>
-                                    <th>수량</th>
-                                    <th>주문금액</th>
-                                    <th>택배비</th>
-                                </tr>
+                            <tr>
+                                <th>판매처</th>
+                                <th>주문일시</th>
+                                <th>주문번호</th>
+                                <th>주문제품</th>
+                                <th>수량</th>
+                                <th>주문금액</th>
+                                <th>택배비</th>
+                                <?php
+                                if($marketName=='로켓그로스'){
+                                    ?>
+                                <th>입출고비</th>
+                                <?php } ?>
+                            </tr>
                             </thead>
                             <tbody id="order-list">
                             <!-- Order rows will be added dynamically -->
@@ -172,8 +175,9 @@
                             $previousOrderNumber = null; // 이전 주문번호를 저장
                             $toggle = true; // 색상을 변경하기 위한 토글 변수
 
+                            $dataA = $xlsxA->rows(0);
                             if(isset($dataA)){
-                                if(!($marketName=='쿠팡' && $fileType=='ex')){ 
+                                if(!(($marketName=='쿠팡' && $fileType=='ex') || $marketName=='로켓그로스')){ 
                                     foreach ($dataA as $indexA => $rowA) {
                                         if($indexA===0){
                                             continue;
@@ -242,8 +246,8 @@
                                             <td><?=htmlspecialchars($orderNumber)?></td>
                                             <td><?=htmlspecialchars($orderName)?></td>
                                             <td><?=htmlspecialchars($orderQuantity)?></td>
-                                            <td><?=htmlspecialchars($orderPrice)?></td>
-                                            <td><?=htmlspecialchars($orderShipping)?></td>
+                                            <td><?=htmlspecialchars(number_format($orderPrice))?></td>
+                                            <td><?=htmlspecialchars(number_format($orderShipping))?></td>
                                         </tr>
 
                                 <?php }
@@ -362,11 +366,61 @@
                                         <td><?=htmlspecialchars($data['order_date'])?></td>
                                         <td><?=htmlspecialchars($data['order_number'])?></td>
                                         <td><?=htmlspecialchars($eachOrderName)?></td>
-                                        <td><?=htmlspecialchars($data['order_quantity'][$index])?></td>
-                                        <td><?=htmlspecialchars($data['order_price'][$index])?></td>
-                                        <td><?=htmlspecialchars($data['shipping_fee'])?></td>
+                                        <td><?=htmlspecialchars(number_format($data['order_quantity'][$index]))?></td>
+                                        <td><?=htmlspecialchars(number_format($data['order_price'][$index]))?></td>
+                                        <td><?=htmlspecialchars(number_format($data['shipping_fee']))?></td>
                                     </tr>
                                     <?php } } ?>
+                                <?php 
+                                }else if($marketName=='로켓그로스'){
+                                    //dataA 는 입출고비내역
+                                    $dataB = $xlsxA->rows(1); //로켓그로스 배송비 내역
+
+                                    $groupedOrders = []; // 주문을 저장할 배열
+
+                                    $previousOrderNumber = null; // 이전 주문번호를 저장
+                                    $maxRows = max(count($dataA), count($dataB)); // 둘 중 더 많은 행 수만큼 반복
+                
+                                    for ($i = 0; $i < $maxRows; $i++) {
+                                        if($dataA[$i][0]!='주정산' || $dataA[$i][17]<0){
+                                            continue;
+                                        }     
+
+                                        $orderNumber = $dataA[$i][6]; //주문번호
+                                       
+                                        $currentOrderNumber = $orderNumber;
+
+                                        //settlement dashboard(24-07 이전 주문 엑셀)에서는 optionId가 -1값이다.
+
+                                        $orderDate = $dataA[$i][8];
+                                        $orderQuantity = $dataA[$i][17];
+                                        $orderPrice = $dataA[$i][14];
+                                        $orderName = $dataA[$i][12].",".$dataA[$i][13];
+                                        $etc = $dataA[$i][22];
+                                        $orderShip = $dataB[$i][23];
+                                    
+
+                                    
+                                        if ($currentOrderNumber !== $previousOrderNumber) {
+                                                // 주문번호가 변경될 때마다 토글 값을 변경
+                                            $toggle = !$toggle;
+                                        }
+                                        $backgroundColor = $toggle ? '#f0f0f0' : '#ffffff'; // 흰색(#ffffff)과 회색(#f0f0f0)으로 구분
+                                        $previousOrderNumber = $currentOrderNumber; // 현재 주문번호를 이전 주문번호로 갱신
+                                ?>
+                                    <tr style="background-color: <?= $backgroundColor ?>;">
+                                        <td><img src="./img/icon/<?=htmlspecialchars($marketIcon)?>" alt="" style="width:20px;"></td>
+                                        <td><?=htmlspecialchars($orderDate)?></td>
+                                        <td><?=htmlspecialchars($orderNumber)?></td>
+                                        <td><?=htmlspecialchars($orderName)?></td>
+                                        <td><?=htmlspecialchars($orderQuantity)?></td>
+                                        <td><?=htmlspecialchars(number_format($orderPrice))?></td>
+                                        <td><?=htmlspecialchars(number_format($orderShip))?></td>
+                                        <td><?=htmlspecialchars(number_format($etc))?></td>
+                                    </tr>
+                                    <?php } ?>
+
+
                                 <?php 
                                 }
                             }?>

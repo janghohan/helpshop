@@ -14,6 +14,10 @@
         #fileList{
             font-size:14px;
         }
+        .card{
+            border: none;
+            box-shadow: none !important;
+        }
     </style>
 </head>
 <body>

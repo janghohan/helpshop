@@ -62,7 +62,7 @@
                  if(isset($memoResult)){
                     foreach($memoResult as $memoRow) {
                 ?>
-                <button type="button" class="btn btn-secondary position-relative me-3 memo-title" data-ix="<?=htmlspecialchars($memoRow['ix'])?>">
+                <button type="button" class="btn btn-secondary position-relative me-3 mb-2 memo-title" data-ix="<?=htmlspecialchars($memoRow['ix'])?>">
                     <?=htmlspecialchars($memoRow['title'])?>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger memo-del" data-ix="<?=htmlspecialchars($memoRow['ix'])?>">
                         X

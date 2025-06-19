@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo json_encode(['status' => 'success', 'message' => 'op update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     
+    //product-edit 페이지 수정
     }else if($type=='productEdit'){
         $productName = $_POST['productName'] ?? '';
         $accountIx = $_POST['accountIx'] ?? '';
@@ -78,6 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $productStock = $_POST['stock'] ?? 0;
         $alarmStock = $_POST['alarmStock'] ?? 0;
         $updateTime = date("Y-m-d H:i:s");
+
+        $productCost = str_replace(",","",$productCost);
 
         //옵션값, 원가, 재고 수정
         $productStmt = $conn->prepare("UPDATE matching_name SET matching_name=?, account_ix=?, category_ix=?, cost =?, stock=?, alarm_stock=? WHERE ix=? AND user_ix=?");
@@ -116,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
     
+    //product 페이지에서 더블클릭 수정 
     }else if($type=='matchingEdit'){
         $matchingIx = $_POST['matchingIx'] ?? '';
         $value = $_POST['value'] ?? '';
@@ -143,6 +147,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['status' => 'success', 'message' => 'matching update processed successfully'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         }
 
+
+        //재고 변경시 알람재고보다 많게 변경되면
+        if($editCol=='stock'){
+            $selectStockStmt = $conn->prepare("SELECT stock,alarm_stock FROM matching_name WHERE user_ix =? AND ix=?");
+            $selectStockStmt->bind_param("ss",$userIx,$matchingIx);
+            $selectStockStmt->execute();
+
+            $selectStockResult = $selectStockStmt->get_result();
+            $selectStockRow = $selectStockResult->fetch_assoc();
+            $alarmStock = $selectStockRow['alarm_stock'];
+
+            if($value >= $alarmStock) {
+                $updateStmt = $conn->prepare("UPDATE stock_alarm SET is_resolved=1 WHERE matching_ix = ?");
+                $updateStmt->bind_param("s",$matchingIx);
+                $updateStmt->execute();
+            }
+
+        }
         
 
         // matchingIx': ix, 'value': newValue, 'type':'matchingEdit', 'editCol':type 
