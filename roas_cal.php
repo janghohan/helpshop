@@ -180,10 +180,10 @@
                                         </div>
                                         <div>
                                             <div>
-                                                <label class="form-label">수수료(%)</label>
+                                                <label class="form-label">가능예산(원)</label>
                                             </div>
                                             <div>
-                                                <input type="text" class="form-control fee" value="0">
+                                                <input type="text" class="form-control budget localeNumber" value="0">
                                             </div>
                                         </div>
                                     </div>
@@ -196,13 +196,21 @@
                                         <div>
                                             <div>
                                                 <label class="form-label">부가세(원)</label>
+                                                <input type="checkbox" name="surtaxCheck" class="surtaxCheck">
+                                                <label for="surtaxCheck">비과세</label>
                                             </div>
                                             <div>
                                                 <input type="text" class="form-control localeNumber surtax">
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <div class="mt-3">
                                             <div>
-                                                <input type="checkbox" name="surtaxCheck" class="surtaxCheck">
-                                                <label for="surtaxCheck">비과세</label>
+                                                <label class="form-label">수수료(%)</label>
+                                            </div>
+                                            <div>
+                                                <input type="text" class="form-control fee" value="0">
                                             </div>
                                         </div>
                                     </div>
@@ -338,11 +346,18 @@
         }
         
 
+        // 세전순수익 계산 (매출 - 매입금액 - 상품,배송 수수료)
+        let exNetProfit = totalRevenue  - totalPurchase - totalPriceFee - totalShipFee;
+        // 부가세 후 순수익 = 최대 사용 광고비
+        let afterNetProfit = exNetProfit - surtax;
+
+
+
         // 총 지출(상품원가 + 배송비 + 판매수수료 + 택배비수수료 + 부자재비)
         let totalExpense = (totalProductCost + totalPriceFee + totalShipFee + surtax + etc).toFixed(2);
 
         // 최대 사용가능 광고비
-        let maxAdBudget = totalProductRevenue - totalExpense;
+        let maxAdBudget = afterNetProfit;
 
         // 수익실현 최소 ROAS
         let minRoas = (totalProductRevenue / maxAdBudget) * 100;
@@ -353,6 +368,7 @@
 
         row.find('.roas').val(minRoas);
         row.find('.surtax').val(surtax);
+        row.find('.budget').val(maxAdBudget);
     }
 
     function parseNumber(value) {

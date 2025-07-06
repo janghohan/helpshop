@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/SimpleXLSX.php'; // 실제 경로 확인
 require_once __DIR__ . '/SimpleXLSXGen.php'; // 실제 경로 확인
+$config = require __DIR__ . '/../config.php';
 
 use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
 use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
@@ -66,10 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     die("파일 업로드 실패");
                 }
                 // Python 스크립트 실행 : 비밀번호 삭제
-                exec("python unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
+
+                $cmd = $config['python_path'] . ' ' . $config['unlock_script_path'] . ' ' . $inputFile . ' ' . $outputFile . ' ' . $pwd;
+                exec($cmd, $output, $return_var);
+
+                // exec("/usr/bin/python3 /var/www/html/api/unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
 
                 $xlsxA = SimpleXLSX::parse($outputFile);
                 $dataA = $xlsxA->rows();
+
             }
 
             if ($xlsxB = SimpleXLSX::parse($basicFile)) {
@@ -123,7 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $processedFiles[] = [
                 'name' => $fileName,
-                'url' => 'api/'.$fileLocation
+                'url' => 'api/'.$fileLocation,
+                'cmd' => $cmd,
             ];
 
             // 결과 링크 출력
@@ -287,8 +294,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             // Python 스크립트 실행 : 비밀번호 삭제
-            exec("python unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
-    
+            // exec("/usr/bin/python3 /var/www/html/api/unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
+            $cmd = $config['python_path'] . ' ' . $config['unlock_script_path'] . ' ' . $inputFile . ' ' . $outputFile . ' ' . $pwd;
+            exec($cmd, $output, $return_var);
+
+
+
             // 엑셀 파일 읽기
             if ($xlsxA = SimpleXLSX::parse($outputFile)) {
                 $dataA = $xlsxA->rows();
@@ -322,8 +333,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $fileLocation = "excelFile/useFile/".date("Ymd").'/송장등록(네이버)_'.$day.'_'.$userIx.'.xlsx';
             $fileName = "송장등록(네이버)_".$day.".xlsx";
             $xlsx->saveAs($fileLocation);
+            chmod($fileLocation, 0777);
+
+            $file = "excelFile/useFile/".date("Ymd").'/송장등록(네이버)_'.$day.'_'.$userIx.'.xlsx';
             
-            exec("python change_excel.py $fileLocation", $output, $return_var);
+            // exec("/usr/bin/python3 /var/www/html/api/change_excel.py $fileLocation", $output, $return_var);
+
+            $cmd = $config['python_path'] . ' ' . $config['change_script_path'] . ' ' .escapeshellarg($fileLocation);
+            exec($cmd, $output, $return_var);
 
             $processedFiles[] = [
                 'name' => $fileName,

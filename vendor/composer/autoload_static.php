@@ -6,10 +6,6 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb
 {
-    public static $files = array (
-        '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
-    );
-
     public static $prefixLengthsPsr4 = array (
         'Z' => 
         array (
@@ -24,7 +20,6 @@ class ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb
         ),
         'M' => 
         array (
-            'MyCLabs\\Enum\\' => 13,
             'Matrix\\' => 7,
         ),
         'C' => 
@@ -56,10 +51,6 @@ class ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
         ),
-        'MyCLabs\\Enum\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
-        ),
         'Matrix\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
@@ -74,19 +65,8 @@ class ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb
         ),
     );
 
-    public static $prefixesPsr0 = array (
-        'H' => 
-        array (
-            'HTMLPurifier' => 
-            array (
-                0 => __DIR__ . '/..' . '/ezyang/htmlpurifier/library',
-            ),
-        ),
-    );
-
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'Stringable' => __DIR__ . '/..' . '/myclabs/php-enum/stubs/Stringable.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
@@ -94,7 +74,6 @@ class ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitf01ca2e7ccfd85272670bf19ebc4f1fb::$classMap;
 
         }, null, ClassLoader::class);

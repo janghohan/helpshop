@@ -57,6 +57,7 @@
 
     require_once __DIR__ . '/api/SimpleXLSX.php'; // 실제 경로 확인
     require_once __DIR__ . '/api/SimpleXLSXGen.php'; // 실제 경로 확인
+    $config = require __DIR__ . '/config.php';
 
     use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
     use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
@@ -111,7 +112,9 @@
                     die("파일 업로드 실패");
                 }
                 // Python 스크립트 실행 : 비밀번호 삭제
-                exec("python ./api/unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
+                // exec("/usr/bin/python3 /var/www/html/api/unlock_excel.py $inputFile $outputFile $pwd", $output, $return_var);
+                $cmd = $config['python_path'] . ' ' . $config['unlock_script_path'] . ' ' . $inputFile . ' ' . $outputFile . ' ' . $pwd;
+                exec($cmd, $output, $return_var);
 
                 $xlsxA = SimpleXLSX::parse($outputFile);
     

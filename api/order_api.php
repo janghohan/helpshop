@@ -7,7 +7,7 @@ require_once __DIR__ . '/SimpleXLSXGen.php'; // 실제 경로 확인
 
 use Shuchkin\SimpleXLSX; // 네임스페이스가 있는 경우 사용할 수 있음
 use Shuchkin\SimpleXLSXGen; // 네임스페이스가 있는 경우 사용할 수 있음
-
+header('Content-Type: application/json');
 $userIx = $_SESSION['user_ix'] ?? '1';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // JSON 문자열로 받은 데이터를 파싱
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($xlsxA = SimpleXLSX::parse("../".$orderExcelFile)) {
             $dataA = $xlsxA->rows(0);
         } else {
-            echo "Error reading Excel A: " . SimpleXLSX::parseError();
+            $response['error'] =  "Error reading Excel A: ";
             exit;
         }
 
@@ -381,10 +381,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     //실시간 주문에 대해서만 재고 체크
                     if($fileType=='realtime'){
-                        $stockStmt = $conn->prepare("UPDATE matching_name SET stock = stock -? WHERE ix = ( SELECT mn.ix FROM db_match db
-                            JOIN matching_name mn ON db.matching_ix = mn.ix WHERE db.name_of_excel = ? AND db.user_ix = ?
-                            LIMIT 1
-                        )");
+                        // $stockStmt = $conn->prepare("UPDATE matching_name SET stock = stock -? WHERE ix = ( SELECT mn.ix FROM db_match db
+                        //     JOIN matching_name mn ON db.matching_ix = mn.ix WHERE db.name_of_excel = ? AND db.user_ix = ?
+                        //     LIMIT 1
+                        // )");
+
+                        $stockStmt = $conn->prepare("UPDATE matching_name mn
+                            JOIN db_match db ON db.matching_ix = mn.ix
+                            SET mn.stock = mn.stock - ?
+                            WHERE db.name_of_excel = ? AND db.user_ix = ?
+                            LIMIT 1");
                         $stockStmt->bind_param("sss", $orderQuantity, $orderName,$userIx);
                         if ($stockStmt->execute()) {
                             $status = true;
@@ -416,6 +422,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn->close();
     
             $response['msg'] = $testNum;
+
             echo json_encode($response, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
         
 
@@ -700,16 +707,6 @@ function stockCheck(){
     global $conn;
     global $userIx;
     // 1. 알림이 필요한 상품 조회
-    $sql = "
-        SELECT mn.ix AS matching_ix
-        FROM matching_name mn
-        WHERE mn.stock < mn.alarm_stock
-        AND NOT EXISTS (
-            SELECT 1 FROM stock_alarm sa
-            WHERE sa.matching_ix = mn.ix
-                AND sa.is_resolved = 0
-        )
-    ";
 
     $alarmStmt = $conn->prepare("SELECT mn.ix AS matching_ix FROM matching_name mn WHERE mn.user_ix=? AND mn.stock < mn.alarm_stock 
     AND NOT EXISTS(SELECT * FROM stock_alarm sa WHERE sa.matching_ix = mn.ix AND sa.is_resolved=0)");
@@ -719,12 +716,8 @@ function stockCheck(){
     $result = $alarmStmt->get_result();
 
     // 2. 알림 생성
-    $insert_sql = "
-        INSERT INTO stock_alarm (matching_ix, alarm_type, created_at, is_resolved)
-        VALUES (?, 'stock', NOW(), 0)
-    ";
-    $insertStmt = $conn->prepare("INSERT INTO stock_alarm (user_ix,matching_ix, alarm_type, created_at)
-        VALUES (?,?, 'stock', NOW())");
+    $now = date("Y-m-d H:i:s");
+    $insertStmt = $conn->prepare("INSERT INTO stock_alarm (user_ix,matching_ix, alarm_type, created_at) VALUES (?,?, 'stock', '$now')");
 
     $count = 0;
     while ($row = $result->fetch_assoc()) {

@@ -1,9 +1,21 @@
 <?php
+ini_set('memory_limit', '1024M'); // 메모리 1GB
+set_time_limit(300);              // 최대 실행시간 5분
 require __DIR__ . '/../vendor/autoload.php';
 
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Settings;
+use PhpOffice\PhpSpreadsheet\CachedObjectStorage\CacheBaseFactory;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+
+// 디스크 캐시 사용
+// Settings::setCache(
+//     CacheBaseFactory::create(CacheBaseFactory::CACHE_TO_DISK_ISAM)
+// );
+
+
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -29,20 +41,36 @@ if($type=='coupang'){
         $tmpPath = $files['tmp_name'][$i];
 
         try {
-            $spreadsheet = IOFactory::load($tmpPath);
+            $reader = IOFactory::createReader('Xlsx');
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($tmpPath);
             $sheet = $spreadsheet->getActiveSheet();
+
+
             $highestRow = $sheet->getHighestRow();
             $highestCol = $sheet->getHighestColumn();
-            $colCount = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestCol);
+            $colCount = Coordinate::columnIndexFromString($highestCol);
+
+            // 컬럼 좌표 캐싱
+            if (empty($colCoordinates)) {
+                for ($col = 1; $col <= $colCount; $col++) {
+                    $colCoordinates[$col] = Coordinate::stringFromColumnIndex($col);
+                }
+            }
 
             for ($row = 1; $row <= $highestRow; $row++) {
                 $rowData = [];
                 for ($col = 1; $col <= $colCount; $col++) {
-                    $value = $sheet->getCellByColumnAndRow($col, $row)->getValue();
+                    // $value = $sheet->getCellByColumnAndRow($col, $row)->getValue();
+                    // $value = $sheet->getCell(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $row)->getValue();
+                    // $rowData[] = trim((string)$value);
+
+                    $cellCoordinate = $colCoordinates[$col] . $row;
+                    $value = $sheet->getCell($cellCoordinate)->getValue();
                     $rowData[] = trim((string)$value);
                 }
 
-                $rowKey = implode('||', $rowData); // 행 전체 문자열로 변환
+                $rowKey = md5(implode('||', $rowData));
 
                 if (isset($uniqueRows[$rowKey])) {
                     continue; // 중복된 행은 스킵
@@ -52,27 +80,32 @@ if($type=='coupang'){
 
                 // 결과 시트에 행 추가
                 for ($col = 1; $col <= $colCount; $col++) {
-                    $resultSheet->setCellValueByColumnAndRow($col, $resultRow, $rowData[$col - 1]);
+                    // $resultSheet->setCellValueByColumnAndRow($col, $resultRow, $rowData[$col - 1]);
+                    // $cellCoordinate = Coordinate::stringFromColumnIndex($col) . $resultRow;
+                    // $resultSheet->setCellValue($cellCoordinate, $rowData[$col - 1]);
+                    $cellCoordinate = $colCoordinates[$col] . $resultRow;
+                    $resultSheet->setCellValue($cellCoordinate, $rowData[$col - 1]);
                 }
                 $resultRow++;
             }
         } catch (Exception $e) {
-            echo "파일 처리 중 오류 발생: " . $files['name'][$i] . " - " . $e->getMessage() . "<br>";
+            echo "파일 처리 중 오류 발생: " . htmlspecialchars($files['name'][$i]) . " - " . htmlspecialchars($e->getMessage()) . "<br>";
         }
     }
 
     // 결과 저장
-    $outputFile = '쿠팡 주문파일(합본).xlsx';
+    $outputFile = tempnam(sys_get_temp_dir(), 'merged_excel_') . '.xlsx';
     $writer = new Xlsx($resultSpreadsheet);
     $writer->save($outputFile);
 
-    // echo "<p>중복 없이 병합 완료: <a href='$outputFile' download>결과 다운로드</a></p>";
-
-    // 자동 다운로드 처리
+    // 파일 다운로드 헤더
     header('Content-Description: File Transfer');
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
+    header('Content-Disposition: attachment; filename="쿠팡_주문파일_합본.xlsx"');
     header('Content-Length: ' . filesize($outputFile));
+    header('Cache-Control: must-revalidate');
+    header('Pragma: public');
+    header('Expires: 0');
     readfile($outputFile);
 
 }else if($type=='growthSale'){ //로켓그로스 판매수수료 파일 합치기
